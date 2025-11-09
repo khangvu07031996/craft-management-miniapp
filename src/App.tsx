@@ -13,6 +13,7 @@ import { WorkItemPage } from './pages/WorkItemPage';
 import { WorkRecordPage } from './pages/WorkRecordPage';
 import { MonthlySalaryPage } from './pages/MonthlySalaryPage';
 import { WorkReportPage } from './pages/WorkReportPage';
+import { OvertimeConfigPage } from './pages/OvertimeConfigPage';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
 
@@ -65,6 +66,16 @@ function App() {
               <ProtectedRoute>
                 <AdminRoute>
                   <WorkTypePage />
+                </AdminRoute>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/work/overtime-configs"
+            element={
+              <ProtectedRoute>
+                <AdminRoute>
+                  <OvertimeConfigPage />
                 </AdminRoute>
               </ProtectedRoute>
             }

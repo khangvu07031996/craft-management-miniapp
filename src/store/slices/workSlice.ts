@@ -6,6 +6,7 @@ import {
   workRecordService,
   monthlySalaryService,
   workReportService,
+  overtimeConfigService,
 } from '../../services/work.service';
 import type {
   WorkTypeResponse,
@@ -22,6 +23,9 @@ import type {
   WorkReport,
   WorkReportParams,
   PaginationParams,
+  OvertimeConfigResponse,
+  CreateOvertimeConfigDto,
+  UpdateOvertimeConfigDto,
 } from '../../types/work.types';
 
 interface WorkState {
@@ -31,6 +35,7 @@ interface WorkState {
   monthlySalaries: MonthlySalaryResponse[];
   weeklyReport: WorkReport | null;
   monthlyReport: WorkReport | null;
+  overtimeConfigs: OvertimeConfigResponse[];
   pagination: PaginationParams;
   isLoading: boolean;
   error: string | null;
@@ -43,6 +48,7 @@ const initialState: WorkState = {
   monthlySalaries: [],
   weeklyReport: null,
   monthlyReport: null,
+  overtimeConfigs: [],
   pagination: {
     page: 1,
     pageSize: 10,
@@ -214,6 +220,18 @@ export const deleteWorkRecord = createAsyncThunk(
   }
 );
 
+export const fetchWorkRecordsByEmployeeAndMonth = createAsyncThunk(
+  'work/fetchWorkRecordsByEmployeeAndMonth',
+  async ({ employeeId, year, month }: { employeeId: string; year: number; month: number }, { rejectWithValue }) => {
+    try {
+      const response = await workRecordService.getWorkRecordsByEmployeeAndMonth(employeeId, year, month);
+      return response;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to fetch work records for employee and month');
+    }
+  }
+);
+
 // Monthly Salaries Thunks
 export const fetchMonthlySalaries = createAsyncThunk(
   'work/fetchMonthlySalaries',
@@ -292,6 +310,70 @@ export const fetchMonthlyReport = createAsyncThunk(
   }
 );
 
+// Overtime Config Thunks
+export const fetchOvertimeConfigs = createAsyncThunk(
+  'work/fetchOvertimeConfigs',
+  async (_, { rejectWithValue }) => {
+    try {
+      const data = await overtimeConfigService.getAllOvertimeConfigs();
+      return data;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to fetch overtime configs');
+    }
+  }
+);
+
+export const fetchOvertimeConfigByWorkTypeId = createAsyncThunk(
+  'work/fetchOvertimeConfigByWorkTypeId',
+  async (workTypeId: string, { rejectWithValue }) => {
+    try {
+      const data = await overtimeConfigService.getOvertimeConfigByWorkTypeId(workTypeId);
+      return data;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to fetch overtime config');
+    }
+  }
+);
+
+export const createOvertimeConfig = createAsyncThunk(
+  'work/createOvertimeConfig',
+  async (data: CreateOvertimeConfigDto, { rejectWithValue }) => {
+    try {
+      const response = await overtimeConfigService.createOvertimeConfig(data);
+      return response;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to create overtime config');
+    }
+  }
+);
+
+export const updateOvertimeConfig = createAsyncThunk(
+  'work/updateOvertimeConfig',
+  async (
+    { workTypeId, data }: { workTypeId: string; data: UpdateOvertimeConfigDto },
+    { rejectWithValue }
+  ) => {
+    try {
+      const response = await overtimeConfigService.updateOvertimeConfig(workTypeId, data);
+      return response;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to update overtime config');
+    }
+  }
+);
+
+export const deleteOvertimeConfig = createAsyncThunk(
+  'work/deleteOvertimeConfig',
+  async (workTypeId: string, { rejectWithValue }) => {
+    try {
+      await overtimeConfigService.deleteOvertimeConfig(workTypeId);
+      return workTypeId;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to delete overtime config');
+    }
+  }
+);
+
 const workSlice = createSlice({
   name: 'work',
   initialState,
@@ -316,7 +398,6 @@ const workSlice = createSlice({
       })
       .addCase(fetchWorkTypes.fulfilled, (state, action) => {
         state.isLoading = false;
-        // Remove duplicates by id - defensive programming
         const uniqueMap = new Map<string, typeof action.payload[0]>();
         action.payload.forEach((workType) => {
           uniqueMap.set(workType.id, workType);
@@ -330,15 +411,12 @@ const workSlice = createSlice({
       })
       .addCase(createWorkType.fulfilled, (state) => {
         // Don't update state here - let fetchWorkTypes handle it
-        // This prevents duplicates when fetchWorkTypes is called after create
       })
       .addCase(updateWorkType.fulfilled, (state) => {
         // Don't update state here - let fetchWorkTypes handle it
-        // This ensures data is always in sync with server
       })
       .addCase(deleteWorkType.fulfilled, (state) => {
         // Don't update state here - let fetchWorkTypes handle it
-        // This ensures data is always in sync with server
       })
       // Work Items
       .addCase(fetchWorkItems.pending, (state) => {
@@ -392,6 +470,19 @@ const workSlice = createSlice({
       })
       .addCase(deleteWorkRecord.fulfilled, (state, action) => {
         state.workRecords = state.workRecords.filter((record) => record.id !== action.payload);
+      })
+      .addCase(fetchWorkRecordsByEmployeeAndMonth.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(fetchWorkRecordsByEmployeeAndMonth.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.workRecords = action.payload;
+        state.error = null;
+      })
+      .addCase(fetchWorkRecordsByEmployeeAndMonth.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload as string;
       })
       // Monthly Salaries
       .addCase(fetchMonthlySalaries.pending, (state) => {
@@ -452,10 +543,58 @@ const workSlice = createSlice({
       .addCase(fetchMonthlyReport.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload as string;
+      })
+      // Overtime Configs
+      .addCase(fetchOvertimeConfigs.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(fetchOvertimeConfigs.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.overtimeConfigs = action.payload;
+        state.error = null;
+      })
+      .addCase(fetchOvertimeConfigs.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(fetchOvertimeConfigByWorkTypeId.fulfilled, (state, action) => {
+        const index = state.overtimeConfigs.findIndex(
+          (config) => config.workTypeId === action.payload.workTypeId
+        );
+        if (index !== -1) {
+          state.overtimeConfigs[index] = action.payload;
+        } else {
+          state.overtimeConfigs.push(action.payload);
+        }
+      })
+      .addCase(createOvertimeConfig.fulfilled, (state, action) => {
+        const index = state.overtimeConfigs.findIndex(
+          (config) => config.workTypeId === action.payload.workTypeId
+        );
+        if (index !== -1) {
+          state.overtimeConfigs[index] = action.payload;
+        } else {
+          state.overtimeConfigs.push(action.payload);
+        }
+      })
+      .addCase(updateOvertimeConfig.fulfilled, (state, action) => {
+        const index = state.overtimeConfigs.findIndex(
+          (config) => config.workTypeId === action.payload.workTypeId
+        );
+        if (index !== -1) {
+          state.overtimeConfigs[index] = action.payload;
+        } else {
+          state.overtimeConfigs.push(action.payload);
+        }
+      })
+      .addCase(deleteOvertimeConfig.fulfilled, (state, action) => {
+        state.overtimeConfigs = state.overtimeConfigs.filter(
+          (config) => config.workTypeId !== action.payload
+        );
       });
   },
 });
 
 export const { setPagination, clearError, clearReports } = workSlice.actions;
 export default workSlice.reducer;
-

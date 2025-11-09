@@ -14,6 +14,9 @@ import type {
   WorkReport,
   WorkReportParams,
   PaginationParams,
+  OvertimeConfigResponse,
+  CreateOvertimeConfigDto,
+  UpdateOvertimeConfigDto,
 } from '../types/work.types';
 
 // Work Types
@@ -83,12 +86,19 @@ export const workRecordService = {
     },
     pagination?: PaginationParams
   ): Promise<{ data: WorkRecordResponse[]; pagination: PaginationParams }> => {
-    const params: any = { ...filters };
+    const params: any = {};
+    // Convert camelCase to snake_case for backend
+    if (filters.employeeId) params.employee_id = filters.employeeId;
+    if (filters.dateFrom) params.date_from = filters.dateFrom;
+    if (filters.dateTo) params.date_to = filters.dateTo;
+    if (filters.workTypeId) params.work_type_id = filters.workTypeId;
     if (pagination) {
       params.page = pagination.page;
       params.page_size = pagination.pageSize;
     }
+    console.log('workRecordService.getAllWorkRecords - Sending params:', params);
     const response = await api.get('/work/records', { params });
+    console.log('workRecordService.getAllWorkRecords - Received records:', response.data.data?.length || 0);
     return {
       data: response.data.data,
       pagination: response.data.pagination,
@@ -189,5 +199,35 @@ export const workReportService = {
   getMonthlyReport: async (params: WorkReportParams): Promise<WorkReport> => {
     const response = await api.get('/work/reports/monthly', { params });
     return response.data.data;
+  },
+};
+
+// Overtime Config
+export const overtimeConfigService = {
+  getAllOvertimeConfigs: async (): Promise<OvertimeConfigResponse[]> => {
+    const response = await api.get('/work/overtime-configs');
+    return response.data.data;
+  },
+
+  getOvertimeConfigByWorkTypeId: async (workTypeId: string): Promise<OvertimeConfigResponse> => {
+    const response = await api.get(`/work/overtime-configs/${workTypeId}`);
+    return response.data.data;
+  },
+
+  createOvertimeConfig: async (data: CreateOvertimeConfigDto): Promise<OvertimeConfigResponse> => {
+    const response = await api.post('/work/overtime-configs', data);
+    return response.data.data;
+  },
+
+  updateOvertimeConfig: async (
+    workTypeId: string,
+    data: UpdateOvertimeConfigDto
+  ): Promise<OvertimeConfigResponse> => {
+    const response = await api.put(`/work/overtime-configs/${workTypeId}`, data);
+    return response.data.data;
+  },
+
+  deleteOvertimeConfig: async (workTypeId: string): Promise<void> => {
+    await api.delete(`/work/overtime-configs/${workTypeId}`);
   },
 };

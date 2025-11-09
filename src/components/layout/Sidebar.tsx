@@ -8,6 +8,7 @@ import {
   DocumentTextIcon,
   BanknotesIcon,
   ChartBarSquareIcon,
+  ClockIcon,
 } from '@heroicons/react/24/outline';
 
 interface MenuItem {
@@ -31,6 +32,11 @@ const menuItems: MenuItem[] = [
     name: 'Loại công việc',
     path: '/work/types',
     icon: WrenchScrewdriverIcon,
+  },
+  {
+    name: 'Cấu hình tăng ca',
+    path: '/work/overtime-configs',
+    icon: ClockIcon,
   },
   {
     name: 'Sản phẩm',

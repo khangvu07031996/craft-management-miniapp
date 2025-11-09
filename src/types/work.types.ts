@@ -185,3 +185,30 @@ export interface PaginationParams {
   totalPages?: number;
 }
 
+
+// Overtime Config
+export interface OvertimeConfigResponse {
+  id: string;
+  workTypeId: string;
+  workType?: {
+    id: string;
+    name: string;
+    department: string;
+    calculationType: CalculationType;
+  };
+  overtimePricePerWeld: number;
+  overtimePercentage: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateOvertimeConfigDto {
+  workTypeId: string;
+  overtimePricePerWeld?: number;
+  overtimePercentage?: number;
+}
+
+export interface UpdateOvertimeConfigDto {
+  overtimePricePerWeld?: number;
+  overtimePercentage?: number;
+}
