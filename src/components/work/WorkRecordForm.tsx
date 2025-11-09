@@ -6,6 +6,7 @@ import {
   fetchWorkItems,
   createWorkRecord,
   updateWorkRecord,
+  fetchOvertimeConfigByWorkTypeId,
 } from '../../store/slices/workSlice';
 import { fetchEmployees } from '../../store/slices/employeeSlice';
 import type {
@@ -27,7 +28,7 @@ interface WorkRecordFormProps {
 
 export const WorkRecordForm = ({ workRecord, onCancel, onSuccess }: WorkRecordFormProps) => {
   const dispatch = useAppDispatch();
-  const { workTypes, workItems } = useAppSelector((state) => state.work);
+  const { workTypes, workItems, overtimeConfigs } = useAppSelector((state) => state.work);
   const { employees } = useAppSelector((state) => state.employees);
   const { isLoading } = useAppSelector((state) => state.work);
 
@@ -40,6 +41,9 @@ export const WorkRecordForm = ({ workRecord, onCancel, onSuccess }: WorkRecordFo
     workItemId: '',
     quantity: '',
     unitPrice: '',
+    isOvertime: false,
+    overtimeQuantity: '',
+    overtimeHours: '',
     notes: '',
   });
 
@@ -47,6 +51,7 @@ export const WorkRecordForm = ({ workRecord, onCancel, onSuccess }: WorkRecordFo
   const [selectedWorkType, setSelectedWorkType] = useState<CalculationType | null>(null);
   const [selectedEmployee, setSelectedEmployee] = useState<EmployeeResponse | null>(null);
   const [selectedWorkItem, setSelectedWorkItem] = useState<any>(null);
+  const [overtimeConfig, setOvertimeConfig] = useState<any>(null);
 
   useEffect(() => {
     dispatch(fetchWorkTypes());
@@ -62,6 +67,9 @@ export const WorkRecordForm = ({ workRecord, onCancel, onSuccess }: WorkRecordFo
         workItemId: workRecord.workItemId || '',
         quantity: workRecord.quantity.toString(),
         unitPrice: workRecord.unitPrice.toString(),
+        isOvertime: workRecord.isOvertime || false,
+        overtimeQuantity: workRecord.overtimeQuantity?.toString() || '',
+        overtimeHours: workRecord.overtimeHours?.toString() || '',
         notes: workRecord.notes || '',
       });
       const workType = workTypes.find((wt) => wt.id === workRecord.workTypeId);
@@ -88,6 +96,9 @@ export const WorkRecordForm = ({ workRecord, onCancel, onSuccess }: WorkRecordFo
         workItemId: '',
         quantity: '',
         unitPrice: '',
+        isOvertime: false,
+        overtimeQuantity: '',
+        overtimeHours: '',
         notes: '',
       });
       setSelectedWorkType(null);
@@ -136,11 +147,26 @@ export const WorkRecordForm = ({ workRecord, onCancel, onSuccess }: WorkRecordFo
         if (workType.calculationType !== CalculationType.WELD_COUNT && !formData.unitPrice) {
           setFormData((prev) => ({ ...prev, unitPrice: workType.unitPrice.toString() }));
         }
+        // Fetch overtime config if weld_count or hourly
+        if (workType.calculationType === CalculationType.WELD_COUNT || workType.calculationType === CalculationType.HOURLY) {
+          dispatch(fetchOvertimeConfigByWorkTypeId(workType.id));
+        }
       }
     } else {
       setSelectedWorkType(null);
+      setOvertimeConfig(null);
     }
   }, [formData.workTypeId, workTypes, dispatch]);
+
+  // Update overtime config when it's fetched or workTypeId changes
+  useEffect(() => {
+    if (formData.workTypeId) {
+      const config = overtimeConfigs.find((oc) => oc.workTypeId === formData.workTypeId);
+      setOvertimeConfig(config || null);
+    } else {
+      setOvertimeConfig(null);
+    }
+  }, [formData.workTypeId, overtimeConfigs]);
 
   // Update selectedWorkItem when workItems are loaded and workItemId is set
   useEffect(() => {
@@ -183,6 +209,24 @@ export const WorkRecordForm = ({ workRecord, onCancel, onSuccess }: WorkRecordFo
       }
     }
 
+    // Validate overtime fields
+    if (formData.isOvertime) {
+      if (selectedWorkType === CalculationType.WELD_COUNT) {
+        if (!formData.overtimeQuantity || parseFloat(formData.overtimeQuantity) <= 0) {
+          newErrors.overtimeQuantity = 'Số lượng hàng tăng ca là bắt buộc và phải lớn hơn 0';
+        } else {
+          const overtimeQtyNum = parseFloat(formData.overtimeQuantity);
+          if (!Number.isInteger(overtimeQtyNum) || overtimeQtyNum < 1) {
+            newErrors.overtimeQuantity = 'Số lượng hàng tăng ca phải là số nguyên lớn hơn hoặc bằng 1';
+          }
+        }
+      } else if (selectedWorkType === CalculationType.HOURLY) {
+        if (!formData.overtimeHours || parseFloat(formData.overtimeHours) <= 0) {
+          newErrors.overtimeHours = 'Số giờ tăng ca là bắt buộc và phải lớn hơn 0';
+        }
+      }
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -204,6 +248,13 @@ export const WorkRecordForm = ({ workRecord, onCancel, onSuccess }: WorkRecordFo
         unitPrice: selectedWorkType !== CalculationType.WELD_COUNT && formData.unitPrice
           ? parseFloat(formData.unitPrice)
           : undefined,
+        isOvertime: formData.isOvertime,
+        overtimeQuantity: formData.isOvertime && selectedWorkType === CalculationType.WELD_COUNT && formData.overtimeQuantity
+          ? parseFloat(formData.overtimeQuantity)
+          : undefined,
+        overtimeHours: formData.isOvertime && selectedWorkType === CalculationType.HOURLY && formData.overtimeHours
+          ? parseFloat(formData.overtimeHours)
+          : undefined,
         notes: formData.notes || undefined,
       };
 
@@ -219,8 +270,31 @@ export const WorkRecordForm = ({ workRecord, onCancel, onSuccess }: WorkRecordFo
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const { name, value, type } = e.target;
+    const checked = (e.target as HTMLInputElement).checked;
+    
+    // Handle checkbox separately
+    if (type === 'checkbox') {
+      setFormData((prev) => ({ ...prev, [name]: checked }));
+      if (errors[name]) {
+        setErrors((prev) => ({ ...prev, [name]: '' }));
+      }
+      
+      // Reset overtime fields when isOvertime is unchecked
+      if (name === 'isOvertime' && !checked) {
+        setFormData((prev) => ({ ...prev, overtimeQuantity: '', overtimeHours: '' }));
+        setErrors((prev) => {
+          const newErrors = { ...prev };
+          delete newErrors.overtimeQuantity;
+          delete newErrors.overtimeHours;
+          return newErrors;
+        });
+      }
+      return;
+    }
+    
+    // Handle other input types
     setFormData((prev) => ({ ...prev, [name]: value }));
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: '' }));
@@ -228,7 +302,7 @@ export const WorkRecordForm = ({ workRecord, onCancel, onSuccess }: WorkRecordFo
     
     // Reset work type and work item when employee changes
     if (name === 'employeeId') {
-      setFormData((prev) => ({ ...prev, workTypeId: '', workItemId: '', unitPrice: '' }));
+      setFormData((prev) => ({ ...prev, workTypeId: '', workItemId: '', unitPrice: '', isOvertime: false, overtimeQuantity: '', overtimeHours: '' }));
       setSelectedWorkType(null);
       setSelectedWorkItem(null);
     }
@@ -436,21 +510,6 @@ export const WorkRecordForm = ({ workRecord, onCancel, onSuccess }: WorkRecordFo
             step="1"
             min="1"
           />
-          {selectedWorkType === CalculationType.WELD_COUNT && selectedWorkItem && formData.quantity && parseFloat(formData.quantity) > 0 && (
-            <div className="mt-2 p-3 bg-green-50 border border-green-200 rounded-lg">
-              <p className="text-sm font-medium text-gray-900 mb-1">Tổng tiền dự kiến:</p>
-              <p className="text-lg font-bold text-green-700">
-                {(
-                  parseFloat(formData.quantity) *
-                  selectedWorkItem.weldsPerItem *
-                  selectedWorkItem.pricePerWeld
-                ).toLocaleString('vi-VN')} ₫
-              </p>
-              <p className="text-xs text-gray-600 mt-1">
-                ({formData.quantity} SP × {selectedWorkItem.weldsPerItem} mối/SP × {selectedWorkItem.pricePerWeld.toLocaleString('vi-VN')} ₫/mối)
-              </p>
-            </div>
-          )}
         </div>
 
         {selectedWorkType !== CalculationType.WELD_COUNT && (
@@ -469,13 +528,174 @@ export const WorkRecordForm = ({ workRecord, onCancel, onSuccess }: WorkRecordFo
         )}
 
         <div className="md:col-span-2">
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              name="isOvertime"
+              checked={formData.isOvertime}
+              onChange={handleChange}
+              className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+            />
+            <span className="text-sm font-medium text-gray-700">Tăng ca</span>
+          </label>
+        </div>
+
+        {formData.isOvertime && selectedWorkType === CalculationType.WELD_COUNT && (
+          <div>
+            <Input
+              label="Số lượng hàng tăng ca"
+              type="number"
+              name="overtimeQuantity"
+              value={formData.overtimeQuantity}
+              onChange={handleChange}
+              error={errors.overtimeQuantity}
+              required
+              step="1"
+              min="1"
+            />
+            {/* Calculate and display total amount for weld_count with overtime */}
+            {selectedWorkItem && formData.quantity && parseFloat(formData.quantity) > 0 && formData.overtimeQuantity && parseFloat(formData.overtimeQuantity) > 0 && (
+              <div className="mt-2 p-3 bg-green-50 border border-green-200 rounded-lg">
+                <p className="text-sm font-medium text-gray-900 mb-1">Tổng tiền dự kiến:</p>
+                <p className="text-lg font-bold text-green-700">
+                  {(() => {
+                    const baseAmount = parseFloat(formData.quantity) * selectedWorkItem.weldsPerItem * selectedWorkItem.pricePerWeld;
+                    let overtimeAmount = 0;
+                    if (overtimeConfig && overtimeConfig.overtimePricePerWeld > 0) {
+                      overtimeAmount = parseFloat(formData.overtimeQuantity) * selectedWorkItem.weldsPerItem * (selectedWorkItem.pricePerWeld + overtimeConfig.overtimePricePerWeld);
+                    }
+                    return (baseAmount + overtimeAmount).toLocaleString('vi-VN');
+                  })()} ₫
+                </p>
+                <div className="text-xs text-gray-600 mt-1 space-y-0.5">
+                  <p>
+                    Tiền giờ thường: {formData.quantity} SP × {selectedWorkItem.weldsPerItem} mối/SP × {selectedWorkItem.pricePerWeld.toLocaleString('vi-VN')} ₫/mối = {(parseFloat(formData.quantity) * selectedWorkItem.weldsPerItem * selectedWorkItem.pricePerWeld).toLocaleString('vi-VN')} ₫
+                  </p>
+                  {overtimeConfig && overtimeConfig.overtimePricePerWeld > 0 && formData.overtimeQuantity && parseFloat(formData.overtimeQuantity) > 0 && (
+                    <p>
+                      Tiền tăng ca: {formData.overtimeQuantity} SP × {selectedWorkItem.weldsPerItem} mối/SP × {(selectedWorkItem.pricePerWeld + overtimeConfig.overtimePricePerWeld).toLocaleString('vi-VN')} ₫/mối = {(parseFloat(formData.overtimeQuantity) * selectedWorkItem.weldsPerItem * (selectedWorkItem.pricePerWeld + overtimeConfig.overtimePricePerWeld)).toLocaleString('vi-VN')} ₫
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
+            {/* Show base amount if no overtime quantity yet */}
+            {selectedWorkItem && formData.quantity && parseFloat(formData.quantity) > 0 && (!formData.overtimeQuantity || parseFloat(formData.overtimeQuantity) <= 0) && (
+              <div className="mt-2 p-3 bg-green-50 border border-green-200 rounded-lg">
+                <p className="text-sm font-medium text-gray-900 mb-1">Tổng tiền dự kiến:</p>
+                <p className="text-lg font-bold text-green-700">
+                  {(
+                    parseFloat(formData.quantity) *
+                    selectedWorkItem.weldsPerItem *
+                    selectedWorkItem.pricePerWeld
+                  ).toLocaleString('vi-VN')} ₫
+                </p>
+                <p className="text-xs text-gray-600 mt-1">
+                  ({formData.quantity} SP × {selectedWorkItem.weldsPerItem} mối/SP × {selectedWorkItem.pricePerWeld.toLocaleString('vi-VN')} ₫/mối)
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {formData.isOvertime && selectedWorkType === CalculationType.HOURLY && (
+          <div>
+            <Input
+              label="Số giờ tăng ca"
+              type="number"
+              name="overtimeHours"
+              value={formData.overtimeHours}
+              onChange={handleChange}
+              error={errors.overtimeHours}
+              required
+              step="0.5"
+              min="0.5"
+            />
+            {/* Calculate and display total amount for hourly with overtime */}
+            {formData.quantity && parseFloat(formData.quantity) > 0 && formData.unitPrice && parseFloat(formData.unitPrice) > 0 && formData.overtimeHours && parseFloat(formData.overtimeHours) > 0 && (
+              <div className="mt-2 p-3 bg-green-50 border border-green-200 rounded-lg">
+                <p className="text-sm font-medium text-gray-900 mb-1">Tổng tiền dự kiến:</p>
+                <p className="text-lg font-bold text-green-700">
+                  {(() => {
+                    const baseAmount = parseFloat(formData.quantity) * parseFloat(formData.unitPrice);
+                    let overtimeAmount = 0;
+                    if (overtimeConfig && overtimeConfig.overtimePercentage > 0) {
+                      // Tiền tăng ca = số giờ tăng ca × (unitPrice + unitPrice × overtime_percentage/100)
+                      // = số giờ tăng ca × unitPrice × (1 + overtime_percentage/100)
+                      overtimeAmount = parseFloat(formData.overtimeHours) * parseFloat(formData.unitPrice) * (1 + overtimeConfig.overtimePercentage / 100);
+                    }
+                    return (baseAmount + overtimeAmount).toLocaleString('vi-VN');
+                  })()} ₫
+                </p>
+                <div className="text-xs text-gray-600 mt-1 space-y-0.5">
+                  <p>
+                    Tiền giờ thường: {formData.quantity} giờ × {parseFloat(formData.unitPrice).toLocaleString('vi-VN')} ₫/giờ = {(parseFloat(formData.quantity) * parseFloat(formData.unitPrice)).toLocaleString('vi-VN')} ₫
+                  </p>
+                  {overtimeConfig && overtimeConfig.overtimePercentage > 0 && formData.overtimeHours && parseFloat(formData.overtimeHours) > 0 && (
+                    <p>
+                      Tiền tăng ca: {formData.overtimeHours} giờ × ({parseFloat(formData.unitPrice).toLocaleString('vi-VN')} ₫/giờ × {overtimeConfig.overtimePercentage}% + {parseFloat(formData.unitPrice).toLocaleString('vi-VN')}) = {(parseFloat(formData.overtimeHours) * parseFloat(formData.unitPrice) * (1 + overtimeConfig.overtimePercentage / 100)).toLocaleString('vi-VN')} ₫
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
+            {/* Show base amount if no overtime hours yet */}
+            {formData.quantity && parseFloat(formData.quantity) > 0 && formData.unitPrice && parseFloat(formData.unitPrice) > 0 && (!formData.overtimeHours || parseFloat(formData.overtimeHours) <= 0) && (
+              <div className="mt-2 p-3 bg-green-50 border border-green-200 rounded-lg">
+                <p className="text-sm font-medium text-gray-900 mb-1">Tổng tiền dự kiến:</p>
+                <p className="text-lg font-bold text-green-700">
+                  {(parseFloat(formData.quantity) * parseFloat(formData.unitPrice)).toLocaleString('vi-VN')} ₫
+                </p>
+                <p className="text-xs text-gray-600 mt-1">
+                  ({formData.quantity} giờ × {parseFloat(formData.unitPrice).toLocaleString('vi-VN')} ₫/giờ)
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Show total amount for weld_count without overtime */}
+        {!formData.isOvertime && selectedWorkType === CalculationType.WELD_COUNT && selectedWorkItem && formData.quantity && parseFloat(formData.quantity) > 0 && (
+          <div className="md:col-span-2">
+            <div className="mt-2 p-3 bg-green-50 border border-green-200 rounded-lg">
+              <p className="text-sm font-medium text-gray-900 mb-1">Tổng tiền dự kiến:</p>
+              <p className="text-lg font-bold text-green-700">
+                {(
+                  parseFloat(formData.quantity) *
+                  selectedWorkItem.weldsPerItem *
+                  selectedWorkItem.pricePerWeld
+                ).toLocaleString('vi-VN')} ₫
+              </p>
+              <p className="text-xs text-gray-600 mt-1">
+                ({formData.quantity} SP × {selectedWorkItem.weldsPerItem} mối/SP × {selectedWorkItem.pricePerWeld.toLocaleString('vi-VN')} ₫/mối)
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Show total amount for hourly without overtime */}
+        {!formData.isOvertime && selectedWorkType === CalculationType.HOURLY && formData.quantity && parseFloat(formData.quantity) > 0 && formData.unitPrice && parseFloat(formData.unitPrice) > 0 && (
+          <div className="md:col-span-2">
+            <div className="mt-2 p-3 bg-green-50 border border-green-200 rounded-lg">
+              <p className="text-sm font-medium text-gray-900 mb-1">Tổng tiền dự kiến:</p>
+              <p className="text-lg font-bold text-green-700">
+                {(parseFloat(formData.quantity) * parseFloat(formData.unitPrice)).toLocaleString('vi-VN')} ₫
+              </p>
+              <p className="text-xs text-gray-600 mt-1">
+                ({formData.quantity} giờ × {parseFloat(formData.unitPrice).toLocaleString('vi-VN')} ₫/giờ)
+              </p>
+            </div>
+          </div>
+        )}
+
+        <div className="md:col-span-2">
           <label className="block text-sm font-medium text-gray-700 mb-1.5">
             Ghi chú
           </label>
           <textarea
             name="notes"
             value={formData.notes}
-            onChange={(e) => handleChange(e as any)}
+            onChange={handleChange}
             rows={3}
             className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
           />

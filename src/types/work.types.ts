@@ -95,6 +95,9 @@ export interface WorkRecordResponse {
   quantity: number;
   unitPrice: number;
   totalAmount: number;
+  isOvertime: boolean;
+  overtimeQuantity?: number;
+  overtimeHours?: number;
   notes?: string;
   createdBy: string;
   createdByUser?: {
@@ -113,6 +116,9 @@ export interface CreateWorkRecordDto {
   workItemId?: string;
   quantity: number;
   unitPrice?: number;
+  isOvertime?: boolean;
+  overtimeQuantity?: number;
+  overtimeHours?: number;
   notes?: string;
 }
 
@@ -123,6 +129,9 @@ export interface UpdateWorkRecordDto {
   workItemId?: string;
   quantity?: number;
   unitPrice?: number;
+  isOvertime?: boolean;
+  overtimeQuantity?: number;
+  overtimeHours?: number;
   notes?: string;
 }
 

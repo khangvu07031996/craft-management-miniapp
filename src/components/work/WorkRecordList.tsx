@@ -95,6 +95,9 @@ export const WorkRecordList = ({ workRecords, onEdit, onDelete }: WorkRecordList
               Đơn giá
             </th>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Tăng ca
+            </th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               Tổng tiền
             </th>
             {(onEdit || onDelete) && (
@@ -138,6 +141,27 @@ export const WorkRecordList = ({ workRecords, onEdit, onDelete }: WorkRecordList
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                   {formatCurrency(record.unitPrice)}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  {record.isOvertime ? (
+                    <div className="flex flex-col gap-1">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-orange-100 text-orange-800">
+                        Có tăng ca
+                      </span>
+                      {record.workType?.calculationType === 'weld_count' && record.overtimeQuantity && (
+                        <span className="text-xs text-gray-600">
+                          {record.overtimeQuantity} SP
+                        </span>
+                      )}
+                      {record.workType?.calculationType === 'hourly' && record.overtimeHours && (
+                        <span className="text-xs text-gray-600">
+                          {record.overtimeHours} giờ
+                        </span>
+                      )}
+                    </div>
+                  ) : (
+                    <span className="text-gray-400">-</span>
+                  )}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
                   {formatCurrency(record.totalAmount)}
