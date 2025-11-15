@@ -187,19 +187,19 @@ export const EmployeeList = ({ hideControls = false }: EmployeeListProps) => {
     <div>
       {/* Table Controls - Only show if not hidden */}
       {!hideControls && (
-        <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-end bg-white">
-          <div className="flex items-center gap-3">
-            <div className="relative">
+        <div className="px-4 sm:px-6 py-4 border-b border-gray-200 flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-3 bg-white">
+          <div className="flex items-center gap-3 flex-1 sm:flex-none">
+            <div className="relative flex-1 sm:flex-none sm:w-64">
               <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
               <input
                 type="text"
                 placeholder="Tìm kiếm..."
                 value={searchValue}
                 onChange={handleSearchChange}
-                className="pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg bg-white text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent w-64"
+                className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg bg-white text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
-            <Button onClick={handleCreate} size="sm">Thêm nhân viên</Button>
+            <Button onClick={handleCreate} size="sm" className="whitespace-nowrap flex-shrink-0">Thêm nhân viên</Button>
           </div>
         </div>
       )}
@@ -216,41 +216,39 @@ export const EmployeeList = ({ hideControls = false }: EmployeeListProps) => {
       ) : (
         <>
           {/* Mobile: Card Layout */}
-          <div className="md:hidden space-y-4 p-4">
+          <div className="md:hidden space-y-3 px-4 py-2">
             {employees.map((employee) => (
               <div
                 key={employee.id}
                 className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm"
               >
                 {/* Header: Avatar, Name, and Actions */}
-                <div className="flex items-start justify-between mb-3 pb-3 border-b border-gray-200">
-                  <div className="flex items-center gap-3 flex-1">
-                    <div className="flex-shrink-0 h-10 w-10">
-                      <div className="h-10 w-10 rounded-full bg-blue-600 flex items-center justify-center text-white text-sm font-semibold">
-                        {getInitials(employee.firstName, employee.lastName)}
-                      </div>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <button
-                        onClick={() => navigate(`/employees/${employee.id}`)}
-                        className="text-base font-semibold text-gray-900 hover:text-blue-600 transition-colors text-left block truncate"
-                      >
-                        {employee.firstName} {employee.lastName}
-                      </button>
-                      <div className="text-xs text-gray-500 mt-0.5 truncate">{employee.email}</div>
+                <div className="flex items-start gap-3 mb-3 pb-3 border-b border-gray-200">
+                  <div className="flex-shrink-0 h-12 w-12">
+                    <div className="h-12 w-12 rounded-full bg-blue-600 flex items-center justify-center text-white text-sm font-semibold">
+                      {getInitials(employee.firstName, employee.lastName)}
                     </div>
                   </div>
-                  <div className="flex gap-2 flex-shrink-0 ml-2">
+                  <div className="flex-1 min-w-0 pr-2">
+                    <button
+                      onClick={() => navigate(`/employees/${employee.id}`)}
+                      className="text-base font-semibold text-gray-900 hover:text-blue-600 transition-colors text-left block w-full truncate"
+                    >
+                      {employee.firstName} {employee.lastName}
+                    </button>
+                    <div className="text-xs text-gray-500 mt-0.5 w-full truncate">{employee.email}</div>
+                  </div>
+                  <div className="flex gap-1.5 flex-shrink-0">
                     <button
                       onClick={() => handleEdit(employee)}
-                      className="text-blue-600 hover:text-blue-700 transition-colors p-1.5 rounded-md hover:bg-blue-50"
+                      className="text-blue-600 hover:text-blue-700 transition-colors p-1.5 rounded-md hover:bg-blue-50 flex-shrink-0"
                       aria-label="Edit"
                     >
                       <PencilIcon className="h-5 w-5" />
                     </button>
                     <button
                       onClick={() => handleDelete(employee)}
-                      className="text-red-600 hover:text-red-700 transition-colors p-1.5 rounded-md hover:bg-red-50"
+                      className="text-red-600 hover:text-red-700 transition-colors p-1.5 rounded-md hover:bg-red-50 flex-shrink-0"
                       aria-label="Delete"
                     >
                       <TrashIcon className="h-5 w-5" />
@@ -259,28 +257,28 @@ export const EmployeeList = ({ hideControls = false }: EmployeeListProps) => {
                 </div>
 
                 {/* Details */}
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-gray-500">Vị trí:</span>
-                    <span className="text-gray-900 font-medium">{employee.position}</span>
+                <div className="space-y-2.5 text-sm">
+                  <div className="flex justify-between items-start gap-2">
+                    <span className="text-gray-500 flex-shrink-0">Vị trí:</span>
+                    <span className="text-gray-900 font-medium text-right break-words">{employee.position}</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-500">Phòng ban:</span>
-                    <span className="text-gray-900">{employee.department}</span>
+                  <div className="flex justify-between items-start gap-2">
+                    <span className="text-gray-500 flex-shrink-0">Phòng ban:</span>
+                    <span className="text-gray-900 text-right break-words">{employee.department}</span>
                   </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-500">Trạng thái:</span>
+                  <div className="flex justify-between items-center gap-2">
+                    <span className="text-gray-500 flex-shrink-0">Trạng thái:</span>
                     <span
-                      className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${getStatusColor(
+                      className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium whitespace-nowrap ${getStatusColor(
                         employee.status
                       )}`}
                     >
                       {employee.status === 'active' ? 'Đang làm việc' : 'Đã nghỉ việc'}
                     </span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-500">Thời gian làm việc:</span>
-                    <span className="text-gray-900">{calculateWorkingDuration(employee.hireDate)}</span>
+                  <div className="flex justify-between items-start gap-2">
+                    <span className="text-gray-500 flex-shrink-0">Thời gian làm việc:</span>
+                    <span className="text-gray-900 text-right">{calculateWorkingDuration(employee.hireDate)}</span>
                   </div>
                 </div>
               </div>

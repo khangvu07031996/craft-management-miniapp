@@ -165,91 +165,174 @@ export const OvertimeConfigPage = () => {
               </p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Tên loại công việc
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Phòng ban
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Loại tính toán
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Cấu hình tăng ca
-                    </th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Thao tác
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {filteredTypes.map((workType) => {
-                    const isEditing = editingWorkTypeId === workType.id;
-                    const config = configMap.get(workType.id);
+            <>
+              {/* Mobile: Card Layout */}
+              <div className="md:hidden space-y-3 px-4 py-2">
+                {filteredTypes.map((workType) => {
+                  const isEditing = editingWorkTypeId === workType.id;
+                  const config = configMap.get(workType.id);
 
+                  if (isEditing) {
                     return (
-                      <tr key={workType.id} className="hover:bg-gray-50">
-                        {!isEditing ? (
-                          <>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                              {workType.name}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                              {workType.department}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                              {getCalculationTypeLabel(workType.calculationType)}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                              <span
-                                className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                                  config &&
-                                  ((workType.calculationType === 'weld_count' &&
-                                    config.overtimePricePerWeld > 0) ||
-                                    (workType.calculationType === 'hourly' &&
-                                      config.overtimePercentage > 0))
-                                    ? 'bg-green-100 text-green-800'
-                                    : 'bg-gray-100 text-gray-800'
-                                }`}
-                              >
-                                {getOvertimeConfigDisplay(workType)}
-                              </span>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                              <button
-                                onClick={() => handleEdit(workType.id)}
-                                className="text-blue-600 hover:text-blue-900"
-                                title="Chỉnh sửa cấu hình"
-                              >
-                                <PencilIcon className="w-4 h-4" />
-                              </button>
-                            </td>
-                          </>
-                        ) : (
-                          <td colSpan={5} className="px-6 py-4">
-                            <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                              <h3 className="text-sm font-semibold text-gray-900 mb-3">
-                                Chỉnh sửa cấu hình tăng ca
-                              </h3>
-                              <OvertimeConfigForm
-                                workType={workType}
-                                overtimeConfig={config}
-                                onSave={handleSave}
-                                onCancel={handleCancel}
-                              />
-                            </div>
-                          </td>
-                        )}
-                      </tr>
+                      <div
+                        key={workType.id}
+                        className="bg-gray-50 rounded-lg p-4 border border-gray-200"
+                      >
+                        <h3 className="text-sm font-semibold text-gray-900 mb-3">
+                          Chỉnh sửa cấu hình tăng ca
+                        </h3>
+                        <OvertimeConfigForm
+                          workType={workType}
+                          overtimeConfig={config}
+                          onSave={handleSave}
+                          onCancel={handleCancel}
+                        />
+                      </div>
                     );
-                  })}
-                </tbody>
-              </table>
-            </div>
+                  }
+
+                  return (
+                    <div
+                      key={workType.id}
+                      className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm"
+                    >
+                      {/* Header: Name and Actions */}
+                      <div className="flex items-start justify-between mb-3 pb-3 border-b border-gray-200">
+                        <h3 className="text-base font-semibold text-gray-900 flex-1 pr-2">
+                          {workType.name}
+                        </h3>
+                        <button
+                          onClick={() => handleEdit(workType.id)}
+                          className="text-blue-600 hover:text-blue-700 transition-colors p-1.5 rounded-md hover:bg-blue-50 flex-shrink-0"
+                          aria-label="Edit"
+                        >
+                          <PencilIcon className="h-5 w-5" />
+                        </button>
+                      </div>
+
+                      {/* Details */}
+                      <div className="space-y-2.5 text-sm">
+                        <div className="flex justify-between items-start gap-2">
+                          <span className="text-gray-500 flex-shrink-0">Phòng ban:</span>
+                          <span className="text-gray-900 text-right break-words">{workType.department}</span>
+                        </div>
+                        <div className="flex justify-between items-start gap-2">
+                          <span className="text-gray-500 flex-shrink-0">Loại tính toán:</span>
+                          <span className="text-gray-900 text-right">{getCalculationTypeLabel(workType.calculationType)}</span>
+                        </div>
+                        <div className="flex justify-between items-center gap-2">
+                          <span className="text-gray-500 flex-shrink-0">Cấu hình tăng ca:</span>
+                          <span
+                            className={`inline-flex px-2.5 py-1 rounded-full text-xs font-semibold whitespace-nowrap ${
+                              config &&
+                              ((workType.calculationType === 'weld_count' &&
+                                config.overtimePricePerWeld > 0) ||
+                                (workType.calculationType === 'hourly' &&
+                                  config.overtimePercentage > 0))
+                                ? 'bg-green-100 text-green-800'
+                                : 'bg-gray-100 text-gray-800'
+                            }`}
+                          >
+                            {getOvertimeConfigDisplay(workType)}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Tablet/Desktop: Table Layout */}
+              <div className="hidden md:block overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Tên loại công việc
+                      </th>
+                      <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Phòng ban
+                      </th>
+                      <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Loại tính toán
+                      </th>
+                      <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Cấu hình tăng ca
+                      </th>
+                      <th className="px-4 lg:px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Thao tác
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {filteredTypes.map((workType) => {
+                      const isEditing = editingWorkTypeId === workType.id;
+                      const config = configMap.get(workType.id);
+
+                      return (
+                        <tr key={workType.id} className="hover:bg-gray-50">
+                          {!isEditing ? (
+                            <>
+                              <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                {workType.name}
+                              </td>
+                              <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                {workType.department}
+                              </td>
+                              <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                {getCalculationTypeLabel(workType.calculationType)}
+                              </td>
+                              <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                <span
+                                  className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                                    config &&
+                                    ((workType.calculationType === 'weld_count' &&
+                                      config.overtimePricePerWeld > 0) ||
+                                      (workType.calculationType === 'hourly' &&
+                                        config.overtimePercentage > 0))
+                                      ? 'bg-green-100 text-green-800'
+                                      : 'bg-gray-100 text-gray-800'
+                                  }`}
+                                >
+                                  {getOvertimeConfigDisplay(workType)}
+                                </span>
+                              </td>
+                              <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                <button
+                                  onClick={() => handleEdit(workType.id)}
+                                  className="text-blue-600 hover:text-blue-900"
+                                  title="Chỉnh sửa cấu hình"
+                                >
+                                  <PencilIcon className="w-4 h-4" />
+                                </button>
+                              </td>
+                            </>
+                          ) : (
+                            <td colSpan={5} className="px-4 lg:px-6 py-4">
+                              <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                                <h3 className="text-sm font-semibold text-gray-900 mb-3">
+                                  Chỉnh sửa cấu hình tăng ca
+                                </h3>
+                                <OvertimeConfigForm
+                                  workType={workType}
+                                  overtimeConfig={config}
+                                  onSave={handleSave}
+                                  onCancel={handleCancel}
+                                />
+                              </div>
+                            </td>
+                          )}
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </>
           )}
         </div>
       </div>

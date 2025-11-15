@@ -144,63 +144,117 @@ export const WorkTypePage = () => {
                 <p className="text-sm text-gray-500">Không có loại công việc nào</p>
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Tên loại công việc
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Phòng ban
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Loại tính toán
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Giá đơn vị
-                      </th>
-                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Thao tác
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {filteredTypes.map((type) => (
-                      <tr key={type.id} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+              <>
+                {/* Mobile: Card Layout */}
+                <div className="md:hidden space-y-3 px-4 py-2">
+                  {filteredTypes.map((type) => (
+                    <div
+                      key={type.id}
+                      className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm"
+                    >
+                      {/* Header: Name and Actions */}
+                      <div className="flex items-start justify-between mb-3 pb-3 border-b border-gray-200">
+                        <h3 className="text-base font-semibold text-gray-900 flex-1 pr-2">
                           {type.name}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {type.department}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {getCalculationTypeLabel(type.calculationType)}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {type.calculationType === 'weld_count' ? '-' : formatCurrency(type.unitPrice)}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                          <div className="flex justify-end gap-2">
-                            <button
-                              onClick={() => handleEdit(type)}
-                              className="text-blue-600 hover:text-blue-900"
-                            >
-                              <PencilIcon className="w-4 h-4" />
-                            </button>
-                            <button
-                              onClick={() => handleDelete(type.id)}
-                              className="text-red-600 hover:text-red-900"
-                            >
-                              <TrashIcon className="w-4 h-4" />
-                            </button>
-                          </div>
-                        </td>
+                        </h3>
+                        <div className="flex gap-1.5 flex-shrink-0">
+                          <button
+                            onClick={() => handleEdit(type)}
+                            className="text-blue-600 hover:text-blue-700 transition-colors p-1.5 rounded-md hover:bg-blue-50 flex-shrink-0"
+                            aria-label="Edit"
+                          >
+                            <PencilIcon className="h-5 w-5" />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(type.id)}
+                            className="text-red-600 hover:text-red-700 transition-colors p-1.5 rounded-md hover:bg-red-50 flex-shrink-0"
+                            aria-label="Delete"
+                          >
+                            <TrashIcon className="h-5 w-5" />
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Details */}
+                      <div className="space-y-2.5 text-sm">
+                        <div className="flex justify-between items-start gap-2">
+                          <span className="text-gray-500 flex-shrink-0">Phòng ban:</span>
+                          <span className="text-gray-900 text-right break-words">{type.department}</span>
+                        </div>
+                        <div className="flex justify-between items-start gap-2">
+                          <span className="text-gray-500 flex-shrink-0">Loại tính toán:</span>
+                          <span className="text-gray-900 text-right">{getCalculationTypeLabel(type.calculationType)}</span>
+                        </div>
+                        <div className="flex justify-between items-start gap-2">
+                          <span className="text-gray-500 flex-shrink-0">Giá đơn vị:</span>
+                          <span className="text-gray-900 font-medium text-right break-words">
+                            {type.calculationType === 'weld_count' ? '-' : formatCurrency(type.unitPrice)}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Tablet/Desktop: Table Layout */}
+                <div className="hidden md:block overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Tên loại công việc
+                        </th>
+                        <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Phòng ban
+                        </th>
+                        <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Loại tính toán
+                        </th>
+                        <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Giá đơn vị
+                        </th>
+                        <th className="px-4 lg:px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Thao tác
+                        </th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {filteredTypes.map((type) => (
+                        <tr key={type.id} className="hover:bg-gray-50">
+                          <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                            {type.name}
+                          </td>
+                          <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {type.department}
+                          </td>
+                          <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {getCalculationTypeLabel(type.calculationType)}
+                          </td>
+                          <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {type.calculationType === 'weld_count' ? '-' : formatCurrency(type.unitPrice)}
+                          </td>
+                          <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <div className="flex justify-end gap-2">
+                              <button
+                                onClick={() => handleEdit(type)}
+                                className="text-blue-600 hover:text-blue-900"
+                              >
+                                <PencilIcon className="w-4 h-4" />
+                              </button>
+                              <button
+                                onClick={() => handleDelete(type.id)}
+                                className="text-red-600 hover:text-red-900"
+                              >
+                                <TrashIcon className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </>
             )}
           </div>
         </LoadingOverlay>
