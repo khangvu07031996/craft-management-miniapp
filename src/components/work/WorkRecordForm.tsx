@@ -1,5 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Fragment, useMemo } from 'react';
 import type { FormEvent } from 'react';
+import { Dialog, Transition, Combobox } from '@headlessui/react';
+import { ExclamationTriangleIcon, ChevronUpDownIcon, CheckIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
 import {
   fetchWorkTypes,
@@ -7,6 +9,7 @@ import {
   createWorkRecord,
   updateWorkRecord,
   fetchOvertimeConfigByWorkTypeId,
+  fetchTotalQuantityMadeByWorkItem,
 } from '../../store/slices/workSlice';
 import { fetchEmployees } from '../../store/slices/employeeSlice';
 import type {
@@ -52,6 +55,10 @@ export const WorkRecordForm = ({ workRecord, onCancel, onSuccess }: WorkRecordFo
   const [selectedEmployee, setSelectedEmployee] = useState<EmployeeResponse | null>(null);
   const [selectedWorkItem, setSelectedWorkItem] = useState<any>(null);
   const [overtimeConfig, setOvertimeConfig] = useState<any>(null);
+  const [totalQuantityMade, setTotalQuantityMade] = useState<number>(0);
+  const [showQuantityExceedModal, setShowQuantityExceedModal] = useState(false);
+  const [workItemSearchQuery, setWorkItemSearchQuery] = useState('');
+  const [employeeSearchQuery, setEmployeeSearchQuery] = useState('');
 
   useEffect(() => {
     dispatch(fetchWorkTypes());
@@ -80,13 +87,20 @@ export const WorkRecordForm = ({ workRecord, onCancel, onSuccess }: WorkRecordFo
       const employee = employees.find((emp) => emp.id === workRecord.employeeId);
       if (employee) {
         setSelectedEmployee(employee);
+        setEmployeeSearchQuery(`${employee.firstName} ${employee.lastName} - ${employee.department}`);
+      } else {
+        setEmployeeSearchQuery('');
       }
       // Set selected work item for edit mode
       if (workRecord.workItemId) {
         const item = workItems.find((i) => i.id === workRecord.workItemId);
         if (item) {
           setSelectedWorkItem(item);
+          setWorkItemSearchQuery(item.name);
         }
+      } else {
+        setSelectedWorkItem(null);
+        setWorkItemSearchQuery('');
       }
     } else {
       setFormData({
@@ -104,6 +118,8 @@ export const WorkRecordForm = ({ workRecord, onCancel, onSuccess }: WorkRecordFo
       setSelectedWorkType(null);
       setSelectedEmployee(null);
       setSelectedWorkItem(null);
+      setWorkItemSearchQuery('');
+      setEmployeeSearchQuery('');
     }
   }, [workRecord, workTypes, employees]);
 
@@ -118,6 +134,7 @@ export const WorkRecordForm = ({ workRecord, onCancel, onSuccess }: WorkRecordFo
       const employee = employees.find((emp) => emp.id === formData.employeeId);
       if (employee) {
         setSelectedEmployee(employee);
+        setEmployeeSearchQuery(`${employee.firstName} ${employee.lastName} - ${employee.department}`);
         
         // Auto-select work type if employee has workTypeId and workTypeId is not already set
         if (employee.workTypeId && !formData.workTypeId) {
@@ -133,6 +150,7 @@ export const WorkRecordForm = ({ workRecord, onCancel, onSuccess }: WorkRecordFo
       }
     } else {
       setSelectedEmployee(null);
+      setEmployeeSearchQuery('');
     }
   }, [formData.employeeId, employees, workTypes, isEditMode, workRecord]);
 
@@ -143,6 +161,11 @@ export const WorkRecordForm = ({ workRecord, onCancel, onSuccess }: WorkRecordFo
         setSelectedWorkType(workType.calculationType);
         if (workType.calculationType === CalculationType.WELD_COUNT) {
           dispatch(fetchWorkItems());
+        } else {
+          // Reset work item when switching away from weld_count
+          setFormData((prev) => ({ ...prev, workItemId: '' }));
+          setSelectedWorkItem(null);
+          setWorkItemSearchQuery('');
         }
         if (workType.calculationType !== CalculationType.WELD_COUNT && !formData.unitPrice) {
           setFormData((prev) => ({ ...prev, unitPrice: workType.unitPrice.toString() }));
@@ -155,6 +178,8 @@ export const WorkRecordForm = ({ workRecord, onCancel, onSuccess }: WorkRecordFo
     } else {
       setSelectedWorkType(null);
       setOvertimeConfig(null);
+      setSelectedWorkItem(null);
+      setWorkItemSearchQuery('');
     }
   }, [formData.workTypeId, workTypes, dispatch]);
 
@@ -174,11 +199,96 @@ export const WorkRecordForm = ({ workRecord, onCancel, onSuccess }: WorkRecordFo
       const item = workItems.find((i) => i.id === formData.workItemId);
       if (item) {
         setSelectedWorkItem(item);
+        setWorkItemSearchQuery(item.name);
       }
+    } else if (!formData.workItemId) {
+      setSelectedWorkItem(null);
+      setWorkItemSearchQuery('');
     }
   }, [formData.workItemId, workItems]);
 
-  const validateForm = (): boolean => {
+  // Fetch total quantity made when workItemId changes (for weld_count only)
+  useEffect(() => {
+    if (selectedWorkType === CalculationType.WELD_COUNT && formData.workItemId) {
+      const excludeRecordId = isEditMode && workRecord ? workRecord.id : undefined;
+      dispatch(fetchTotalQuantityMadeByWorkItem({ workItemId: formData.workItemId, excludeRecordId }))
+        .unwrap()
+        .then((result) => {
+          setTotalQuantityMade(result.totalQuantity);
+        })
+        .catch((error) => {
+          console.error('Error fetching total quantity made:', error);
+          setTotalQuantityMade(0);
+        });
+    } else {
+      setTotalQuantityMade(0);
+    }
+  }, [formData.workItemId, selectedWorkType, dispatch, isEditMode, workRecord]);
+
+  // Real-time validation for quantity exceeding totalQuantity (only for weld_count)
+  useEffect(() => {
+    if (selectedWorkType === CalculationType.WELD_COUNT && selectedWorkItem && totalQuantityMade !== undefined && formData.quantity) {
+      const currentQuantity = parseFloat(formData.quantity) || 0;
+      const remaining = selectedWorkItem.totalQuantity - totalQuantityMade;
+      
+      setErrors((prev) => {
+        const newErrors = { ...prev };
+        
+        // Check if quantity alone exceeds remaining
+        if (currentQuantity > remaining) {
+          // Set error in quantity field
+          newErrors.quantity = `Số lượng sản phẩm (${currentQuantity} SP) vượt quá số lượng còn lại (${remaining} SP). Tổng đã làm: ${totalQuantityMade} SP / Cần làm: ${selectedWorkItem.totalQuantity} SP`;
+          // Clear overtime quantity error if exists (quantity already exceeds, no need to check overtime)
+          if (newErrors.overtimeQuantity && newErrors.overtimeQuantity.includes('vượt quá số lượng cần làm')) {
+            delete newErrors.overtimeQuantity;
+          }
+        } else {
+          // Quantity is OK, clear quantity error if it was the exceeded error
+          if (newErrors.quantity && newErrors.quantity.includes('vượt quá số lượng còn lại')) {
+            delete newErrors.quantity;
+          }
+          
+          // If overtime is enabled, check if quantity + overtimeQuantity exceeds total
+          if (formData.isOvertime && formData.overtimeQuantity) {
+            const currentOvertimeQuantity = parseFloat(formData.overtimeQuantity) || 0;
+            const newQuantity = currentQuantity + currentOvertimeQuantity;
+            const newTotal = totalQuantityMade + newQuantity;
+            
+            if (newTotal > selectedWorkItem.totalQuantity) {
+              // Set error in overtimeQuantity field
+              newErrors.overtimeQuantity = `Tổng số lượng (${totalQuantityMade} + ${newQuantity} = ${newTotal} SP) vượt quá số lượng cần làm (${selectedWorkItem.totalQuantity} SP). Số lượng còn lại: ${remaining} SP`;
+            } else {
+              // Clear overtime quantity error if valid
+              if (newErrors.overtimeQuantity && newErrors.overtimeQuantity.includes('vượt quá số lượng cần làm')) {
+                delete newErrors.overtimeQuantity;
+              }
+            }
+          } else {
+            // Clear overtime quantity error when overtime is unchecked or cleared
+            if (newErrors.overtimeQuantity && newErrors.overtimeQuantity.includes('vượt quá số lượng cần làm')) {
+              delete newErrors.overtimeQuantity;
+            }
+          }
+        }
+        
+        return newErrors;
+      });
+    } else if (!formData.quantity) {
+      // Clear errors when quantity is cleared
+      setErrors((prev) => {
+        const newErrors = { ...prev };
+        if (newErrors.quantity && newErrors.quantity.includes('vượt quá số lượng còn lại')) {
+          delete newErrors.quantity;
+        }
+        if (newErrors.overtimeQuantity && newErrors.overtimeQuantity.includes('vượt quá số lượng cần làm')) {
+          delete newErrors.overtimeQuantity;
+        }
+        return newErrors;
+      });
+    }
+  }, [formData.quantity, formData.overtimeQuantity, formData.isOvertime, selectedWorkType, selectedWorkItem, totalQuantityMade]);
+
+  const validateForm = (): { isValid: boolean; errors: Record<string, string> } => {
     const newErrors: Record<string, string> = {};
 
     if (!formData.employeeId) {
@@ -207,17 +317,44 @@ export const WorkRecordForm = ({ workRecord, onCancel, onSuccess }: WorkRecordFo
       if (!Number.isInteger(quantityNum) || quantityNum < 1) {
         newErrors.quantity = 'Số sản phẩm phải là số nguyên lớn hơn hoặc bằng 1';
       }
+      
+      // Validate total quantity doesn't exceed work item's totalQuantity
+      if (selectedWorkItem && totalQuantityMade !== undefined) {
+        const currentQuantity = parseFloat(formData.quantity) || 0;
+        const remaining = selectedWorkItem.totalQuantity - totalQuantityMade;
+        
+        // First check if quantity alone exceeds remaining
+        if (currentQuantity > remaining) {
+          newErrors.quantity = `Số lượng sản phẩm (${currentQuantity} SP) vượt quá số lượng còn lại (${remaining} SP). Tổng đã làm: ${totalQuantityMade} SP / Cần làm: ${selectedWorkItem.totalQuantity} SP`;
+        } else if (formData.isOvertime && formData.overtimeQuantity) {
+          // Quantity is OK, check if quantity + overtimeQuantity exceeds total
+          const currentOvertimeQuantity = parseFloat(formData.overtimeQuantity) || 0;
+          const newQuantity = currentQuantity + currentOvertimeQuantity;
+          const newTotal = totalQuantityMade + newQuantity;
+          
+          if (newTotal > selectedWorkItem.totalQuantity) {
+            // Only set error in overtimeQuantity field if quantity itself is OK
+            newErrors.overtimeQuantity = `Tổng số lượng (${totalQuantityMade} + ${newQuantity} = ${newTotal} SP) vượt quá số lượng cần làm (${selectedWorkItem.totalQuantity} SP). Số lượng còn lại: ${remaining} SP`;
+          }
+        }
+      }
     }
 
     // Validate overtime fields
     if (formData.isOvertime) {
       if (selectedWorkType === CalculationType.WELD_COUNT) {
         if (!formData.overtimeQuantity || parseFloat(formData.overtimeQuantity) <= 0) {
-          newErrors.overtimeQuantity = 'Số lượng hàng tăng ca là bắt buộc và phải lớn hơn 0';
+          // Only set this error if overtimeQuantity doesn't already have an exceeded error
+          if (!newErrors.overtimeQuantity || !newErrors.overtimeQuantity.includes('vượt quá số lượng cần làm')) {
+            newErrors.overtimeQuantity = 'Số lượng hàng tăng ca là bắt buộc và phải lớn hơn 0';
+          }
         } else {
           const overtimeQtyNum = parseFloat(formData.overtimeQuantity);
           if (!Number.isInteger(overtimeQtyNum) || overtimeQtyNum < 1) {
-            newErrors.overtimeQuantity = 'Số lượng hàng tăng ca phải là số nguyên lớn hơn hoặc bằng 1';
+            // Only set this error if overtimeQuantity doesn't already have an exceeded error
+            if (!newErrors.overtimeQuantity || !newErrors.overtimeQuantity.includes('vượt quá số lượng cần làm')) {
+              newErrors.overtimeQuantity = 'Số lượng hàng tăng ca phải là số nguyên lớn hơn hoặc bằng 1';
+            }
           }
         }
       } else if (selectedWorkType === CalculationType.HOURLY) {
@@ -228,13 +365,32 @@ export const WorkRecordForm = ({ workRecord, onCancel, onSuccess }: WorkRecordFo
     }
 
     setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    return { isValid: Object.keys(newErrors).length === 0, errors: newErrors };
   };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
-    if (!validateForm()) {
+    // Check for quantity exceeded errors before validation
+    const hasQuantityExceededError = 
+      (errors.quantity && errors.quantity.includes('vượt quá số lượng còn lại')) ||
+      (errors.overtimeQuantity && errors.overtimeQuantity.includes('vượt quá số lượng cần làm'));
+
+    if (hasQuantityExceededError) {
+      setShowQuantityExceedModal(true);
+      return;
+    }
+
+    const validationResult = validateForm();
+    if (!validationResult.isValid) {
+      // Check for quantity exceeded errors in validation result
+      const hasQuantityExceeded = 
+        (validationResult.errors.quantity && validationResult.errors.quantity.includes('vượt quá số lượng còn lại')) ||
+        (validationResult.errors.overtimeQuantity && validationResult.errors.overtimeQuantity.includes('vượt quá số lượng cần làm'));
+      
+      if (hasQuantityExceeded) {
+        setShowQuantityExceedModal(true);
+      }
       return;
     }
 
@@ -300,13 +456,6 @@ export const WorkRecordForm = ({ workRecord, onCancel, onSuccess }: WorkRecordFo
       setErrors((prev) => ({ ...prev, [name]: '' }));
     }
     
-    // Reset work type and work item when employee changes
-    if (name === 'employeeId') {
-      setFormData((prev) => ({ ...prev, workTypeId: '', workItemId: '', unitPrice: '', isOvertime: false, overtimeQuantity: '', overtimeHours: '' }));
-      setSelectedWorkType(null);
-      setSelectedWorkItem(null);
-    }
-    
     // Update selected work item when workItemId changes
     if (name === 'workItemId') {
       const item = workItems.find((i) => i.id === value);
@@ -363,12 +512,34 @@ export const WorkRecordForm = ({ workRecord, onCancel, onSuccess }: WorkRecordFo
     return departmentWorkTypes.sort((a, b) => a.name.localeCompare(b.name));
   };
 
-  const filteredWorkItems = workItems.filter((item) => {
-    if (!formData.workItemId) return true;
-    return item.id === formData.workItemId;
-  });
+  // Filter work items based on search query
+  const filteredWorkItems = useMemo(() => {
+    if (!workItemSearchQuery.trim()) {
+      return workItems;
+    }
+    const query = workItemSearchQuery.toLowerCase();
+    return workItems.filter((item) => 
+      item.name.toLowerCase().includes(query) ||
+      item.difficultyLevel.toLowerCase().includes(query)
+    );
+  }, [workItems, workItemSearchQuery]);
+
+  // Filter employees based on search query
+  const filteredEmployees = useMemo(() => {
+    if (!employeeSearchQuery.trim()) {
+      return employees;
+    }
+    const query = employeeSearchQuery.toLowerCase();
+    return employees.filter((emp) => 
+      emp.firstName.toLowerCase().includes(query) ||
+      emp.lastName.toLowerCase().includes(query) ||
+      emp.department.toLowerCase().includes(query) ||
+      emp.email.toLowerCase().includes(query)
+    );
+  }, [employees, employeeSearchQuery]);
 
   return (
+    <>
     <form onSubmit={handleSubmit} className="space-y-4">
       {errors.submit && (
         <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-800">
@@ -382,21 +553,114 @@ export const WorkRecordForm = ({ workRecord, onCancel, onSuccess }: WorkRecordFo
             Nhân viên
             <span className="text-red-500 ml-1">*</span>
           </label>
-          <select
-            name="employeeId"
-            value={formData.employeeId}
-            onChange={handleChange}
-            className={`w-full px-3 py-2 text-sm border rounded-lg bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
-              errors.employeeId ? 'border-red-500' : 'border-gray-200'
-            }`}
+          <Combobox
+            value={selectedEmployee}
+            onChange={(employee: EmployeeResponse | null) => {
+              if (employee) {
+                setFormData((prev) => ({ ...prev, employeeId: employee.id }));
+                setSelectedEmployee(employee);
+                setEmployeeSearchQuery(`${employee.firstName} ${employee.lastName} - ${employee.department}`);
+                // Reset work type and work item when employee changes
+                setFormData((prev) => ({ ...prev, workTypeId: '', workItemId: '', unitPrice: '', isOvertime: false, overtimeQuantity: '', overtimeHours: '' }));
+                setSelectedWorkType(null);
+                setSelectedWorkItem(null);
+                setWorkItemSearchQuery('');
+                if (errors.employeeId) {
+                  setErrors((prev) => ({ ...prev, employeeId: '' }));
+                }
+                // Auto-select work type if employee has workTypeId
+                if (employee.workTypeId) {
+                  setFormData((prev) => ({ ...prev, workTypeId: employee.workTypeId! }));
+                }
+                // If no workTypeId but only one work type in department, auto-select it
+                else {
+                  const departmentWorkTypes = workTypes.filter((wt) => wt.department === employee.department);
+                  if (departmentWorkTypes.length === 1) {
+                    setFormData((prev) => ({ ...prev, workTypeId: departmentWorkTypes[0].id }));
+                  }
+                }
+              } else {
+                setFormData((prev) => ({ ...prev, employeeId: '', workTypeId: '', workItemId: '', unitPrice: '', isOvertime: false, overtimeQuantity: '', overtimeHours: '' }));
+                setSelectedEmployee(null);
+                setEmployeeSearchQuery('');
+                setSelectedWorkType(null);
+                setSelectedWorkItem(null);
+                setWorkItemSearchQuery('');
+              }
+            }}
           >
-            <option value="">Chọn nhân viên</option>
-            {employees.map((emp) => (
-              <option key={emp.id} value={emp.id}>
-                {emp.firstName} {emp.lastName} - {emp.department}
-              </option>
-            ))}
-          </select>
+            <div className="relative">
+              <div className="relative">
+                <Combobox.Input
+                  className={`w-full pl-10 pr-10 py-2.5 text-sm border rounded-lg bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
+                    errors.employeeId ? 'border-red-500' : 'border-gray-200'
+                  }`}
+                  displayValue={(employee: EmployeeResponse | null) => 
+                    employee ? `${employee.firstName} ${employee.lastName} - ${employee.department}` : ''
+                  }
+                  onChange={(event) => {
+                    setEmployeeSearchQuery(event.target.value);
+                    if (event.target.value === '') {
+                      setFormData((prev) => ({ ...prev, employeeId: '', workTypeId: '', workItemId: '', unitPrice: '', isOvertime: false, overtimeQuantity: '', overtimeHours: '' }));
+                      setSelectedEmployee(null);
+                      setSelectedWorkType(null);
+                      setSelectedWorkItem(null);
+                      setWorkItemSearchQuery('');
+                    }
+                  }}
+                  placeholder="Tìm kiếm nhân viên..."
+                />
+                <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Combobox.Button className="absolute inset-y-0 right-0 flex items-center pr-2">
+                  <ChevronUpDownIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
+                </Combobox.Button>
+              </div>
+              <Transition
+                as={Fragment}
+                leave="transition ease-in duration-100"
+                leaveFrom="opacity-100"
+                leaveTo="opacity-0"
+                afterLeave={() => setEmployeeSearchQuery('')}
+              >
+                <Combobox.Options className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-lg bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
+                  {filteredEmployees.length === 0 && employeeSearchQuery !== '' ? (
+                    <div className="relative cursor-default select-none px-4 py-2 text-gray-700">
+                      Không tìm thấy nhân viên nào.
+                    </div>
+                  ) : (
+                    filteredEmployees.map((employee) => (
+                      <Combobox.Option
+                        key={employee.id}
+                        className={({ active }) =>
+                          `relative cursor-default select-none py-2 pl-10 pr-4 ${
+                            active ? 'bg-blue-600 text-white' : 'text-gray-900'
+                          }`
+                        }
+                        value={employee}
+                      >
+                        {({ selected, active }) => (
+                          <>
+                            <span className={`block truncate ${selected ? 'font-medium' : 'font-normal'}`}>
+                              {employee.firstName} {employee.lastName} - {employee.department}
+                            </span>
+                            {selected ? (
+                              <span
+                                className={`absolute inset-y-0 left-0 flex items-center pl-3 ${
+                                  active ? 'text-white' : 'text-blue-600'
+                                }`}
+                              >
+                                <CheckIcon className="h-5 w-5" aria-hidden="true" />
+                              </span>
+                            ) : null}
+                          </>
+                        )}
+                      </Combobox.Option>
+                    ))
+                  )}
+                </Combobox.Options>
+              </Transition>
+            </div>
+          </Combobox>
           {errors.employeeId && <p className="mt-1 text-xs text-red-600">{errors.employeeId}</p>}
         </div>
 
@@ -464,25 +728,90 @@ export const WorkRecordForm = ({ workRecord, onCancel, onSuccess }: WorkRecordFo
                 Loại hàng
                 <span className="text-red-500 ml-1">*</span>
               </label>
-              <select
-                name="workItemId"
-                value={formData.workItemId}
-                onChange={(e) => {
-                  handleChange(e);
-                  const item = workItems.find((i) => i.id === e.target.value);
-                  setSelectedWorkItem(item || null);
+              <Combobox
+                value={selectedWorkItem}
+                onChange={(item: any) => {
+                  if (item) {
+                    setFormData((prev) => ({ ...prev, workItemId: item.id }));
+                    setSelectedWorkItem(item);
+                    setWorkItemSearchQuery(item.name);
+                    if (errors.workItemId) {
+                      setErrors((prev) => ({ ...prev, workItemId: '' }));
+                    }
+                  } else {
+                    setFormData((prev) => ({ ...prev, workItemId: '' }));
+                    setSelectedWorkItem(null);
+                    setWorkItemSearchQuery('');
+                  }
                 }}
-                className={`w-full px-3 py-2 text-sm border rounded-lg bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
-                  errors.workItemId ? 'border-red-500' : 'border-gray-200'
-                }`}
               >
-                <option value="">Chọn loại hàng</option>
-                {workItems.map((item) => (
-                  <option key={item.id} value={item.id}>
-                    {item.name} ({item.difficultyLevel})
-                  </option>
-                ))}
-              </select>
+                <div className="relative">
+                  <div className="relative">
+                    <Combobox.Input
+                      className={`w-full pl-10 pr-10 py-2.5 text-sm border rounded-lg bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
+                        errors.workItemId ? 'border-red-500' : 'border-gray-200'
+                      }`}
+                      displayValue={(item: any) => item ? `${item.name} (${item.difficultyLevel})` : ''}
+                      onChange={(event) => {
+                        setWorkItemSearchQuery(event.target.value);
+                        if (event.target.value === '') {
+                          setFormData((prev) => ({ ...prev, workItemId: '' }));
+                          setSelectedWorkItem(null);
+                        }
+                      }}
+                      placeholder="Tìm kiếm loại hàng..."
+                    />
+                    <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <Combobox.Button className="absolute inset-y-0 right-0 flex items-center pr-2">
+                      <ChevronUpDownIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
+                    </Combobox.Button>
+                  </div>
+                  <Transition
+                    as={Fragment}
+                    leave="transition ease-in duration-100"
+                    leaveFrom="opacity-100"
+                    leaveTo="opacity-0"
+                    afterLeave={() => setWorkItemSearchQuery('')}
+                  >
+                    <Combobox.Options className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-lg bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
+                      {filteredWorkItems.length === 0 && workItemSearchQuery !== '' ? (
+                        <div className="relative cursor-default select-none px-4 py-2 text-gray-700">
+                          Không tìm thấy loại hàng nào.
+                        </div>
+                      ) : (
+                        filteredWorkItems.map((item) => (
+                          <Combobox.Option
+                            key={item.id}
+                            className={({ active }) =>
+                              `relative cursor-default select-none py-2 pl-10 pr-4 ${
+                                active ? 'bg-blue-600 text-white' : 'text-gray-900'
+                              }`
+                            }
+                            value={item}
+                          >
+                            {({ selected, active }) => (
+                              <>
+                                <span className={`block truncate ${selected ? 'font-medium' : 'font-normal'}`}>
+                                  {item.name} ({item.difficultyLevel})
+                                </span>
+                                {selected ? (
+                                  <span
+                                    className={`absolute inset-y-0 left-0 flex items-center pl-3 ${
+                                      active ? 'text-white' : 'text-blue-600'
+                                    }`}
+                                  >
+                                    <CheckIcon className="h-5 w-5" aria-hidden="true" />
+                                  </span>
+                                ) : null}
+                              </>
+                            )}
+                          </Combobox.Option>
+                        ))
+                      )}
+                    </Combobox.Options>
+                  </Transition>
+                </div>
+              </Combobox>
               {errors.workItemId && <p className="mt-1 text-xs text-red-600">{errors.workItemId}</p>}
               {selectedWorkItem && (
                 <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
@@ -510,6 +839,21 @@ export const WorkRecordForm = ({ workRecord, onCancel, onSuccess }: WorkRecordFo
             step="1"
             min="1"
           />
+          {/* Display remaining quantity for weld_count */}
+          {selectedWorkType === CalculationType.WELD_COUNT && selectedWorkItem && totalQuantityMade !== undefined && (
+            <div className="mt-2 text-xs text-gray-600">
+              <p>
+                <span className="font-medium">Đã làm:</span> {totalQuantityMade.toLocaleString('vi-VN')} SP /{' '}
+                <span className="font-medium">Cần làm:</span> {selectedWorkItem.totalQuantity.toLocaleString('vi-VN')} SP
+              </p>
+              <p className="mt-0.5">
+                <span className="font-medium">Số lượng còn lại:</span>{' '}
+                <span className={selectedWorkItem.totalQuantity - totalQuantityMade <= 0 ? 'text-red-600 font-semibold' : 'text-green-600 font-semibold'}>
+                  {Math.max(0, selectedWorkItem.totalQuantity - totalQuantityMade).toLocaleString('vi-VN')} SP
+                </span>
+              </p>
+            </div>
+          )}
         </div>
 
         {selectedWorkType !== CalculationType.WELD_COUNT && (
@@ -711,6 +1055,80 @@ export const WorkRecordForm = ({ workRecord, onCancel, onSuccess }: WorkRecordFo
         </Button>
       </div>
     </form>
+
+    {/* Quantity Exceeded Modal */}
+    <Transition appear show={showQuantityExceedModal} as={Fragment}>
+      <Dialog as="div" className="relative z-10" onClose={() => setShowQuantityExceedModal(false)}>
+        <Transition.Child
+          as={Fragment}
+          enter="ease-out duration-300"
+          enterFrom="opacity-0"
+          enterTo="opacity-100"
+          leave="ease-in duration-200"
+          leaveFrom="opacity-100"
+          leaveTo="opacity-0"
+        >
+          <div className="fixed inset-0 bg-black bg-opacity-25" />
+        </Transition.Child>
+
+        <div className="fixed inset-0 overflow-y-auto">
+          <div className="flex min-h-full items-center justify-center p-4 text-center">
+            <Transition.Child
+              as={Fragment}
+              enter="ease-out duration-300"
+              enterFrom="opacity-0 scale-95"
+              enterTo="opacity-100 scale-100"
+              leave="ease-in duration-200"
+              leaveFrom="opacity-100 scale-100"
+              leaveTo="opacity-0 scale-95"
+            >
+              <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
+                <div className="flex items-center gap-4">
+                  <div className="flex-shrink-0">
+                    <ExclamationTriangleIcon className="h-12 w-12 text-red-600" />
+                  </div>
+                  <div className="flex-1">
+                    <Dialog.Title as="h3" className="text-lg font-medium leading-6 text-gray-900">
+                      Cảnh báo số lượng vượt quá
+                    </Dialog.Title>
+                    <div className="mt-2">
+                      <p className="text-sm text-gray-500">
+                        {errors.quantity && errors.quantity.includes('vượt quá số lượng còn lại') ? (
+                          <>
+                            Số lượng sản phẩm làm được vượt quá số lượng cần làm. Vui lòng điều chỉnh số lượng hoặc số lượng tăng ca cho phù hợp.
+                            <br />
+                            <span className="mt-2 inline-block text-xs text-gray-600 font-medium">
+                              {errors.quantity}
+                            </span>
+                          </>
+                        ) : errors.overtimeQuantity && errors.overtimeQuantity.includes('vượt quá số lượng cần làm') ? (
+                          <>
+                            Tổng số lượng sản phẩm (bao gồm tăng ca) vượt quá số lượng cần làm. Vui lòng điều chỉnh số lượng tăng ca cho phù hợp.
+                            <br />
+                            <span className="mt-2 inline-block text-xs text-gray-600 font-medium">
+                              {errors.overtimeQuantity}
+                            </span>
+                          </>
+                        ) : (
+                          'Số lượng sản phẩm vượt quá số lượng cần làm. Vui lòng điều chỉnh lại.'
+                        )}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-6 flex justify-end gap-2">
+                  <Button variant="outline" onClick={() => setShowQuantityExceedModal(false)}>
+                    Hủy bỏ
+                  </Button>
+                </div>
+              </Dialog.Panel>
+            </Transition.Child>
+          </div>
+        </div>
+      </Dialog>
+    </Transition>
+    </>
   );
 };
 

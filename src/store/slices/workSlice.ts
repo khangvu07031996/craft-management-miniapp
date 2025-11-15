@@ -232,6 +232,18 @@ export const fetchWorkRecordsByEmployeeAndMonth = createAsyncThunk(
   }
 );
 
+export const fetchTotalQuantityMadeByWorkItem = createAsyncThunk(
+  'work/fetchTotalQuantityMadeByWorkItem',
+  async ({ workItemId, excludeRecordId }: { workItemId: string; excludeRecordId?: string }, { rejectWithValue }) => {
+    try {
+      const totalQuantity = await workRecordService.getTotalQuantityMadeByWorkItem(workItemId, excludeRecordId);
+      return { workItemId, totalQuantity };
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to fetch total quantity made');
+    }
+  }
+);
+
 // Monthly Salaries Thunks
 export const fetchMonthlySalaries = createAsyncThunk(
   'work/fetchMonthlySalaries',

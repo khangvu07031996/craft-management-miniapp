@@ -9,6 +9,7 @@ import { fetchEmployees } from '../store/slices/employeeSlice';
 import { Layout } from '../components/layout/Layout';
 import { WorkRecordForm } from '../components/work/WorkRecordForm';
 import { WorkRecordList } from '../components/work/WorkRecordList';
+import { WorkRecordDeleteConfirm } from '../components/work/WorkRecordDeleteConfirm';
 import { Button } from '../components/common/Button';
 import { ErrorMessage } from '../components/common/ErrorMessage';
 import { Pagination } from '../components/employees/Pagination';
@@ -23,6 +24,8 @@ export const WorkRecordPage = () => {
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState<WorkRecordResponse | null>(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [recordToDelete, setRecordToDelete] = useState<WorkRecordResponse | null>(null);
   const [filterType, setFilterType] = useState<'single' | 'range' | 'all'>('single');
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [dateFrom, setDateFrom] = useState(new Date().toISOString().split('T')[0]);
@@ -100,10 +103,20 @@ export const WorkRecordPage = () => {
     setIsFormOpen(true);
   };
 
-  const handleDelete = async (id: string) => {
-    if (window.confirm('Bạn có chắc chắn muốn xóa công việc này?')) {
+  const handleDelete = (id: string) => {
+    const record = workRecords.find((r) => r.id === id);
+    if (record) {
+      setRecordToDelete(record);
+      setIsDeleteModalOpen(true);
+    }
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (recordToDelete) {
       try {
-        await dispatch(deleteWorkRecord(id)).unwrap();
+        await dispatch(deleteWorkRecord(recordToDelete.id)).unwrap();
+        setIsDeleteModalOpen(false);
+        setRecordToDelete(null);
         loadWorkRecords();
       } catch (error) {
         console.error('Error deleting work record:', error);
@@ -305,6 +318,18 @@ export const WorkRecordPage = () => {
           )}
         </div>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      <WorkRecordDeleteConfirm
+        isOpen={isDeleteModalOpen}
+        onClose={() => {
+          setIsDeleteModalOpen(false);
+          setRecordToDelete(null);
+        }}
+        onConfirm={handleDeleteConfirm}
+        workRecord={recordToDelete}
+        isLoading={isLoading}
+      />
     </Layout>
   );
 };

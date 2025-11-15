@@ -134,6 +134,12 @@ export const workRecordService = {
     });
     return response.data.data;
   },
+
+  getTotalQuantityMadeByWorkItem: async (workItemId: string, excludeRecordId?: string): Promise<number> => {
+    const params = excludeRecordId ? { excludeRecordId } : {};
+    const response = await api.get(`/work/items/${workItemId}/total-made`, { params });
+    return response.data.data.totalQuantityMade;
+  },
 };
 
 // Monthly Salaries
