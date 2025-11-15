@@ -6,9 +6,11 @@ import { WorkItemForm } from '../components/work/WorkItemForm';
 import { ErrorMessage } from '../components/common/ErrorMessage';
 import { WorkItemDeleteConfirm } from '../components/work/WorkItemDeleteConfirm';
 import { LoadingOverlay } from '../components/common/LoadingOverlay';
+import { Pagination } from '../components/employees/Pagination';
 import type { WorkItemResponse, DifficultyLevel } from '../types/work.types';
-import { PencilIcon, TrashIcon, FunnelIcon, ChartBarIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
+import { PencilIcon, TrashIcon, FunnelIcon, ChartBarIcon, ExclamationTriangleIcon, MagnifyingGlassIcon, ArrowUpIcon, ArrowDownIcon, ChevronUpDownIcon, CheckIcon } from '@heroicons/react/24/outline';
 import { PlusIcon } from '@heroicons/react/24/solid';
+import { Combobox } from '@headlessui/react';
 
 export const WorkItemPage = () => {
   const dispatch = useAppDispatch();
@@ -17,12 +19,27 @@ export const WorkItemPage = () => {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<WorkItemResponse | null>(null);
   const [filterDifficulty, setFilterDifficulty] = useState<DifficultyLevel | ''>('');
+  const [filterName, setFilterName] = useState('');
+  const [filterNameQuery, setFilterNameQuery] = useState('');
+  const [selectedWorkItemForFilter, setSelectedWorkItemForFilter] = useState<WorkItemResponse | null>(null);
+  const [filterStatus, setFilterStatus] = useState<'Tạo mới' | 'Đang sản xuất' | 'Hoàn thành' | ''>('');
+  const [filterDateFrom, setFilterDateFrom] = useState('');
+  const [filterDateTo, setFilterDateTo] = useState('');
+  const [sortBy, setSortBy] = useState<string>('');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<WorkItemResponse | null>(null);
 
   useEffect(() => {
     loadWorkItems();
   }, [filterDifficulty]);
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filterDifficulty, filterName, filterStatus, filterDateFrom, filterDateTo]);
 
   const loadWorkItems = () => {
     dispatch(fetchWorkItems(filterDifficulty || undefined));
@@ -70,9 +87,143 @@ export const WorkItemPage = () => {
     setSelectedItem(null);
   };
 
-  const filteredItems = filterDifficulty
-    ? workItems.filter((item) => item.difficultyLevel === filterDifficulty)
-    : workItems;
+  // Filter work items for autocomplete suggestions
+  const filteredWorkItemsForAutocomplete = useMemo(() => {
+    if (!filterNameQuery.trim()) {
+      return workItems;
+    }
+    const query = filterNameQuery.toLowerCase().trim();
+    return workItems.filter((item) =>
+      item.name.toLowerCase().includes(query)
+    );
+  }, [workItems, filterNameQuery]);
+
+  // Apply all filters
+  const filteredItems = useMemo(() => {
+    let filtered = [...workItems];
+
+    // Filter by difficulty
+    if (filterDifficulty) {
+      filtered = filtered.filter((item) => item.difficultyLevel === filterDifficulty);
+    }
+
+    // Filter by name (case-insensitive search)
+    if (filterName.trim()) {
+      const searchTerm = filterName.toLowerCase().trim();
+      filtered = filtered.filter((item) =>
+        item.name.toLowerCase().includes(searchTerm)
+      );
+    }
+
+    // Filter by status
+    if (filterStatus) {
+      filtered = filtered.filter((item) => item.status === filterStatus);
+    }
+
+    // Filter by estimated delivery date
+    if (filterDateFrom || filterDateTo) {
+      filtered = filtered.filter((item) => {
+        if (!item.estimatedDeliveryDate) return false;
+        const itemDate = new Date(item.estimatedDeliveryDate);
+        itemDate.setHours(0, 0, 0, 0);
+
+        if (filterDateFrom && filterDateTo) {
+          const fromDate = new Date(filterDateFrom);
+          fromDate.setHours(0, 0, 0, 0);
+          const toDate = new Date(filterDateTo);
+          toDate.setHours(23, 59, 59, 999);
+          return itemDate >= fromDate && itemDate <= toDate;
+        } else if (filterDateFrom) {
+          const fromDate = new Date(filterDateFrom);
+          fromDate.setHours(0, 0, 0, 0);
+          return itemDate >= fromDate;
+        } else if (filterDateTo) {
+          const toDate = new Date(filterDateTo);
+          toDate.setHours(23, 59, 59, 999);
+          return itemDate <= toDate;
+        }
+        return true;
+      });
+    }
+
+    // Apply sorting
+    if (sortBy) {
+      filtered.sort((a, b) => {
+        let aValue: any;
+        let bValue: any;
+
+        switch (sortBy) {
+          case 'name':
+            aValue = a.name.toLowerCase();
+            bValue = b.name.toLowerCase();
+            break;
+          case 'difficulty':
+            const difficultyOrder = { 'dễ': 1, 'trung bình': 2, 'khó': 3 };
+            aValue = difficultyOrder[a.difficultyLevel as keyof typeof difficultyOrder] || 0;
+            bValue = difficultyOrder[b.difficultyLevel as keyof typeof difficultyOrder] || 0;
+            break;
+          case 'totalQuantity':
+            aValue = a.totalQuantity;
+            bValue = b.totalQuantity;
+            break;
+          case 'quantityMade':
+            aValue = a.quantityMade || 0;
+            bValue = b.quantityMade || 0;
+            break;
+          case 'status':
+            const statusOrder = { 'Tạo mới': 1, 'Đang sản xuất': 2, 'Hoàn thành': 3 };
+            aValue = statusOrder[a.status as keyof typeof statusOrder] || 0;
+            bValue = statusOrder[b.status as keyof typeof statusOrder] || 0;
+            break;
+          case 'estimatedDeliveryDate':
+            aValue = a.estimatedDeliveryDate ? new Date(a.estimatedDeliveryDate).getTime() : 0;
+            bValue = b.estimatedDeliveryDate ? new Date(b.estimatedDeliveryDate).getTime() : 0;
+            break;
+          default:
+            return 0;
+        }
+
+        if (aValue < bValue) return sortOrder === 'asc' ? -1 : 1;
+        if (aValue > bValue) return sortOrder === 'asc' ? 1 : -1;
+        return 0;
+      });
+    }
+
+    return filtered;
+  }, [workItems, filterDifficulty, filterName, filterStatus, filterDateFrom, filterDateTo, sortBy, sortOrder]);
+
+  // Pagination calculations
+  const totalItems = filteredItems.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedItems = filteredItems.slice(startIndex, endIndex);
+  const hasNextPage = currentPage < totalPages;
+  const hasPreviousPage = currentPage > 1;
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    // Scroll to top of table
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleSort = (column: string) => {
+    if (sortBy === column) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortBy(column);
+      setSortOrder('asc');
+    }
+  };
+
+  const getSortIcon = (column: string) => {
+    if (sortBy !== column) return null;
+    return sortOrder === 'asc' ? (
+      <ArrowUpIcon className="w-4 h-4 inline ml-1" />
+    ) : (
+      <ArrowDownIcon className="w-4 h-4 inline ml-1" />
+    );
+  };
 
   const formatCurrency = (amount: number): string => {
     return new Intl.NumberFormat('vi-VN', {
@@ -87,13 +238,27 @@ export const WorkItemPage = () => {
     return date.toLocaleDateString('vi-VN');
   };
 
+  const formatDifficultyLevel = (level: string): string => {
+    if (!level) return level;
+    return level.charAt(0).toUpperCase() + level.slice(1);
+  };
+
   // Calculate items approaching delivery date (within 3 days and not completed)
   const itemsApproachingDelivery = useMemo(() => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
     return filteredItems.filter((item) => {
-      if (!item.estimatedDeliveryDate || item.status === 'Hoàn thành') {
+      if (!item.estimatedDeliveryDate) {
+        return false;
+      }
+
+      // Check if item is actually completed based on quantityMade vs totalQuantity
+      const isCompleted = item.quantityMade !== undefined && 
+                         item.totalQuantity > 0 && 
+                         item.quantityMade >= item.totalQuantity;
+      
+      if (isCompleted) {
         return false;
       }
 
@@ -156,7 +321,88 @@ export const WorkItemPage = () => {
 
         {/* Filter */}
         <div className="mb-6 bg-gradient-to-br from-white to-gray-50 rounded-xl border border-gray-200/60 shadow-md shadow-gray-100/50 p-6">
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-5">
+            <div>
+              <label className="flex items-center gap-2 text-xs font-semibold text-gray-600 uppercase tracking-wider mb-2.5">
+                <MagnifyingGlassIcon className="w-3.5 h-3.5" />
+                Tên loại hàng
+              </label>
+              <Combobox
+                value={selectedWorkItemForFilter}
+                onChange={(item: WorkItemResponse | null) => {
+                  setSelectedWorkItemForFilter(item);
+                  if (item) {
+                    setFilterName(item.name);
+                    setFilterNameQuery(item.name);
+                  } else {
+                    setFilterName('');
+                    setFilterNameQuery('');
+                  }
+                }}
+              >
+                <div className="relative">
+                  <div className="relative w-full">
+                    <Combobox.Input
+                      className="w-full pl-4 pr-10 py-2.5 text-sm border border-gray-300/80 rounded-lg bg-white text-gray-700 shadow-sm hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200"
+                      displayValue={(item: WorkItemResponse | null) => item ? item.name : filterNameQuery}
+                      onChange={(event) => {
+                        const value = event.target.value;
+                        setFilterNameQuery(value);
+                        setFilterName(value);
+                        setSelectedWorkItemForFilter(null);
+                      }}
+                      placeholder="Tìm kiếm theo tên..."
+                    />
+                    <Combobox.Button className="absolute inset-y-0 right-0 flex items-center pr-2">
+                      <ChevronUpDownIcon
+                        className="h-5 w-5 text-gray-400"
+                        aria-hidden="true"
+                      />
+                    </Combobox.Button>
+                  </div>
+                  <Combobox.Options className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
+                    {filteredWorkItemsForAutocomplete.length === 0 && filterNameQuery !== '' ? (
+                      <div className="relative cursor-default select-none px-4 py-2 text-gray-700">
+                        Không tìm thấy loại hàng nào.
+                      </div>
+                    ) : (
+                      filteredWorkItemsForAutocomplete.map((item) => (
+                        <Combobox.Option
+                          key={item.id}
+                          className={({ active }) =>
+                            `relative cursor-default select-none py-2 pl-10 pr-4 ${
+                              active ? 'bg-blue-600 text-white' : 'text-gray-900'
+                            }`
+                          }
+                          value={item}
+                        >
+                          {({ selected, active }) => (
+                            <>
+                              <span
+                                className={`block truncate ${
+                                  selected ? 'font-medium' : 'font-normal'
+                                }`}
+                              >
+                                {item.name}
+                              </span>
+                              {selected ? (
+                                <span
+                                  className={`absolute inset-y-0 left-0 flex items-center pl-3 ${
+                                    active ? 'text-white' : 'text-blue-600'
+                                  }`}
+                                >
+                                  <CheckIcon className="h-5 w-5" aria-hidden="true" />
+                                </span>
+                              ) : null}
+                            </>
+                          )}
+                        </Combobox.Option>
+                      ))
+                    )}
+                  </Combobox.Options>
+                </div>
+              </Combobox>
+            </div>
             <div>
               <label className="flex items-center gap-2 text-xs font-semibold text-gray-600 uppercase tracking-wider mb-2.5">
                 <ChartBarIcon className="w-3.5 h-3.5" />
@@ -179,6 +425,53 @@ export const WorkItemPage = () => {
                   </svg>
                 </div>
               </div>
+            </div>
+            <div>
+              <label className="flex items-center gap-2 text-xs font-semibold text-gray-600 uppercase tracking-wider mb-2.5">
+                <FunnelIcon className="w-3.5 h-3.5" />
+                Trạng thái
+              </label>
+              <div className="relative">
+                <select
+                  value={filterStatus}
+                  onChange={(e) => setFilterStatus(e.target.value as 'Tạo mới' | 'Đang sản xuất' | 'Hoàn thành' | '')}
+                  className="w-full pl-4 pr-10 py-2.5 text-sm border border-gray-300/80 rounded-lg bg-white text-gray-700 shadow-sm hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200 appearance-none cursor-pointer"
+                >
+                  <option value="">Tất cả</option>
+                  <option value="Tạo mới">Tạo mới</option>
+                  <option value="Đang sản xuất">Đang sản xuất</option>
+                  <option value="Hoàn thành">Hoàn thành</option>
+                </select>
+                <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                  <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+            <div>
+              <label className="flex items-center gap-2 text-xs font-semibold text-gray-600 uppercase tracking-wider mb-2.5">
+                <ChartBarIcon className="w-3.5 h-3.5" />
+                Ngày xuất hàng từ
+              </label>
+              <input
+                type="date"
+                value={filterDateFrom}
+                onChange={(e) => setFilterDateFrom(e.target.value)}
+                className="w-full pl-4 pr-4 py-2.5 text-sm border border-gray-300/80 rounded-lg bg-white text-gray-700 shadow-sm hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200"
+              />
+            </div>
+            <div>
+              <label className="flex items-center gap-2 text-xs font-semibold text-gray-600 uppercase tracking-wider mb-2.5">
+                <ChartBarIcon className="w-3.5 h-3.5" />
+                Ngày xuất hàng đến
+              </label>
+              <input
+                type="date"
+                value={filterDateTo}
+                onChange={(e) => setFilterDateTo(e.target.value)}
+                className="w-full pl-4 pr-4 py-2.5 text-sm border border-gray-300/80 rounded-lg bg-white text-gray-700 shadow-sm hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200"
+              />
             </div>
           </div>
         </div>
@@ -252,33 +545,52 @@ export const WorkItemPage = () => {
                 <p className="text-sm text-gray-500">Không có loại hàng nào</p>
               </div>
             ) : (
+              <>
               <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Tên loại hàng
+                    <th 
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
+                      onClick={() => handleSort('name')}
+                    >
+                      Tên loại hàng {getSortIcon('name')}
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Độ khó
+                    <th 
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
+                      onClick={() => handleSort('difficulty')}
+                    >
+                      Độ khó {getSortIcon('difficulty')}
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Giá mỗi mối hàn
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Số lượng cần làm
+                    <th 
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
+                      onClick={() => handleSort('totalQuantity')}
+                    >
+                      Số lượng cần làm {getSortIcon('totalQuantity')}
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Số lượng đã sản xuất
+                    <th 
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
+                      onClick={() => handleSort('quantityMade')}
+                    >
+                      Số lượng đã sản xuất {getSortIcon('quantityMade')}
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Mối hàn/SP
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Trạng thái
+                    <th 
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
+                      onClick={() => handleSort('status')}
+                    >
+                      Trạng thái {getSortIcon('status')}
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Ngày ước tính xuất hàng
+                    <th 
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
+                      onClick={() => handleSort('estimatedDeliveryDate')}
+                    >
+                      Ngày ước tính xuất hàng {getSortIcon('estimatedDeliveryDate')}
                     </th>
                     <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Thao tác
@@ -286,7 +598,7 @@ export const WorkItemPage = () => {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {filteredItems.map((item) => (
+                  {paginatedItems.map((item) => (
                     <tr key={item.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                         {item.name}
@@ -301,7 +613,7 @@ export const WorkItemPage = () => {
                               : 'bg-red-100 text-red-800'
                           }`}
                         >
-                          {item.difficultyLevel}
+                          {formatDifficultyLevel(item.difficultyLevel)}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
@@ -358,6 +670,29 @@ export const WorkItemPage = () => {
                 </tbody>
               </table>
               </div>
+
+              {/* Pagination Footer */}
+              {totalItems > 0 && (
+                <div className="px-6 py-4 border-t border-gray-200 bg-white rounded-b-lg">
+                  <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <p className="text-sm text-gray-600 whitespace-nowrap">
+                      Hiển thị <span className="font-medium">{startIndex + 1}</span> đến{' '}
+                      <span className="font-medium">{Math.min(endIndex, totalItems)}</span> trong tổng số{' '}
+                      <span className="font-medium">{totalItems}</span> bản ghi
+                    </p>
+                    {totalPages > 1 && (
+                      <Pagination
+                        currentPage={currentPage}
+                        totalPages={totalPages}
+                        hasNextPage={hasNextPage}
+                        hasPreviousPage={hasPreviousPage}
+                        onPageChange={handlePageChange}
+                      />
+                    )}
+                  </div>
+                </div>
+              )}
+              </>
             )}
           </div>
         </LoadingOverlay>
