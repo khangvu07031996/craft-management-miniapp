@@ -10,7 +10,11 @@ import {
   ChevronDownIcon,
 } from '@heroicons/react/24/outline';
 
-export const Header = () => {
+interface HeaderProps {
+  onMenuClick: () => void;
+}
+
+export const Header = ({ onMenuClick }: HeaderProps) => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { user } = useAppSelector((state) => state.auth);
@@ -30,23 +34,27 @@ export const Header = () => {
   };
 
   return (
-    <header className="fixed top-0 left-64 right-0 h-14 bg-white border-b border-gray-200 z-20">
-      <div className="flex items-center justify-between h-full px-6">
+    <header className="fixed top-0 left-0 lg:left-64 right-0 h-14 bg-white border-b border-gray-200 z-20">
+      <div className="flex items-center justify-between h-full px-4 lg:px-6">
         {/* Left side - Menu and Search */}
-        <div className="flex items-center gap-3 flex-1">
-          <button className="lg:hidden p-2 rounded-md hover:bg-gray-50 transition-colors">
+        <div className="flex items-center gap-2 lg:gap-3 flex-1">
+          <button
+            onClick={onMenuClick}
+            className="lg:hidden p-2 rounded-md hover:bg-gray-50 transition-colors"
+            aria-label="Toggle menu"
+          >
             <Bars3Icon className="w-5 h-5 text-gray-600" />
           </button>
 
           {/* Search */}
-          <div className="relative flex-1 max-w-md">
+          <div className="relative flex-1 lg:max-w-md">
             <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
               type="text"
               placeholder="Tìm kiếm..."
-              className="w-full pl-9 pr-20 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              className="w-full pl-9 pr-16 lg:pr-20 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
             />
-            <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
+            <div className="absolute right-2 top-1/2 transform -translate-y-1/2 hidden lg:block">
               <kbd className="px-2 py-1 text-[10px] font-medium text-gray-500 bg-white border border-gray-200 rounded shadow-sm">
                 ⌘K
               </kbd>
@@ -55,14 +63,14 @@ export const Header = () => {
         </div>
 
         {/* Right side - Icons and User */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 lg:gap-2">
           {/* Dark Mode Toggle */}
-          <button className="p-2 rounded-md hover:bg-gray-50 transition-colors">
+          <button className="p-2 rounded-md hover:bg-gray-50 transition-colors" aria-label="Toggle dark mode">
             <MoonIcon className="w-5 h-5 text-gray-600" />
           </button>
 
           {/* Notifications */}
-          <button className="relative p-2 rounded-md hover:bg-gray-50 transition-colors">
+          <button className="relative p-2 rounded-md hover:bg-gray-50 transition-colors" aria-label="Notifications">
             <BellIcon className="w-5 h-5 text-gray-600" />
             <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-orange-500 rounded-full border border-white"></span>
           </button>
@@ -71,15 +79,16 @@ export const Header = () => {
           <div className="relative">
             <button
               onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-              className="flex items-center gap-2.5 px-2 py-1.5 rounded-md hover:bg-gray-50 transition-colors"
+              className="flex items-center gap-2 lg:gap-2.5 px-1 lg:px-2 py-1.5 rounded-md hover:bg-gray-50 transition-colors"
+              aria-label="User menu"
             >
               <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-xs font-semibold">
                 {getUserInitials()}
               </div>
-              <span className="text-sm font-medium text-gray-900 hidden md:block">
+              <span className="text-sm font-medium text-gray-900 hidden lg:block">
                 {user ? `${user.firstName} ${user.lastName}` : 'Người dùng'}
               </span>
-              <ChevronDownIcon className="w-4 h-4 text-gray-400 hidden md:block" />
+              <ChevronDownIcon className="w-4 h-4 text-gray-400 hidden lg:block" />
             </button>
 
             {/* Dropdown Menu */}

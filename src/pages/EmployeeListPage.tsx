@@ -138,30 +138,30 @@ export const EmployeeListPage = () => {
 
   return (
     <Layout>
-      <div className="pt-6">
+      <div className="pt-4 lg:pt-6">
         {/* Breadcrumbs */}
-        <div className="flex items-center gap-1.5 text-sm text-gray-500 mb-4">
-          <Link to="/dashboard" className="hover:text-gray-700 transition-colors">
+        <div className="flex items-center gap-1.5 text-xs sm:text-sm text-gray-500 mb-4 overflow-x-auto">
+          <Link to="/dashboard" className="hover:text-gray-700 transition-colors whitespace-nowrap">
             Trang chủ
           </Link>
-          <ChevronRightIcon className="w-4 h-4" />
-          <Link to="/employees" className="hover:text-gray-700 transition-colors">
+          <ChevronRightIcon className="w-4 h-4 flex-shrink-0" />
+          <Link to="/employees" className="hover:text-gray-700 transition-colors whitespace-nowrap">
             Nhân viên
           </Link>
           {filters.department && (
             <>
-              <ChevronRightIcon className="w-4 h-4" />
-              <span className="text-gray-900 font-medium">{filters.department}</span>
+              <ChevronRightIcon className="w-4 h-4 flex-shrink-0" />
+              <span className="text-gray-900 font-medium whitespace-nowrap">{filters.department}</span>
             </>
           )}
         </div>
 
         {/* Header with Title and Add Button */}
-        <div className="flex items-center justify-between mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">Nhân viên</h1>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 lg:mb-8">
+          <h1 className="text-xl lg:text-2xl font-bold text-gray-900">Nhân viên</h1>
           <button
             onClick={handleCreate}
-            className="inline-flex items-center gap-2.5 px-5 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold rounded-xl shadow-lg shadow-blue-500/30 hover:from-blue-700 hover:to-blue-800 hover:shadow-xl hover:shadow-blue-500/40 transform hover:-translate-y-0.5 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            className="inline-flex items-center justify-center gap-2 sm:gap-2.5 px-4 sm:px-5 py-2.5 sm:py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white text-sm sm:text-base font-semibold rounded-xl shadow-lg shadow-blue-500/30 hover:from-blue-700 hover:to-blue-800 hover:shadow-xl hover:shadow-blue-500/40 transform hover:-translate-y-0.5 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 w-full sm:w-auto"
           >
             <PlusIcon className="w-5 h-5" />
             <span>Thêm nhân viên</span>
@@ -169,8 +169,8 @@ export const EmployeeListPage = () => {
         </div>
 
         {/* Search Bar */}
-        <div className="mb-6">
-          <div className="relative max-w-md">
+        <div className="mb-4 lg:mb-6">
+          <div className="relative w-full max-w-md">
             <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
             <input
               type="text"
@@ -191,9 +191,9 @@ export const EmployeeListPage = () => {
 
             {/* Pagination Footer */}
             {pagination.total > 0 && (
-              <div className="px-6 py-4 border-t border-gray-200 bg-white rounded-b-lg">
+              <div className="px-4 lg:px-6 py-4 border-t border-gray-200 bg-white rounded-b-lg">
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                  <p className="text-sm text-gray-600 whitespace-nowrap">
+                  <p className="text-xs sm:text-sm text-gray-600">
                     Hiển thị <span className="font-medium">{((pagination.page - 1) * pagination.pageSize) + 1}</span> đến{' '}
                     <span className="font-medium">{Math.min(pagination.page * pagination.pageSize, pagination.total)}</span> trong tổng số{' '}
                     <span className="font-medium">{pagination.total}</span> bản ghi

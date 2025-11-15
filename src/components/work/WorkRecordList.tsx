@@ -72,79 +72,71 @@ export const WorkRecordList = ({ workRecords, onEdit, onDelete }: WorkRecordList
   }
 
   return (
-    <div className="overflow-x-auto">
-      <table className="min-w-full divide-y divide-gray-200">
-        <thead className="bg-gray-50">
-          <tr>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Ngày
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Nhân viên
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Loại công việc
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Loại hàng
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Số lượng
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Đơn giá
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Tăng ca
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Tổng tiền
-            </th>
-            {(onEdit || onDelete) && (
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Thao tác
-              </th>
-            )}
-          </tr>
-        </thead>
-        <tbody className="bg-white divide-y divide-gray-200">
-          {groupedRecords.map(({ record, isNewDate, isNewEmployee }) => {
-            const borderClass = isNewDate 
-              ? 'border-t-2 border-gray-300' 
-              : isNewEmployee 
-              ? 'border-t border-gray-200' 
-              : '';
+    <>
+      {/* Mobile: Card Layout */}
+      <div className="md:hidden space-y-4">
+        {groupedRecords.map(({ record, isNewDate, isNewEmployee }) => {
+          const borderClass = isNewDate 
+            ? 'border-t-2 border-gray-300' 
+            : isNewEmployee 
+            ? 'border-t border-gray-200' 
+            : '';
 
-            return (
-              <tr 
-                key={record.id} 
-                className={`hover:bg-gray-50 ${borderClass}`}
-              >
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {formatDate(record.workDate)}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {record.employee
-                    ? `${record.employee.firstName} ${record.employee.lastName}`
-                    : record.employeeId}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {record.workType?.name || '-'}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {record.workItem ? `${record.workItem.name} (${record.workItem.difficultyLevel})` : '-'}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {record.workType?.calculationType === 'weld_count' 
-                    ? `${record.quantity} SP` 
-                    : record.quantity}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {formatCurrency(record.unitPrice)}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {record.isOvertime ? (
-                    <div className="flex flex-col gap-1">
+          return (
+            <div
+              key={record.id}
+              className={`bg-white border border-gray-200 rounded-lg p-4 shadow-sm ${borderClass}`}
+            >
+              {/* Header: Date and Employee */}
+              <div className="mb-3 pb-3 border-b border-gray-200">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-medium text-gray-500">Ngày</span>
+                  {isNewDate && (
+                    <span className="text-xs font-semibold text-gray-700 bg-gray-100 px-2 py-1 rounded">
+                      {formatDate(record.workDate)}
+                    </span>
+                  )}
+                </div>
+                {isNewDate && (
+                  <div className="text-sm font-semibold text-gray-900 mb-2">
+                    {formatDate(record.workDate)}
+                  </div>
+                )}
+                {isNewEmployee && (
+                  <div className="text-sm font-medium text-gray-900">
+                    {record.employee
+                      ? `${record.employee.firstName} ${record.employee.lastName}`
+                      : record.employeeId}
+                  </div>
+                )}
+              </div>
+
+              {/* Details */}
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-gray-500">Loại công việc:</span>
+                  <span className="text-gray-900 font-medium">{record.workType?.name || '-'}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-500">Loại hàng:</span>
+                  <span className="text-gray-900">{record.workItem ? `${record.workItem.name}` : '-'}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-500">Số lượng:</span>
+                  <span className="text-gray-900 font-medium">
+                    {record.workType?.calculationType === 'weld_count' 
+                      ? `${record.quantity} SP` 
+                      : record.quantity}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-500">Đơn giá:</span>
+                  <span className="text-gray-900">{formatCurrency(record.unitPrice)}</span>
+                </div>
+                {record.isOvertime && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-500">Tăng ca:</span>
+                    <div className="flex flex-col items-end gap-1">
                       <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-orange-100 text-orange-800">
                         Có tăng ca
                       </span>
@@ -159,40 +151,163 @@ export const WorkRecordList = ({ workRecords, onEdit, onDelete }: WorkRecordList
                         </span>
                       )}
                     </div>
-                  ) : (
-                    <span className="text-gray-400">-</span>
-                  )}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
-                  {formatCurrency(record.totalAmount)}
-                </td>
-                {(onEdit || onDelete) && (
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <div className="flex justify-end gap-2">
-                      {onEdit && (
-                        <button
-                          onClick={() => onEdit(record)}
-                          className="text-blue-600 hover:text-blue-900"
-                        >
-                          Sửa
-                        </button>
-                      )}
-                      {onDelete && (
-                        <button
-                          onClick={() => onDelete(record.id)}
-                          className="text-red-600 hover:text-red-900"
-                        >
-                          Xóa
-                        </button>
-                      )}
-                    </div>
-                  </td>
+                  </div>
                 )}
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
-    </div>
+                <div className="flex justify-between pt-2 border-t border-gray-200">
+                  <span className="text-gray-900 font-semibold">Tổng tiền:</span>
+                  <span className="text-gray-900 font-bold">{formatCurrency(record.totalAmount)}</span>
+                </div>
+              </div>
+
+              {/* Actions */}
+              {(onEdit || onDelete) && (
+                <div className="mt-3 pt-3 border-t border-gray-200 flex justify-end gap-3">
+                  {onEdit && (
+                    <button
+                      onClick={() => onEdit(record)}
+                      className="text-blue-600 hover:text-blue-900 text-sm font-medium px-3 py-1.5 rounded hover:bg-blue-50 transition-colors"
+                    >
+                      Sửa
+                    </button>
+                  )}
+                  {onDelete && (
+                    <button
+                      onClick={() => onDelete(record.id)}
+                      className="text-red-600 hover:text-red-900 text-sm font-medium px-3 py-1.5 rounded hover:bg-red-50 transition-colors"
+                    >
+                      Xóa
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Tablet/Desktop: Table Layout with horizontal scroll */}
+      <div className="hidden md:block overflow-x-auto">
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Ngày
+              </th>
+              <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Nhân viên
+              </th>
+              <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Loại công việc
+              </th>
+              <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Loại hàng
+              </th>
+              <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Số lượng
+              </th>
+              <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Đơn giá
+              </th>
+              <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Tăng ca
+              </th>
+              <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Tổng tiền
+              </th>
+              {(onEdit || onDelete) && (
+                <th className="px-4 lg:px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Thao tác
+                </th>
+              )}
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {groupedRecords.map(({ record, isNewDate, isNewEmployee }) => {
+              const borderClass = isNewDate 
+                ? 'border-t-2 border-gray-300' 
+                : isNewEmployee 
+                ? 'border-t border-gray-200' 
+                : '';
+
+              return (
+                <tr 
+                  key={record.id} 
+                  className={`hover:bg-gray-50 ${borderClass}`}
+                >
+                  <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {formatDate(record.workDate)}
+                  </td>
+                  <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {record.employee
+                      ? `${record.employee.firstName} ${record.employee.lastName}`
+                      : record.employeeId}
+                  </td>
+                  <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {record.workType?.name || '-'}
+                  </td>
+                  <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {record.workItem ? `${record.workItem.name} (${record.workItem.difficultyLevel})` : '-'}
+                  </td>
+                  <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {record.workType?.calculationType === 'weld_count' 
+                      ? `${record.quantity} SP` 
+                      : record.quantity}
+                  </td>
+                  <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {formatCurrency(record.unitPrice)}
+                  </td>
+                  <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {record.isOvertime ? (
+                      <div className="flex flex-col gap-1">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-orange-100 text-orange-800">
+                          Có tăng ca
+                        </span>
+                        {record.workType?.calculationType === 'weld_count' && record.overtimeQuantity && (
+                          <span className="text-xs text-gray-600">
+                            {record.overtimeQuantity} SP
+                          </span>
+                        )}
+                        {record.workType?.calculationType === 'hourly' && record.overtimeHours && (
+                          <span className="text-xs text-gray-600">
+                            {record.overtimeHours} giờ
+                          </span>
+                        )}
+                      </div>
+                    ) : (
+                      <span className="text-gray-400">-</span>
+                    )}
+                  </td>
+                  <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
+                    {formatCurrency(record.totalAmount)}
+                  </td>
+                  {(onEdit || onDelete) && (
+                    <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <div className="flex justify-end gap-2">
+                        {onEdit && (
+                          <button
+                            onClick={() => onEdit(record)}
+                            className="text-blue-600 hover:text-blue-900"
+                          >
+                            Sửa
+                          </button>
+                        )}
+                        {onDelete && (
+                          <button
+                            onClick={() => onDelete(record.id)}
+                            className="text-red-600 hover:text-red-900"
+                          >
+                            Xóa
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  )}
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </>
   );
 };

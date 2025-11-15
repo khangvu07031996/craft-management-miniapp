@@ -152,14 +152,14 @@ export const MonthlySalaryPage = () => {
 
   return (
     <Layout>
-      <div className="pt-6">
-        <div className="flex items-center justify-between mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">Lương tháng</h1>
+      <div className="pt-4 lg:pt-6">
+        <div className="mb-6 lg:mb-8">
+          <h1 className="text-xl lg:text-2xl font-bold text-gray-900">Lương tháng</h1>
         </div>
 
         {/* Filter Section */}
-        <div className="mb-6 bg-gradient-to-br from-white to-gray-50 rounded-xl border border-gray-200/60 shadow-md shadow-gray-100/50 p-6">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
+        <div className="mb-4 lg:mb-6 bg-gradient-to-br from-white to-gray-50 rounded-xl border border-gray-200/60 shadow-md shadow-gray-100/50 p-4 lg:p-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-5">
             <div>
               <label className="flex items-center gap-2 text-xs font-semibold text-gray-600 uppercase tracking-wider mb-2.5">
                 <CalendarDaysIcon className="w-3.5 h-3.5" />

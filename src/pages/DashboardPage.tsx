@@ -33,8 +33,8 @@ export const DashboardPage = () => {
         </div>
 
         {/* Page Title */}
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">Bảng điều khiển</h1>
+        <div className="mb-6 lg:mb-8">
+          <h1 className="text-xl lg:text-2xl font-bold text-gray-900">Bảng điều khiển</h1>
         </div>
 
         {error && <ErrorMessage message={error} className="mb-4" />}
@@ -49,7 +49,7 @@ export const DashboardPage = () => {
             <p className="text-gray-500">Không có dữ liệu phòng ban</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6">
             {departmentStats.map((stat) => (
               <DepartmentCard
                 key={stat.department}
