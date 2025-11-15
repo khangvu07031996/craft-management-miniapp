@@ -53,13 +53,13 @@ export const WorkRecordDeleteConfirm = ({
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
             >
-              <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
-                <div className="flex items-center gap-4">
+              <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-4 sm:p-6 text-left align-middle shadow-xl transition-all mx-4">
+                <div className="flex items-start gap-3 sm:gap-4">
                   <div className="flex-shrink-0">
-                    <ExclamationTriangleIcon className="h-12 w-12 text-red-600" />
+                    <ExclamationTriangleIcon className="h-10 w-10 sm:h-12 sm:w-12 text-red-600" />
                   </div>
-                  <div className="flex-1">
-                    <Dialog.Title as="h3" className="text-lg font-medium leading-6 text-gray-900">
+                  <div className="flex-1 min-w-0">
+                    <Dialog.Title as="h3" className="text-base sm:text-lg font-medium leading-6 text-gray-900">
                       Xóa công việc
                     </Dialog.Title>
                     <div className="mt-2">
@@ -97,11 +97,11 @@ export const WorkRecordDeleteConfirm = ({
                   </div>
                 </div>
 
-                <div className="mt-6 flex justify-end gap-2">
-                  <Button variant="outline" onClick={onClose} disabled={isLoading}>
+                <div className="mt-4 sm:mt-6 flex flex-col sm:flex-row justify-end gap-2">
+                  <Button variant="outline" onClick={onClose} disabled={isLoading} className="w-full sm:w-auto">
                     Hủy
                   </Button>
-                  <Button variant="danger" onClick={onConfirm} isLoading={isLoading}>
+                  <Button variant="danger" onClick={onConfirm} isLoading={isLoading} className="w-full sm:w-auto">
                     Xóa
                   </Button>
                 </div>

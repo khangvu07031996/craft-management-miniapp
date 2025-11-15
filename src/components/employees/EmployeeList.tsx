@@ -205,7 +205,7 @@ export const EmployeeList = ({ hideControls = false }: EmployeeListProps) => {
       )}
 
       {employees.length === 0 ? (
-        <div className="px-6 py-12 text-center">
+        <div className="px-4 lg:px-6 py-12 text-center">
           <p className="text-sm text-gray-500">Không tìm thấy nhân viên</p>
           {searchValue && (
             <p className="text-xs text-gray-400 mt-2">
@@ -214,116 +214,191 @@ export const EmployeeList = ({ hideControls = false }: EmployeeListProps) => {
           )}
         </div>
       ) : (
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-white">
-              <tr>
-                <th className="px-6 py-3.5 text-left">
-                  <button
-                    onClick={() => handleSort('firstName')}
-                    className="flex items-center gap-1.5 hover:bg-gray-50 -ml-1 px-1 py-1 rounded transition-colors group"
-                  >
-                    <span className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Nhân viên</span>
-                    {getSortIcon('firstName')}
-                  </button>
-                </th>
-                <th className="px-6 py-3.5 text-left">
-                  <button
-                    onClick={() => handleSort('position')}
-                    className="flex items-center gap-1.5 hover:bg-gray-50 -ml-1 px-1 py-1 rounded transition-colors group"
-                  >
-                    <span className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Vị trí</span>
-                    {getSortIcon('position')}
-                  </button>
-                </th>
-                <th className="px-6 py-3.5 text-left">
-                  <button
-                    onClick={() => handleSort('department')}
-                    className="flex items-center gap-1.5 hover:bg-gray-50 -ml-1 px-1 py-1 rounded transition-colors group"
-                  >
-                    <span className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Phòng ban</span>
-                    {getSortIcon('department')}
-                  </button>
-                </th>
-                <th className="px-6 py-3.5 text-left">
-                  <span className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Trạng thái</span>
-                </th>
-                <th className="px-6 py-3.5 text-left">
-                  <button
-                    onClick={() => handleSort('hireDate')}
-                    className="flex items-center gap-1.5 hover:bg-gray-50 -ml-1 px-1 py-1 rounded transition-colors group"
-                  >
-                    <span className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Thời gian làm việc</span>
-                    {getSortIcon('hireDate')}
-                  </button>
-                </th>
-                <th className="px-6 py-3.5 text-right">
-                  <span className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Thao tác</span>
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {employees.map((employee) => (
-                <tr key={employee.id} className="hover:bg-gray-50/50 transition-colors">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <div className="flex-shrink-0 h-9 w-9">
-                        <div className="h-9 w-9 rounded-full bg-blue-600 flex items-center justify-center text-white text-xs font-semibold">
-                          {getInitials(employee.firstName, employee.lastName)}
+        <>
+          {/* Mobile: Card Layout */}
+          <div className="md:hidden space-y-4 p-4">
+            {employees.map((employee) => (
+              <div
+                key={employee.id}
+                className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm"
+              >
+                {/* Header: Avatar, Name, and Actions */}
+                <div className="flex items-start justify-between mb-3 pb-3 border-b border-gray-200">
+                  <div className="flex items-center gap-3 flex-1">
+                    <div className="flex-shrink-0 h-10 w-10">
+                      <div className="h-10 w-10 rounded-full bg-blue-600 flex items-center justify-center text-white text-sm font-semibold">
+                        {getInitials(employee.firstName, employee.lastName)}
+                      </div>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <button
+                        onClick={() => navigate(`/employees/${employee.id}`)}
+                        className="text-base font-semibold text-gray-900 hover:text-blue-600 transition-colors text-left block truncate"
+                      >
+                        {employee.firstName} {employee.lastName}
+                      </button>
+                      <div className="text-xs text-gray-500 mt-0.5 truncate">{employee.email}</div>
+                    </div>
+                  </div>
+                  <div className="flex gap-2 flex-shrink-0 ml-2">
+                    <button
+                      onClick={() => handleEdit(employee)}
+                      className="text-blue-600 hover:text-blue-700 transition-colors p-1.5 rounded-md hover:bg-blue-50"
+                      aria-label="Edit"
+                    >
+                      <PencilIcon className="h-5 w-5" />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(employee)}
+                      className="text-red-600 hover:text-red-700 transition-colors p-1.5 rounded-md hover:bg-red-50"
+                      aria-label="Delete"
+                    >
+                      <TrashIcon className="h-5 w-5" />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Details */}
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">Vị trí:</span>
+                    <span className="text-gray-900 font-medium">{employee.position}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">Phòng ban:</span>
+                    <span className="text-gray-900">{employee.department}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-500">Trạng thái:</span>
+                    <span
+                      className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${getStatusColor(
+                        employee.status
+                      )}`}
+                    >
+                      {employee.status === 'active' ? 'Đang làm việc' : 'Đã nghỉ việc'}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">Thời gian làm việc:</span>
+                    <span className="text-gray-900">{calculateWorkingDuration(employee.hireDate)}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Tablet/Desktop: Table Layout */}
+          <div className="hidden md:block overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-white">
+                <tr>
+                  <th className="px-4 lg:px-6 py-3.5 text-left">
+                    <button
+                      onClick={() => handleSort('firstName')}
+                      className="flex items-center gap-1.5 hover:bg-gray-50 -ml-1 px-1 py-1 rounded transition-colors group"
+                    >
+                      <span className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Nhân viên</span>
+                      {getSortIcon('firstName')}
+                    </button>
+                  </th>
+                  <th className="px-4 lg:px-6 py-3.5 text-left">
+                    <button
+                      onClick={() => handleSort('position')}
+                      className="flex items-center gap-1.5 hover:bg-gray-50 -ml-1 px-1 py-1 rounded transition-colors group"
+                    >
+                      <span className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Vị trí</span>
+                      {getSortIcon('position')}
+                    </button>
+                  </th>
+                  <th className="px-4 lg:px-6 py-3.5 text-left">
+                    <button
+                      onClick={() => handleSort('department')}
+                      className="flex items-center gap-1.5 hover:bg-gray-50 -ml-1 px-1 py-1 rounded transition-colors group"
+                    >
+                      <span className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Phòng ban</span>
+                      {getSortIcon('department')}
+                    </button>
+                  </th>
+                  <th className="px-4 lg:px-6 py-3.5 text-left">
+                    <span className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Trạng thái</span>
+                  </th>
+                  <th className="px-4 lg:px-6 py-3.5 text-left">
+                    <button
+                      onClick={() => handleSort('hireDate')}
+                      className="flex items-center gap-1.5 hover:bg-gray-50 -ml-1 px-1 py-1 rounded transition-colors group"
+                    >
+                      <span className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Thời gian làm việc</span>
+                      {getSortIcon('hireDate')}
+                    </button>
+                  </th>
+                  <th className="px-4 lg:px-6 py-3.5 text-right">
+                    <span className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Thao tác</span>
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {employees.map((employee) => (
+                  <tr key={employee.id} className="hover:bg-gray-50/50 transition-colors">
+                    <td className="px-4 lg:px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center">
+                        <div className="flex-shrink-0 h-9 w-9">
+                          <div className="h-9 w-9 rounded-full bg-blue-600 flex items-center justify-center text-white text-xs font-semibold">
+                            {getInitials(employee.firstName, employee.lastName)}
+                          </div>
+                        </div>
+                        <div className="ml-3">
+                          <button
+                            onClick={() => navigate(`/employees/${employee.id}`)}
+                            className="text-sm font-semibold text-gray-900 hover:text-blue-600 transition-colors text-left"
+                          >
+                            {employee.firstName} {employee.lastName}
+                          </button>
+                          <div className="text-xs text-gray-500 mt-0.5">{employee.email}</div>
                         </div>
                       </div>
-                      <div className="ml-3">
+                    </td>
+                    <td className="px-4 lg:px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-700">{employee.position}</div>
+                    </td>
+                    <td className="px-4 lg:px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-700">{employee.department}</div>
+                    </td>
+                    <td className="px-4 lg:px-6 py-4 whitespace-nowrap">
+                      <span
+                        className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${getStatusColor(
+                          employee.status
+                        )}`}
+                      >
+                        {employee.status === 'active' ? 'Đang làm việc' : 'Đã nghỉ việc'}
+                      </span>
+                    </td>
+                    <td className="px-4 lg:px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-700">{calculateWorkingDuration(employee.hireDate)}</div>
+                    </td>
+                    <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-right">
+                      <div className="flex justify-end gap-3">
                         <button
-                          onClick={() => navigate(`/employees/${employee.id}`)}
-                          className="text-sm font-semibold text-gray-900 hover:text-blue-600 transition-colors text-left"
+                          onClick={() => handleEdit(employee)}
+                          className="text-blue-600 hover:text-blue-700 transition-colors p-1 rounded-md hover:bg-blue-50"
+                          title="Chỉnh sửa"
                         >
-                          {employee.firstName} {employee.lastName}
+                          <PencilIcon className="h-4 w-4" />
                         </button>
-                        <div className="text-xs text-gray-500 mt-0.5">{employee.email}</div>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-700">{employee.position}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-700">{employee.department}</div>
-                  </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span
-                          className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${getStatusColor(
-                            employee.status
-                          )}`}
+                        <button
+                          onClick={() => handleDelete(employee)}
+                          className="text-red-600 hover:text-red-700 transition-colors p-1 rounded-md hover:bg-red-50"
+                          title="Xóa"
                         >
-                          {employee.status === 'active' ? 'Đang làm việc' : 'Đã nghỉ việc'}
-                        </span>
-                      </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-700">{calculateWorkingDuration(employee.hireDate)}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right">
-                    <div className="flex justify-end gap-3">
-                          <button
-                            onClick={() => handleEdit(employee)}
-                            className="text-blue-600 hover:text-blue-700 transition-colors p-1 rounded-md hover:bg-blue-50"
-                            title="Chỉnh sửa"
-                          >
-                            <PencilIcon className="h-4 w-4" />
-                          </button>
-                          <button
-                            onClick={() => handleDelete(employee)}
-                            className="text-red-600 hover:text-red-700 transition-colors p-1 rounded-md hover:bg-red-50"
-                            title="Xóa"
-                          >
-                            <TrashIcon className="h-4 w-4" />
-                          </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                          <TrashIcon className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
       )}
 
       <EmployeeModal

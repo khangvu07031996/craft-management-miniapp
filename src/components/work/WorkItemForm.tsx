@@ -207,11 +207,11 @@ export const WorkItemForm = ({ workItem, onCancel, onSuccess }: WorkItemFormProp
         </div>
       </div>
 
-      <div className="flex justify-end gap-2 pt-4">
-        <Button type="button" variant="outline" onClick={onCancel}>
+      <div className="flex flex-col sm:flex-row justify-end gap-2 pt-4">
+        <Button type="button" variant="outline" onClick={onCancel} className="w-full sm:w-auto">
           Hủy
         </Button>
-        <Button type="submit" isLoading={isLoading}>
+        <Button type="submit" isLoading={isLoading} className="w-full sm:w-auto">
           {isEditMode ? 'Cập nhật' : 'Tạo mới'}
         </Button>
       </div>

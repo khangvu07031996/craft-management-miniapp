@@ -546,53 +546,144 @@ export const WorkItemPage = () => {
               </div>
             ) : (
               <>
-              <div className="overflow-x-auto">
+              {/* Mobile: Card Layout */}
+              <div className="md:hidden space-y-4 p-4">
+                {paginatedItems.map((item) => (
+                  <div
+                    key={item.id}
+                    className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm"
+                  >
+                    {/* Header: Name and Actions */}
+                    <div className="flex items-start justify-between mb-3 pb-3 border-b border-gray-200">
+                      <h3 className="text-base font-semibold text-gray-900 flex-1 pr-2">
+                        {item.name}
+                      </h3>
+                      <div className="flex gap-2 flex-shrink-0">
+                        <button
+                          onClick={() => handleEdit(item)}
+                          className="text-blue-600 hover:text-blue-900 p-1"
+                          aria-label="Edit"
+                        >
+                          <PencilIcon className="w-5 h-5" />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(item.id)}
+                          className="text-red-600 hover:text-red-900 p-1"
+                          aria-label="Delete"
+                        >
+                          <TrashIcon className="w-5 h-5" />
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Details */}
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-500">Độ khó:</span>
+                        <span
+                          className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${
+                            item.difficultyLevel === 'dễ'
+                              ? 'bg-green-100 text-green-800'
+                              : item.difficultyLevel === 'trung bình'
+                              ? 'bg-yellow-100 text-yellow-800'
+                              : 'bg-red-100 text-red-800'
+                          }`}
+                        >
+                          {formatDifficultyLevel(item.difficultyLevel)}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-500">Giá mỗi mối hàn:</span>
+                        <span className="text-gray-900 font-medium">{formatCurrency(item.pricePerWeld)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-500">Số lượng cần làm:</span>
+                        <span className="text-gray-900 font-medium">{item.totalQuantity.toLocaleString('vi-VN')}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-500">Số lượng đã sản xuất:</span>
+                        <div className="text-right">
+                          <span className="text-gray-900 font-medium">
+                            {(item.quantityMade || 0).toLocaleString('vi-VN')}
+                          </span>
+                          {item.totalQuantity > 0 && item.quantityMade !== undefined && (
+                            <span className="ml-2 text-xs text-gray-500">
+                              ({Math.round((item.quantityMade / item.totalQuantity) * 100)}%)
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-500">Mối hàn/SP:</span>
+                        <span className="text-gray-900">{item.weldsPerItem}</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-500">Trạng thái:</span>
+                        <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${getStatusBadgeColor(item.status)}`}>
+                          {item.status}
+                        </span>
+                      </div>
+                      {item.estimatedDeliveryDate && (
+                        <div className="flex justify-between">
+                          <span className="text-gray-500">Ngày xuất hàng:</span>
+                          <span className={itemsApproachingDelivery.some(i => i.id === item.id) ? 'font-medium text-yellow-600' : 'text-gray-900'}>
+                            {formatDate(item.estimatedDeliveryDate)}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Tablet/Desktop: Table Layout */}
+              <div className="hidden md:block overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
                     <th 
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
+                      className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
                       onClick={() => handleSort('name')}
                     >
                       Tên loại hàng {getSortIcon('name')}
                     </th>
                     <th 
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
+                      className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
                       onClick={() => handleSort('difficulty')}
                     >
                       Độ khó {getSortIcon('difficulty')}
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Giá mỗi mối hàn
                     </th>
                     <th 
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
+                      className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
                       onClick={() => handleSort('totalQuantity')}
                     >
                       Số lượng cần làm {getSortIcon('totalQuantity')}
                     </th>
                     <th 
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
+                      className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
                       onClick={() => handleSort('quantityMade')}
                     >
                       Số lượng đã sản xuất {getSortIcon('quantityMade')}
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Mối hàn/SP
                     </th>
                     <th 
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
+                      className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
                       onClick={() => handleSort('status')}
                     >
                       Trạng thái {getSortIcon('status')}
                     </th>
                     <th 
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
+                      className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
                       onClick={() => handleSort('estimatedDeliveryDate')}
                     >
                       Ngày ước tính xuất hàng {getSortIcon('estimatedDeliveryDate')}
                     </th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 lg:px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Thao tác
                     </th>
                   </tr>
@@ -600,10 +691,10 @@ export const WorkItemPage = () => {
                 <tbody className="bg-white divide-y divide-gray-200">
                   {paginatedItems.map((item) => (
                     <tr key={item.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                      <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                         {item.name}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         <span
                           className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${
                             item.difficultyLevel === 'dễ'
@@ -616,13 +707,13 @@ export const WorkItemPage = () => {
                           {formatDifficultyLevel(item.difficultyLevel)}
                         </span>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {formatCurrency(item.pricePerWeld)}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {item.totalQuantity.toLocaleString('vi-VN')}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         <span className={item.quantityMade !== undefined && item.quantityMade > 0 ? 'font-medium' : ''}>
                           {(item.quantityMade || 0).toLocaleString('vi-VN')}
                         </span>
@@ -632,15 +723,15 @@ export const WorkItemPage = () => {
                           </span>
                         )}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {item.weldsPerItem}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${getStatusBadgeColor(item.status)}`}>
                           {item.status}
                         </span>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {item.estimatedDeliveryDate ? (
                           <span className={itemsApproachingDelivery.some(i => i.id === item.id) ? 'font-medium text-yellow-600' : ''}>
                             {formatDate(item.estimatedDeliveryDate)}
@@ -649,7 +740,7 @@ export const WorkItemPage = () => {
                           '-'
                         )}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <div className="flex justify-end gap-2">
                           <button
                             onClick={() => handleEdit(item)}
@@ -673,9 +764,9 @@ export const WorkItemPage = () => {
 
               {/* Pagination Footer */}
               {totalItems > 0 && (
-                <div className="px-6 py-4 border-t border-gray-200 bg-white rounded-b-lg">
+                <div className="px-4 lg:px-6 py-4 border-t border-gray-200 bg-white rounded-b-lg">
                   <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                    <p className="text-sm text-gray-600 whitespace-nowrap">
+                    <p className="text-xs sm:text-sm text-gray-600">
                       Hiển thị <span className="font-medium">{startIndex + 1}</span> đến{' '}
                       <span className="font-medium">{Math.min(endIndex, totalItems)}</span> trong tổng số{' '}
                       <span className="font-medium">{totalItems}</span> bản ghi

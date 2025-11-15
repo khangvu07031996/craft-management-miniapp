@@ -1219,8 +1219,8 @@ export const WorkRecordForm = ({ workRecord, onCancel, onSuccess }: WorkRecordFo
         </div>
       </div>
 
-      <div className="flex justify-end gap-2 pt-4">
-        <Button type="button" variant="outline" onClick={onCancel}>
+      <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-2 pt-4">
+        <Button type="button" variant="outline" onClick={onCancel} className="w-full sm:w-auto">
           Hủy
         </Button>
         <Button 
@@ -1228,6 +1228,7 @@ export const WorkRecordForm = ({ workRecord, onCancel, onSuccess }: WorkRecordFo
           isLoading={isLoading}
           disabled={hasCriticalErrors || isLoading}
           title={hasCriticalErrors ? 'Vui lòng sửa các lỗi validation trước khi tạo mới' : ''}
+          className="w-full sm:w-auto"
         >
           {isEditMode ? 'Cập nhật' : 'Tạo mới'}
         </Button>
@@ -1260,13 +1261,13 @@ export const WorkRecordForm = ({ workRecord, onCancel, onSuccess }: WorkRecordFo
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
             >
-              <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
-                <div className="flex items-center gap-4">
+              <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-4 sm:p-6 text-left align-middle shadow-xl transition-all mx-4">
+                <div className="flex items-start gap-3 sm:gap-4">
                   <div className="flex-shrink-0">
-                    <ExclamationTriangleIcon className="h-12 w-12 text-red-600" />
+                    <ExclamationTriangleIcon className="h-10 w-10 sm:h-12 sm:w-12 text-red-600" />
                   </div>
-                  <div className="flex-1">
-                    <Dialog.Title as="h3" className="text-lg font-medium leading-6 text-gray-900">
+                  <div className="flex-1 min-w-0">
+                    <Dialog.Title as="h3" className="text-base sm:text-lg font-medium leading-6 text-gray-900">
                       {(errors.quantity && errors.quantity.includes('vượt quá số giờ còn lại')) || (errors.overtimeHours && errors.overtimeHours.includes('vượt quá 24 giờ'))
                         ? 'Cảnh báo số giờ vượt quá' 
                         : 'Cảnh báo số lượng vượt quá'}
@@ -1313,8 +1314,8 @@ export const WorkRecordForm = ({ workRecord, onCancel, onSuccess }: WorkRecordFo
                   </div>
                 </div>
 
-                <div className="mt-6 flex justify-end gap-2">
-                  <Button variant="outline" onClick={() => setShowQuantityExceedModal(false)}>
+                <div className="mt-4 sm:mt-6 flex flex-col sm:flex-row justify-end gap-2">
+                  <Button variant="outline" onClick={() => setShowQuantityExceedModal(false)} className="w-full sm:w-auto">
                     Hủy bỏ
                   </Button>
                 </div>
