@@ -3,6 +3,7 @@ import { useAppDispatch, useAppSelector } from '../store/hooks';
 import { fetchWorkTypes, createWorkType, updateWorkType, deleteWorkType } from '../store/slices/workSlice';
 import { WorkTypeForm } from '../components/work/WorkTypeForm';
 import { Layout } from '../components/layout/Layout';
+import { LoadingOverlay } from '../components/common/LoadingOverlay';
 import { PencilIcon, TrashIcon, FunnelIcon, BuildingOfficeIcon } from '@heroicons/react/24/outline';
 import { PlusIcon } from '@heroicons/react/24/solid';
 import type { WorkTypeResponse, CalculationType } from '../types/work.types';
@@ -29,7 +30,7 @@ const getCalculationTypeLabel = (type: CalculationType) => {
 
 export const WorkTypePage = () => {
   const dispatch = useAppDispatch();
-  const { workTypes, isLoading } = useAppSelector((state) => state.work);
+  const { workTypes, isLoadingFetch, isLoadingDelete } = useAppSelector((state) => state.work);
   const [showForm, setShowForm] = useState(false);
   const [selectedType, setSelectedType] = useState<WorkTypeResponse | null>(null);
   const [departmentFilter, setDepartmentFilter] = useState<string>('');
@@ -136,75 +137,73 @@ export const WorkTypePage = () => {
         )}
 
         {/* Table */}
-        <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
-          {isLoading ? (
-            <div className="p-12 text-center">
-              <p className="text-gray-500">Đang tải...</p>
-            </div>
-          ) : filteredTypes.length === 0 ? (
-            <div className="p-12 text-center">
-              <p className="text-sm text-gray-500">Không có loại công việc nào</p>
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Tên loại công việc
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Phòng ban
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Loại tính toán
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Giá đơn vị
-                    </th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Thao tác
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {filteredTypes.map((type) => (
-                    <tr key={type.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        {type.name}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {type.department}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {getCalculationTypeLabel(type.calculationType)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {type.calculationType === 'weld_count' ? '-' : formatCurrency(type.unitPrice)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <div className="flex justify-end gap-2">
-                          <button
-                            onClick={() => handleEdit(type)}
-                            className="text-blue-600 hover:text-blue-900"
-                          >
-                            <PencilIcon className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={() => handleDelete(type.id)}
-                            className="text-red-600 hover:text-red-900"
-                          >
-                            <TrashIcon className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </td>
+        <LoadingOverlay isLoading={isLoadingFetch}>
+          <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+            {filteredTypes.length === 0 && !isLoadingFetch ? (
+              <div className="p-12 text-center">
+                <p className="text-sm text-gray-500">Không có loại công việc nào</p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Tên loại công việc
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Phòng ban
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Loại tính toán
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Giá đơn vị
+                      </th>
+                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Thao tác
+                      </th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {filteredTypes.map((type) => (
+                      <tr key={type.id} className="hover:bg-gray-50">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                          {type.name}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {type.department}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {getCalculationTypeLabel(type.calculationType)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {type.calculationType === 'weld_count' ? '-' : formatCurrency(type.unitPrice)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                          <div className="flex justify-end gap-2">
+                            <button
+                              onClick={() => handleEdit(type)}
+                              className="text-blue-600 hover:text-blue-900"
+                            >
+                              <PencilIcon className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => handleDelete(type.id)}
+                              className="text-red-600 hover:text-red-900"
+                            >
+                              <TrashIcon className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </LoadingOverlay>
       </div>
     </Layout>
   );

@@ -6,6 +6,7 @@ import { Layout } from '../components/layout/Layout';
 import { EmployeeList } from '../components/employees/EmployeeList';
 import { Pagination } from '../components/employees/Pagination';
 import { ErrorMessage } from '../components/common/ErrorMessage';
+import { LoadingOverlay } from '../components/common/LoadingOverlay';
 import { EmployeeModal } from '../components/employees/EmployeeModal';
 import { ChevronRightIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import { PlusIcon } from '@heroicons/react/24/solid';
@@ -14,7 +15,7 @@ import type { CreateEmployeeDto, UpdateEmployeeDto } from '../types/employee.typ
 export const EmployeeListPage = () => {
   const dispatch = useAppDispatch();
   const [searchParams] = useSearchParams();
-  const { employees, filters, pagination, error, isLoading } = useAppSelector(
+  const { employees, filters, pagination, error, isLoadingFetch, isLoadingDelete } = useAppSelector(
     (state) => state.employees
   );
   const { user } = useAppSelector((state) => state.auth);
@@ -125,7 +126,7 @@ export const EmployeeListPage = () => {
     setSearchValue(e.target.value);
   };
 
-  if (isLoading && employees.length === 0) {
+  if (isLoadingFetch && employees.length === 0) {
     return (
       <Layout>
         <div className="flex justify-center items-center min-h-screen">
@@ -184,31 +185,33 @@ export const EmployeeListPage = () => {
         {error && <ErrorMessage message={error} className="mb-4" />}
 
         {/* Table Card */}
-        <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
-          <EmployeeList hideControls={true} />
+        <LoadingOverlay isLoading={isLoadingFetch}>
+          <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+            <EmployeeList hideControls={true} />
 
-          {/* Pagination Footer */}
-          {pagination.total > 0 && (
-            <div className="px-6 py-4 border-t border-gray-200 bg-white rounded-b-lg">
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                <p className="text-sm text-gray-600 whitespace-nowrap">
-                  Hiển thị <span className="font-medium">{((pagination.page - 1) * pagination.pageSize) + 1}</span> đến{' '}
-                  <span className="font-medium">{Math.min(pagination.page * pagination.pageSize, pagination.total)}</span> trong tổng số{' '}
-                  <span className="font-medium">{pagination.total}</span> bản ghi
-                </p>
-                {pagination.totalPages > 1 && (
-                  <Pagination
-                    currentPage={pagination.page}
-                    totalPages={pagination.totalPages}
-                    hasNextPage={pagination.hasNextPage}
-                    hasPreviousPage={pagination.hasPreviousPage}
-                    onPageChange={handlePageChange}
-                  />
-                )}
+            {/* Pagination Footer */}
+            {pagination.total > 0 && (
+              <div className="px-6 py-4 border-t border-gray-200 bg-white rounded-b-lg">
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                  <p className="text-sm text-gray-600 whitespace-nowrap">
+                    Hiển thị <span className="font-medium">{((pagination.page - 1) * pagination.pageSize) + 1}</span> đến{' '}
+                    <span className="font-medium">{Math.min(pagination.page * pagination.pageSize, pagination.total)}</span> trong tổng số{' '}
+                    <span className="font-medium">{pagination.total}</span> bản ghi
+                  </p>
+                  {pagination.totalPages > 1 && (
+                    <Pagination
+                      currentPage={pagination.page}
+                      totalPages={pagination.totalPages}
+                      hasNextPage={pagination.hasNextPage}
+                      hasPreviousPage={pagination.hasPreviousPage}
+                      onPageChange={handlePageChange}
+                    />
+                  )}
+                </div>
               </div>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
+        </LoadingOverlay>
 
         {/* Employee Modal */}
         <EmployeeModal
@@ -216,7 +219,7 @@ export const EmployeeListPage = () => {
           employee={selectedEmployee}
           onClose={handleModalClose}
           onSubmit={handleModalSubmit}
-          isLoading={isLoading}
+          isLoading={isLoadingFetch || isLoadingDelete}
         />
       </div>
     </Layout>

@@ -25,6 +25,10 @@ interface EmployeeState {
   sort: SortParams;
   departmentStats: Array<{ department: string; count: number }>;
   isLoading: boolean;
+  isLoadingFetch: boolean;
+  isLoadingCreate: boolean;
+  isLoadingUpdate: boolean;
+  isLoadingDelete: boolean;
   error: string | null;
 }
 
@@ -46,6 +50,10 @@ const initialState: EmployeeState = {
   },
   departmentStats: [],
   isLoading: false,
+  isLoadingFetch: false,
+  isLoadingCreate: false,
+  isLoadingUpdate: false,
+  isLoadingDelete: false,
   error: null,
 };
 
@@ -178,53 +186,59 @@ const employeeSlice = createSlice({
       // Fetch Employees
       .addCase(fetchEmployees.pending, (state) => {
         state.isLoading = true;
+        state.isLoadingFetch = true;
         state.error = null;
       })
       .addCase(fetchEmployees.fulfilled, (state, action) => {
         state.isLoading = false;
+        state.isLoadingFetch = false;
         state.employees = action.payload.data;
         state.pagination = action.payload.pagination;
         state.error = null;
       })
       .addCase(fetchEmployees.rejected, (state, action) => {
         state.isLoading = false;
+        state.isLoadingFetch = false;
         state.error = action.payload as string;
       })
       // Fetch Employee By ID
       .addCase(fetchEmployeeById.pending, (state) => {
         state.isLoading = true;
+        state.isLoadingFetch = true;
         state.error = null;
       })
       .addCase(fetchEmployeeById.fulfilled, (state, action) => {
         state.isLoading = false;
+        state.isLoadingFetch = false;
         state.currentEmployee = action.payload;
         state.error = null;
       })
       .addCase(fetchEmployeeById.rejected, (state, action) => {
         state.isLoading = false;
+        state.isLoadingFetch = false;
         state.error = action.payload as string;
       })
       // Create Employee
       .addCase(createEmployee.pending, (state) => {
-        state.isLoading = true;
+        state.isLoadingCreate = true;
         state.error = null;
       })
       .addCase(createEmployee.fulfilled, (state, action) => {
-        state.isLoading = false;
+        state.isLoadingCreate = false;
         state.employees.unshift(action.payload);
         state.error = null;
       })
       .addCase(createEmployee.rejected, (state, action) => {
-        state.isLoading = false;
+        state.isLoadingCreate = false;
         state.error = action.payload as string;
       })
       // Update Employee
       .addCase(updateEmployee.pending, (state) => {
-        state.isLoading = true;
+        state.isLoadingUpdate = true;
         state.error = null;
       })
       .addCase(updateEmployee.fulfilled, (state, action) => {
-        state.isLoading = false;
+        state.isLoadingUpdate = false;
         const index = state.employees.findIndex((emp) => emp.id === action.payload.id);
         if (index !== -1) {
           state.employees[index] = action.payload;
@@ -235,16 +249,16 @@ const employeeSlice = createSlice({
         state.error = null;
       })
       .addCase(updateEmployee.rejected, (state, action) => {
-        state.isLoading = false;
+        state.isLoadingUpdate = false;
         state.error = action.payload as string;
       })
       // Delete Employee
       .addCase(deleteEmployee.pending, (state) => {
-        state.isLoading = true;
+        state.isLoadingDelete = true;
         state.error = null;
       })
       .addCase(deleteEmployee.fulfilled, (state, action) => {
-        state.isLoading = false;
+        state.isLoadingDelete = false;
         state.employees = state.employees.filter((emp) => emp.id !== action.payload);
         if (state.currentEmployee?.id === action.payload) {
           state.currentEmployee = null;
@@ -252,23 +266,26 @@ const employeeSlice = createSlice({
         state.error = null;
       })
       .addCase(deleteEmployee.rejected, (state, action) => {
-        state.isLoading = false;
+        state.isLoadingDelete = false;
         state.error = action.payload as string;
       })
       // Fetch Department Stats
       .addCase(fetchDepartmentStats.pending, (state) => {
         state.isLoading = true;
+        state.isLoadingFetch = true;
         state.error = null;
         console.log('fetchDepartmentStats.pending: Setting loading to true');
       })
       .addCase(fetchDepartmentStats.fulfilled, (state, action) => {
         state.isLoading = false;
+        state.isLoadingFetch = false;
         state.departmentStats = Array.isArray(action.payload) ? action.payload : [];
         state.error = null;
         console.log('fetchDepartmentStats.fulfilled: Stats set:', state.departmentStats);
       })
       .addCase(fetchDepartmentStats.rejected, (state, action) => {
         state.isLoading = false;
+        state.isLoadingFetch = false;
         state.error = action.payload as string;
         state.departmentStats = [];
         console.error('fetchDepartmentStats.rejected: Error:', action.payload);

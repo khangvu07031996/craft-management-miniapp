@@ -5,13 +5,14 @@ import { Layout } from '../components/layout/Layout';
 import { WorkItemForm } from '../components/work/WorkItemForm';
 import { ErrorMessage } from '../components/common/ErrorMessage';
 import { WorkItemDeleteConfirm } from '../components/work/WorkItemDeleteConfirm';
+import { LoadingOverlay } from '../components/common/LoadingOverlay';
 import type { WorkItemResponse, DifficultyLevel } from '../types/work.types';
 import { PencilIcon, TrashIcon, FunnelIcon, ChartBarIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import { PlusIcon } from '@heroicons/react/24/solid';
 
 export const WorkItemPage = () => {
   const dispatch = useAppDispatch();
-  const { workItems, isLoading, error } = useAppSelector((state) => state.work);
+  const { workItems, isLoadingFetch, isLoadingDelete, error } = useAppSelector((state) => state.work);
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<WorkItemResponse | null>(null);
@@ -244,17 +245,14 @@ export const WorkItemPage = () => {
           </div>
         )}
 
-        <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
-          {isLoading ? (
-            <div className="p-12 text-center">
-              <p className="text-gray-500">Đang tải...</p>
-            </div>
-          ) : filteredItems.length === 0 ? (
-            <div className="p-12 text-center">
-              <p className="text-sm text-gray-500">Không có loại hàng nào</p>
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
+        <LoadingOverlay isLoading={isLoadingFetch}>
+          <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+            {filteredItems.length === 0 && !isLoadingFetch ? (
+              <div className="p-12 text-center">
+                <p className="text-sm text-gray-500">Không có loại hàng nào</p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
@@ -359,22 +357,23 @@ export const WorkItemPage = () => {
                   ))}
                 </tbody>
               </table>
-            </div>
-          )}
-        </div>
-      </div>
+              </div>
+            )}
+          </div>
+        </LoadingOverlay>
 
-      {/* Delete Confirmation Modal */}
-      <WorkItemDeleteConfirm
-        isOpen={isDeleteModalOpen}
-        onClose={() => {
-          setIsDeleteModalOpen(false);
-          setItemToDelete(null);
-        }}
-        onConfirm={handleDeleteConfirm}
-        workItem={itemToDelete}
-        isLoading={isLoading}
-      />
+        {/* Delete Confirmation Modal */}
+        <WorkItemDeleteConfirm
+          isOpen={isDeleteModalOpen}
+          onClose={() => {
+            setIsDeleteModalOpen(false);
+            setItemToDelete(null);
+          }}
+          onConfirm={handleDeleteConfirm}
+          workItem={itemToDelete}
+          isLoading={isLoadingDelete}
+        />
+      </div>
     </Layout>
   );
 };

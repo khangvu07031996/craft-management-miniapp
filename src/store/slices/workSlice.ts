@@ -38,6 +38,10 @@ interface WorkState {
   overtimeConfigs: OvertimeConfigResponse[];
   pagination: PaginationParams;
   isLoading: boolean;
+  isLoadingFetch: boolean;
+  isLoadingCreate: boolean;
+  isLoadingUpdate: boolean;
+  isLoadingDelete: boolean;
   error: string | null;
 }
 
@@ -56,6 +60,10 @@ const initialState: WorkState = {
     totalPages: 0,
   },
   isLoading: false,
+  isLoadingFetch: false,
+  isLoadingCreate: false,
+  isLoadingUpdate: false,
+  isLoadingDelete: false,
   error: null,
 };
 
@@ -418,10 +426,12 @@ const workSlice = createSlice({
       // Work Types
       .addCase(fetchWorkTypes.pending, (state) => {
         state.isLoading = true;
+        state.isLoadingFetch = true;
         state.error = null;
       })
       .addCase(fetchWorkTypes.fulfilled, (state, action) => {
         state.isLoading = false;
+        state.isLoadingFetch = false;
         const uniqueMap = new Map<string, typeof action.payload[0]>();
         action.payload.forEach((workType) => {
           uniqueMap.set(workType.id, workType);
@@ -431,99 +441,198 @@ const workSlice = createSlice({
       })
       .addCase(fetchWorkTypes.rejected, (state, action) => {
         state.isLoading = false;
+        state.isLoadingFetch = false;
         state.error = action.payload as string;
       })
+      .addCase(createWorkType.pending, (state) => {
+        state.isLoadingCreate = true;
+        state.error = null;
+      })
       .addCase(createWorkType.fulfilled, (state) => {
+        state.isLoadingCreate = false;
         // Don't update state here - let fetchWorkTypes handle it
+      })
+      .addCase(createWorkType.rejected, (state, action) => {
+        state.isLoadingCreate = false;
+        state.error = action.payload as string;
+      })
+      .addCase(updateWorkType.pending, (state) => {
+        state.isLoadingUpdate = true;
+        state.error = null;
       })
       .addCase(updateWorkType.fulfilled, (state) => {
+        state.isLoadingUpdate = false;
         // Don't update state here - let fetchWorkTypes handle it
       })
+      .addCase(updateWorkType.rejected, (state, action) => {
+        state.isLoadingUpdate = false;
+        state.error = action.payload as string;
+      })
+      .addCase(deleteWorkType.pending, (state) => {
+        state.isLoadingDelete = true;
+        state.error = null;
+      })
       .addCase(deleteWorkType.fulfilled, (state) => {
+        state.isLoadingDelete = false;
         // Don't update state here - let fetchWorkTypes handle it
+      })
+      .addCase(deleteWorkType.rejected, (state, action) => {
+        state.isLoadingDelete = false;
+        state.error = action.payload as string;
       })
       // Work Items
       .addCase(fetchWorkItems.pending, (state) => {
         state.isLoading = true;
+        state.isLoadingFetch = true;
         state.error = null;
       })
       .addCase(fetchWorkItems.fulfilled, (state, action) => {
         state.isLoading = false;
+        state.isLoadingFetch = false;
         state.workItems = action.payload;
         state.error = null;
       })
       .addCase(fetchWorkItems.rejected, (state, action) => {
         state.isLoading = false;
+        state.isLoadingFetch = false;
         state.error = action.payload as string;
       })
+      .addCase(createWorkItem.pending, (state) => {
+        state.isLoadingCreate = true;
+        state.error = null;
+      })
       .addCase(createWorkItem.fulfilled, (state, action) => {
+        state.isLoadingCreate = false;
         state.workItems.push(action.payload);
       })
+      .addCase(createWorkItem.rejected, (state, action) => {
+        state.isLoadingCreate = false;
+        state.error = action.payload as string;
+      })
+      .addCase(updateWorkItem.pending, (state) => {
+        state.isLoadingUpdate = true;
+        state.error = null;
+      })
       .addCase(updateWorkItem.fulfilled, (state, action) => {
+        state.isLoadingUpdate = false;
         const index = state.workItems.findIndex((item) => item.id === action.payload.id);
         if (index !== -1) {
           state.workItems[index] = action.payload;
         }
       })
+      .addCase(updateWorkItem.rejected, (state, action) => {
+        state.isLoadingUpdate = false;
+        state.error = action.payload as string;
+      })
+      .addCase(deleteWorkItem.pending, (state) => {
+        state.isLoadingDelete = true;
+        state.error = null;
+      })
       .addCase(deleteWorkItem.fulfilled, (state, action) => {
+        state.isLoadingDelete = false;
         state.workItems = state.workItems.filter((item) => item.id !== action.payload);
+      })
+      .addCase(deleteWorkItem.rejected, (state, action) => {
+        state.isLoadingDelete = false;
+        state.error = action.payload as string;
       })
       // Work Records
       .addCase(fetchWorkRecords.pending, (state) => {
         state.isLoading = true;
+        state.isLoadingFetch = true;
         state.error = null;
       })
       .addCase(fetchWorkRecords.fulfilled, (state, action) => {
         state.isLoading = false;
+        state.isLoadingFetch = false;
         state.workRecords = action.payload.data;
         state.pagination = action.payload.pagination;
         state.error = null;
       })
       .addCase(fetchWorkRecords.rejected, (state, action) => {
         state.isLoading = false;
+        state.isLoadingFetch = false;
         state.error = action.payload as string;
       })
+      .addCase(createWorkRecord.pending, (state) => {
+        state.isLoadingCreate = true;
+        state.error = null;
+      })
       .addCase(createWorkRecord.fulfilled, (state, action) => {
+        state.isLoadingCreate = false;
         state.workRecords.unshift(action.payload);
       })
+      .addCase(createWorkRecord.rejected, (state, action) => {
+        state.isLoadingCreate = false;
+        state.error = action.payload as string;
+      })
+      .addCase(updateWorkRecord.pending, (state) => {
+        state.isLoadingUpdate = true;
+        state.error = null;
+      })
       .addCase(updateWorkRecord.fulfilled, (state, action) => {
+        state.isLoadingUpdate = false;
         const index = state.workRecords.findIndex((record) => record.id === action.payload.id);
         if (index !== -1) {
           state.workRecords[index] = action.payload;
         }
       })
+      .addCase(updateWorkRecord.rejected, (state, action) => {
+        state.isLoadingUpdate = false;
+        state.error = action.payload as string;
+      })
+      .addCase(deleteWorkRecord.pending, (state) => {
+        state.isLoadingDelete = true;
+        state.error = null;
+      })
       .addCase(deleteWorkRecord.fulfilled, (state, action) => {
+        state.isLoadingDelete = false;
         state.workRecords = state.workRecords.filter((record) => record.id !== action.payload);
+      })
+      .addCase(deleteWorkRecord.rejected, (state, action) => {
+        state.isLoadingDelete = false;
+        state.error = action.payload as string;
       })
       .addCase(fetchWorkRecordsByEmployeeAndMonth.pending, (state) => {
         state.isLoading = true;
+        state.isLoadingFetch = true;
         state.error = null;
       })
       .addCase(fetchWorkRecordsByEmployeeAndMonth.fulfilled, (state, action) => {
         state.isLoading = false;
+        state.isLoadingFetch = false;
         state.workRecords = action.payload;
         state.error = null;
       })
       .addCase(fetchWorkRecordsByEmployeeAndMonth.rejected, (state, action) => {
         state.isLoading = false;
+        state.isLoadingFetch = false;
         state.error = action.payload as string;
       })
       // Monthly Salaries
       .addCase(fetchMonthlySalaries.pending, (state) => {
         state.isLoading = true;
+        state.isLoadingFetch = true;
         state.error = null;
       })
       .addCase(fetchMonthlySalaries.fulfilled, (state, action) => {
         state.isLoading = false;
+        state.isLoadingFetch = false;
         state.monthlySalaries = action.payload.data;
         state.pagination = action.payload.pagination;
         state.error = null;
       })
       .addCase(fetchMonthlySalaries.rejected, (state, action) => {
         state.isLoading = false;
+        state.isLoadingFetch = false;
         state.error = action.payload as string;
       })
+      .addCase(calculateMonthlySalary.pending, (state) => {
+        state.isLoadingCreate = true;
+        state.error = null;
+      })
       .addCase(calculateMonthlySalary.fulfilled, (state, action) => {
+        state.isLoadingCreate = false;
         const index = state.monthlySalaries.findIndex(
           (salary) => salary.id === action.payload.id
         );
@@ -533,7 +642,16 @@ const workSlice = createSlice({
           state.monthlySalaries.push(action.payload);
         }
       })
+      .addCase(calculateMonthlySalary.rejected, (state, action) => {
+        state.isLoadingCreate = false;
+        state.error = action.payload as string;
+      })
+      .addCase(updateMonthlySalaryStatus.pending, (state) => {
+        state.isLoadingUpdate = true;
+        state.error = null;
+      })
       .addCase(updateMonthlySalaryStatus.fulfilled, (state, action) => {
+        state.isLoadingUpdate = false;
         const index = state.monthlySalaries.findIndex(
           (salary) => salary.id === action.payload.id
         );
@@ -541,48 +659,66 @@ const workSlice = createSlice({
           state.monthlySalaries[index] = action.payload;
         }
       })
+      .addCase(updateMonthlySalaryStatus.rejected, (state, action) => {
+        state.isLoadingUpdate = false;
+        state.error = action.payload as string;
+      })
       // Reports
       .addCase(fetchWeeklyReport.pending, (state) => {
         state.isLoading = true;
+        state.isLoadingFetch = true;
         state.error = null;
       })
       .addCase(fetchWeeklyReport.fulfilled, (state, action) => {
         state.isLoading = false;
+        state.isLoadingFetch = false;
         state.weeklyReport = action.payload;
         state.error = null;
       })
       .addCase(fetchWeeklyReport.rejected, (state, action) => {
         state.isLoading = false;
+        state.isLoadingFetch = false;
         state.error = action.payload as string;
       })
       .addCase(fetchMonthlyReport.pending, (state) => {
         state.isLoading = true;
+        state.isLoadingFetch = true;
         state.error = null;
       })
       .addCase(fetchMonthlyReport.fulfilled, (state, action) => {
         state.isLoading = false;
+        state.isLoadingFetch = false;
         state.monthlyReport = action.payload;
         state.error = null;
       })
       .addCase(fetchMonthlyReport.rejected, (state, action) => {
         state.isLoading = false;
+        state.isLoadingFetch = false;
         state.error = action.payload as string;
       })
       // Overtime Configs
       .addCase(fetchOvertimeConfigs.pending, (state) => {
         state.isLoading = true;
+        state.isLoadingFetch = true;
         state.error = null;
       })
       .addCase(fetchOvertimeConfigs.fulfilled, (state, action) => {
         state.isLoading = false;
+        state.isLoadingFetch = false;
         state.overtimeConfigs = action.payload;
         state.error = null;
       })
       .addCase(fetchOvertimeConfigs.rejected, (state, action) => {
         state.isLoading = false;
+        state.isLoadingFetch = false;
         state.error = action.payload as string;
       })
+      .addCase(fetchOvertimeConfigByWorkTypeId.pending, (state) => {
+        state.isLoadingFetch = true;
+        state.error = null;
+      })
       .addCase(fetchOvertimeConfigByWorkTypeId.fulfilled, (state, action) => {
+        state.isLoadingFetch = false;
         const index = state.overtimeConfigs.findIndex(
           (config) => config.workTypeId === action.payload.workTypeId
         );
@@ -591,8 +727,17 @@ const workSlice = createSlice({
         } else {
           state.overtimeConfigs.push(action.payload);
         }
+      })
+      .addCase(fetchOvertimeConfigByWorkTypeId.rejected, (state, action) => {
+        state.isLoadingFetch = false;
+        state.error = action.payload as string;
+      })
+      .addCase(createOvertimeConfig.pending, (state) => {
+        state.isLoadingCreate = true;
+        state.error = null;
       })
       .addCase(createOvertimeConfig.fulfilled, (state, action) => {
+        state.isLoadingCreate = false;
         const index = state.overtimeConfigs.findIndex(
           (config) => config.workTypeId === action.payload.workTypeId
         );
@@ -601,8 +746,17 @@ const workSlice = createSlice({
         } else {
           state.overtimeConfigs.push(action.payload);
         }
+      })
+      .addCase(createOvertimeConfig.rejected, (state, action) => {
+        state.isLoadingCreate = false;
+        state.error = action.payload as string;
+      })
+      .addCase(updateOvertimeConfig.pending, (state) => {
+        state.isLoadingUpdate = true;
+        state.error = null;
       })
       .addCase(updateOvertimeConfig.fulfilled, (state, action) => {
+        state.isLoadingUpdate = false;
         const index = state.overtimeConfigs.findIndex(
           (config) => config.workTypeId === action.payload.workTypeId
         );
@@ -612,10 +766,23 @@ const workSlice = createSlice({
           state.overtimeConfigs.push(action.payload);
         }
       })
+      .addCase(updateOvertimeConfig.rejected, (state, action) => {
+        state.isLoadingUpdate = false;
+        state.error = action.payload as string;
+      })
+      .addCase(deleteOvertimeConfig.pending, (state) => {
+        state.isLoadingDelete = true;
+        state.error = null;
+      })
       .addCase(deleteOvertimeConfig.fulfilled, (state, action) => {
+        state.isLoadingDelete = false;
         state.overtimeConfigs = state.overtimeConfigs.filter(
           (config) => config.workTypeId !== action.payload
         );
+      })
+      .addCase(deleteOvertimeConfig.rejected, (state, action) => {
+        state.isLoadingDelete = false;
+        state.error = action.payload as string;
       });
   },
 });

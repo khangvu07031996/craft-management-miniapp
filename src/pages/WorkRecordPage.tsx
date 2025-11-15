@@ -12,6 +12,7 @@ import { WorkRecordList } from '../components/work/WorkRecordList';
 import { WorkRecordDeleteConfirm } from '../components/work/WorkRecordDeleteConfirm';
 import { Button } from '../components/common/Button';
 import { ErrorMessage } from '../components/common/ErrorMessage';
+import { LoadingOverlay } from '../components/common/LoadingOverlay';
 import { Pagination } from '../components/employees/Pagination';
 import type { WorkRecordResponse } from '../types/work.types';
 import { PencilIcon, TrashIcon, FunnelIcon, CalendarDaysIcon, UserGroupIcon } from '@heroicons/react/24/outline';
@@ -19,7 +20,7 @@ import { PlusIcon } from '@heroicons/react/24/solid';
 
 export const WorkRecordPage = () => {
   const dispatch = useAppDispatch();
-  const { workRecords, pagination, isLoading, error } = useAppSelector((state) => state.work);
+  const { workRecords, pagination, isLoadingFetch, isLoadingDelete, error } = useAppSelector((state) => state.work);
   const { employees } = useAppSelector((state) => state.employees);
 
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -291,32 +292,26 @@ export const WorkRecordPage = () => {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
-          {isLoading ? (
-            <div className="p-12 text-center">
-              <p className="text-gray-500">Đang tải...</p>
-            </div>
-          ) : (
-            <>
-              <WorkRecordList
-                workRecords={workRecords}
-                onEdit={handleEdit}
-                onDelete={handleDelete}
-              />
-              {pagination.totalPages && pagination.totalPages > 1 && (
-                <div className="flex justify-center py-4 border-t border-gray-200">
-                  <Pagination
-                    currentPage={pagination.page || 1}
-                    totalPages={pagination.totalPages}
-                    hasNextPage={(pagination.page || 1) < pagination.totalPages}
-                    hasPreviousPage={(pagination.page || 1) > 1}
-                    onPageChange={handlePageChange}
-                  />
-                </div>
-              )}
-            </>
-          )}
-        </div>
+        <LoadingOverlay isLoading={isLoadingFetch}>
+          <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+            <WorkRecordList
+              workRecords={workRecords}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+            />
+            {pagination.totalPages && pagination.totalPages > 1 && (
+              <div className="flex justify-center py-4 border-t border-gray-200">
+                <Pagination
+                  currentPage={pagination.page || 1}
+                  totalPages={pagination.totalPages}
+                  hasNextPage={(pagination.page || 1) < pagination.totalPages}
+                  hasPreviousPage={(pagination.page || 1) > 1}
+                  onPageChange={handlePageChange}
+                />
+              </div>
+            )}
+          </div>
+        </LoadingOverlay>
       </div>
 
       {/* Delete Confirmation Modal */}
@@ -328,7 +323,7 @@ export const WorkRecordPage = () => {
         }}
         onConfirm={handleDeleteConfirm}
         workRecord={recordToDelete}
-        isLoading={isLoading}
+        isLoading={isLoadingDelete}
       />
     </Layout>
   );
