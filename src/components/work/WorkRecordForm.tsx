@@ -10,6 +10,7 @@ import {
   updateWorkRecord,
   fetchOvertimeConfigByWorkTypeId,
   fetchTotalQuantityMadeByWorkItem,
+  fetchTotalHoursWorkedInDay,
 } from '../../store/slices/workSlice';
 import { fetchEmployees } from '../../store/slices/employeeSlice';
 import type {
@@ -56,6 +57,7 @@ export const WorkRecordForm = ({ workRecord, onCancel, onSuccess }: WorkRecordFo
   const [selectedWorkItem, setSelectedWorkItem] = useState<any>(null);
   const [overtimeConfig, setOvertimeConfig] = useState<any>(null);
   const [totalQuantityMade, setTotalQuantityMade] = useState<number>(0);
+  const [totalHoursWorked, setTotalHoursWorked] = useState<number>(0);
   const [showQuantityExceedModal, setShowQuantityExceedModal] = useState(false);
   const [workItemSearchQuery, setWorkItemSearchQuery] = useState('');
   const [employeeSearchQuery, setEmployeeSearchQuery] = useState('');
@@ -225,6 +227,24 @@ export const WorkRecordForm = ({ workRecord, onCancel, onSuccess }: WorkRecordFo
     }
   }, [formData.workItemId, selectedWorkType, dispatch, isEditMode, workRecord]);
 
+  // Fetch total hours worked when employeeId, workDate, or selectedWorkType changes (for hourly only)
+  useEffect(() => {
+    if (selectedWorkType === CalculationType.HOURLY && formData.employeeId && formData.workDate) {
+      const excludeRecordId = isEditMode && workRecord ? workRecord.id : undefined;
+      dispatch(fetchTotalHoursWorkedInDay({ employeeId: formData.employeeId, workDate: formData.workDate, excludeRecordId }))
+        .unwrap()
+        .then((result) => {
+          setTotalHoursWorked(result.totalHours);
+        })
+        .catch((error) => {
+          console.error('Error fetching total hours worked:', error);
+          setTotalHoursWorked(0);
+        });
+    } else {
+      setTotalHoursWorked(0);
+    }
+  }, [formData.employeeId, formData.workDate, selectedWorkType, dispatch, isEditMode, workRecord]);
+
   // Real-time validation for quantity exceeding totalQuantity (only for weld_count)
   useEffect(() => {
     if (selectedWorkType === CalculationType.WELD_COUNT && selectedWorkItem && totalQuantityMade !== undefined && formData.quantity) {
@@ -288,6 +308,69 @@ export const WorkRecordForm = ({ workRecord, onCancel, onSuccess }: WorkRecordFo
     }
   }, [formData.quantity, formData.overtimeQuantity, formData.isOvertime, selectedWorkType, selectedWorkItem, totalQuantityMade]);
 
+  // Real-time validation for hours exceeding 24 hours per day (only for hourly)
+  useEffect(() => {
+    if (selectedWorkType === CalculationType.HOURLY && totalHoursWorked !== undefined && formData.quantity) {
+      const currentHours = parseFloat(formData.quantity) || 0;
+      const remainingHours = 24 - totalHoursWorked;
+      
+      setErrors((prev) => {
+        const newErrors = { ...prev };
+        
+        // Check if hours alone exceeds remaining
+        if (currentHours > remainingHours) {
+          // Set error in quantity field
+          newErrors.quantity = `Số giờ làm việc (${currentHours} giờ) vượt quá số giờ còn lại (${remainingHours} giờ). Tổng đã làm: ${totalHoursWorked} giờ / Tối đa: 24 giờ`;
+          // Clear overtime hours error if exists (hours already exceeds, no need to check overtime)
+          if (newErrors.overtimeHours && newErrors.overtimeHours.includes('vượt quá 24 giờ')) {
+            delete newErrors.overtimeHours;
+          }
+        } else {
+          // Hours is OK, clear hours error if it was the exceeded error
+          if (newErrors.quantity && newErrors.quantity.includes('vượt quá số giờ còn lại')) {
+            delete newErrors.quantity;
+          }
+          
+          // If overtime is enabled, check if hours + overtimeHours exceeds 24
+          if (formData.isOvertime && formData.overtimeHours) {
+            const currentOvertimeHours = parseFloat(formData.overtimeHours) || 0;
+            const newHours = currentHours + currentOvertimeHours;
+            const newTotal = totalHoursWorked + newHours;
+            
+            if (newTotal > 24) {
+              // Set error in overtimeHours field
+              newErrors.overtimeHours = `Tổng số giờ (${totalHoursWorked} + ${newHours} = ${newTotal} giờ) vượt quá 24 giờ/ngày. Số giờ còn lại: ${remainingHours} giờ`;
+            } else {
+              // Clear overtime hours error if valid
+              if (newErrors.overtimeHours && newErrors.overtimeHours.includes('vượt quá 24 giờ')) {
+                delete newErrors.overtimeHours;
+              }
+            }
+          } else {
+            // Clear overtime hours error when overtime is unchecked or cleared
+            if (newErrors.overtimeHours && newErrors.overtimeHours.includes('vượt quá 24 giờ')) {
+              delete newErrors.overtimeHours;
+            }
+          }
+        }
+        
+        return newErrors;
+      });
+    } else if (!formData.quantity && selectedWorkType === CalculationType.HOURLY) {
+      // Clear errors when quantity is cleared
+      setErrors((prev) => {
+        const newErrors = { ...prev };
+        if (newErrors.quantity && newErrors.quantity.includes('vượt quá số giờ còn lại')) {
+          delete newErrors.quantity;
+        }
+        if (newErrors.overtimeHours && newErrors.overtimeHours.includes('vượt quá 24 giờ')) {
+          delete newErrors.overtimeHours;
+        }
+        return newErrors;
+      });
+    }
+  }, [formData.quantity, formData.overtimeHours, formData.isOvertime, selectedWorkType, totalHoursWorked]);
+
   const validateForm = (): { isValid: boolean; errors: Record<string, string> } => {
     const newErrors: Record<string, string> = {};
 
@@ -340,6 +423,27 @@ export const WorkRecordForm = ({ workRecord, onCancel, onSuccess }: WorkRecordFo
       }
     }
 
+    // For hourly, validate total hours doesn't exceed 24 hours per day
+    if (selectedWorkType === CalculationType.HOURLY && totalHoursWorked !== undefined) {
+      const currentHours = parseFloat(formData.quantity) || 0;
+      const remainingHours = 24 - totalHoursWorked;
+      
+      // First check if hours alone exceeds remaining
+      if (currentHours > remainingHours) {
+        newErrors.quantity = `Số giờ làm việc (${currentHours} giờ) vượt quá số giờ còn lại (${remainingHours} giờ). Tổng đã làm: ${totalHoursWorked} giờ / Tối đa: 24 giờ`;
+      } else if (formData.isOvertime && formData.overtimeHours) {
+        // Hours is OK, check if hours + overtimeHours exceeds 24
+        const currentOvertimeHours = parseFloat(formData.overtimeHours) || 0;
+        const newHours = currentHours + currentOvertimeHours;
+        const newTotal = totalHoursWorked + newHours;
+        
+        if (newTotal > 24) {
+          // Only set error in overtimeHours field if hours itself is OK
+          newErrors.overtimeHours = `Tổng số giờ (${totalHoursWorked} + ${newHours} = ${newTotal} giờ) vượt quá 24 giờ/ngày. Số giờ còn lại: ${remainingHours} giờ`;
+        }
+      }
+    }
+
     // Validate overtime fields
     if (formData.isOvertime) {
       if (selectedWorkType === CalculationType.WELD_COUNT) {
@@ -359,7 +463,10 @@ export const WorkRecordForm = ({ workRecord, onCancel, onSuccess }: WorkRecordFo
         }
       } else if (selectedWorkType === CalculationType.HOURLY) {
         if (!formData.overtimeHours || parseFloat(formData.overtimeHours) <= 0) {
-          newErrors.overtimeHours = 'Số giờ tăng ca là bắt buộc và phải lớn hơn 0';
+          // Only set this error if overtimeHours doesn't already have an exceeded error
+          if (!newErrors.overtimeHours || !newErrors.overtimeHours.includes('vượt quá 24 giờ')) {
+            newErrors.overtimeHours = 'Số giờ tăng ca là bắt buộc và phải lớn hơn 0';
+          }
         }
       }
     }
@@ -368,30 +475,96 @@ export const WorkRecordForm = ({ workRecord, onCancel, onSuccess }: WorkRecordFo
     return { isValid: Object.keys(newErrors).length === 0, errors: newErrors };
   };
 
+  // Check if form has critical validation errors (quantity/hours exceeded)
+  const hasCriticalErrors = useMemo(() => {
+    return (
+      (errors.quantity && (errors.quantity.includes('vượt quá số lượng còn lại') || errors.quantity.includes('vượt quá số giờ còn lại'))) ||
+      (errors.overtimeQuantity && errors.overtimeQuantity.includes('vượt quá số lượng cần làm')) ||
+      (errors.overtimeHours && errors.overtimeHours.includes('vượt quá 24 giờ'))
+    );
+  }, [errors]);
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
-    // Check for quantity exceeded errors before validation
-    const hasQuantityExceededError = 
-      (errors.quantity && errors.quantity.includes('vượt quá số lượng còn lại')) ||
-      (errors.overtimeQuantity && errors.overtimeQuantity.includes('vượt quá số lượng cần làm'));
+    // Always validate form first
+    const validationResult = validateForm();
+    
+    // Check for quantity or hours exceeded errors in validation result
+    const hasQuantityExceeded = 
+      (validationResult.errors.quantity && (validationResult.errors.quantity.includes('vượt quá số lượng còn lại') || validationResult.errors.quantity.includes('vượt quá số giờ còn lại'))) ||
+      (validationResult.errors.overtimeQuantity && validationResult.errors.overtimeQuantity.includes('vượt quá số lượng cần làm')) ||
+      (validationResult.errors.overtimeHours && validationResult.errors.overtimeHours.includes('vượt quá 24 giờ'));
 
-    if (hasQuantityExceededError) {
+    // If there are critical errors (quantity/hours exceeded), show modal and prevent submit
+    if (hasQuantityExceeded) {
       setShowQuantityExceedModal(true);
       return;
     }
 
-    const validationResult = validateForm();
+    // If form is not valid (other validation errors), stop here
     if (!validationResult.isValid) {
-      // Check for quantity exceeded errors in validation result
-      const hasQuantityExceeded = 
-        (validationResult.errors.quantity && validationResult.errors.quantity.includes('vượt quá số lượng còn lại')) ||
-        (validationResult.errors.overtimeQuantity && validationResult.errors.overtimeQuantity.includes('vượt quá số lượng cần làm'));
-      
-      if (hasQuantityExceeded) {
-        setShowQuantityExceedModal(true);
-      }
       return;
+    }
+
+    // Double-check: Validate again to ensure no critical errors exist
+    // This prevents bypassing by manipulating form state
+    if (selectedWorkType === CalculationType.WELD_COUNT && selectedWorkItem && totalQuantityMade !== undefined) {
+      const currentQuantity = parseFloat(formData.quantity) || 0;
+      const remaining = selectedWorkItem.totalQuantity - totalQuantityMade;
+      
+      if (currentQuantity > remaining) {
+        setErrors((prev) => ({
+          ...prev,
+          quantity: `Số lượng sản phẩm (${currentQuantity} SP) vượt quá số lượng còn lại (${remaining} SP). Tổng đã làm: ${totalQuantityMade} SP / Cần làm: ${selectedWorkItem.totalQuantity} SP`,
+        }));
+        setShowQuantityExceedModal(true);
+        return;
+      }
+      
+      if (formData.isOvertime && formData.overtimeQuantity) {
+        const currentOvertimeQuantity = parseFloat(formData.overtimeQuantity) || 0;
+        const newQuantity = currentQuantity + currentOvertimeQuantity;
+        const newTotal = totalQuantityMade + newQuantity;
+        
+        if (newTotal > selectedWorkItem.totalQuantity) {
+          setErrors((prev) => ({
+            ...prev,
+            overtimeQuantity: `Tổng số lượng (${totalQuantityMade} + ${newQuantity} = ${newTotal} SP) vượt quá số lượng cần làm (${selectedWorkItem.totalQuantity} SP). Số lượng còn lại: ${remaining} SP`,
+          }));
+          setShowQuantityExceedModal(true);
+          return;
+        }
+      }
+    }
+
+    if (selectedWorkType === CalculationType.HOURLY && totalHoursWorked !== undefined) {
+      const currentHours = parseFloat(formData.quantity) || 0;
+      const remainingHours = 24 - totalHoursWorked;
+      
+      if (currentHours > remainingHours) {
+        setErrors((prev) => ({
+          ...prev,
+          quantity: `Số giờ làm việc (${currentHours} giờ) vượt quá số giờ còn lại (${remainingHours} giờ). Tổng đã làm: ${totalHoursWorked} giờ / Tối đa: 24 giờ`,
+        }));
+        setShowQuantityExceedModal(true);
+        return;
+      }
+      
+      if (formData.isOvertime && formData.overtimeHours) {
+        const currentOvertimeHours = parseFloat(formData.overtimeHours) || 0;
+        const newHours = currentHours + currentOvertimeHours;
+        const newTotal = totalHoursWorked + newHours;
+        
+        if (newTotal > 24) {
+          setErrors((prev) => ({
+            ...prev,
+            overtimeHours: `Tổng số giờ (${totalHoursWorked} + ${newHours} = ${newTotal} giờ) vượt quá 24 giờ/ngày. Số giờ còn lại: ${remainingHours} giờ`,
+          }));
+          setShowQuantityExceedModal(true);
+          return;
+        }
+      }
     }
 
     try {
@@ -1050,7 +1223,12 @@ export const WorkRecordForm = ({ workRecord, onCancel, onSuccess }: WorkRecordFo
         <Button type="button" variant="outline" onClick={onCancel}>
           Hủy
         </Button>
-        <Button type="submit" isLoading={isLoading}>
+        <Button 
+          type="submit" 
+          isLoading={isLoading}
+          disabled={hasCriticalErrors || isLoading}
+          title={hasCriticalErrors ? 'Vui lòng sửa các lỗi validation trước khi tạo mới' : ''}
+        >
           {isEditMode ? 'Cập nhật' : 'Tạo mới'}
         </Button>
       </div>
@@ -1089,13 +1267,23 @@ export const WorkRecordForm = ({ workRecord, onCancel, onSuccess }: WorkRecordFo
                   </div>
                   <div className="flex-1">
                     <Dialog.Title as="h3" className="text-lg font-medium leading-6 text-gray-900">
-                      Cảnh báo số lượng vượt quá
+                      {(errors.quantity && errors.quantity.includes('vượt quá số giờ còn lại')) || (errors.overtimeHours && errors.overtimeHours.includes('vượt quá 24 giờ'))
+                        ? 'Cảnh báo số giờ vượt quá' 
+                        : 'Cảnh báo số lượng vượt quá'}
                     </Dialog.Title>
                     <div className="mt-2">
                       <p className="text-sm text-gray-500">
                         {errors.quantity && errors.quantity.includes('vượt quá số lượng còn lại') ? (
                           <>
                             Số lượng sản phẩm làm được vượt quá số lượng cần làm. Vui lòng điều chỉnh số lượng hoặc số lượng tăng ca cho phù hợp.
+                            <br />
+                            <span className="mt-2 inline-block text-xs text-gray-600 font-medium">
+                              {errors.quantity}
+                            </span>
+                          </>
+                        ) : errors.quantity && errors.quantity.includes('vượt quá số giờ còn lại') ? (
+                          <>
+                            Số giờ làm việc vượt quá số giờ còn lại trong ngày. Vui lòng điều chỉnh số giờ hoặc số giờ tăng ca cho phù hợp.
                             <br />
                             <span className="mt-2 inline-block text-xs text-gray-600 font-medium">
                               {errors.quantity}
@@ -1109,8 +1297,16 @@ export const WorkRecordForm = ({ workRecord, onCancel, onSuccess }: WorkRecordFo
                               {errors.overtimeQuantity}
                             </span>
                           </>
+                        ) : errors.overtimeHours && errors.overtimeHours.includes('vượt quá 24 giờ') ? (
+                          <>
+                            Tổng số giờ làm việc (bao gồm tăng ca) vượt quá 24 giờ/ngày. Vui lòng điều chỉnh số giờ tăng ca cho phù hợp.
+                            <br />
+                            <span className="mt-2 inline-block text-xs text-gray-600 font-medium">
+                              {errors.overtimeHours}
+                            </span>
+                          </>
                         ) : (
-                          'Số lượng sản phẩm vượt quá số lượng cần làm. Vui lòng điều chỉnh lại.'
+                          'Số lượng hoặc số giờ vượt quá giới hạn. Vui lòng điều chỉnh lại.'
                         )}
                       </p>
                     </div>

@@ -244,6 +244,18 @@ export const fetchTotalQuantityMadeByWorkItem = createAsyncThunk(
   }
 );
 
+export const fetchTotalHoursWorkedInDay = createAsyncThunk(
+  'work/fetchTotalHoursWorkedInDay',
+  async ({ employeeId, workDate, excludeRecordId }: { employeeId: string; workDate: string; excludeRecordId?: string }, { rejectWithValue }) => {
+    try {
+      const totalHours = await workRecordService.getTotalHoursWorkedInDay(employeeId, workDate, excludeRecordId);
+      return { employeeId, workDate, totalHours };
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to fetch total hours worked');
+    }
+  }
+);
+
 // Monthly Salaries Thunks
 export const fetchMonthlySalaries = createAsyncThunk(
   'work/fetchMonthlySalaries',

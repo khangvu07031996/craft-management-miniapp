@@ -140,6 +140,12 @@ export const workRecordService = {
     const response = await api.get(`/work/items/${workItemId}/total-made`, { params });
     return response.data.data.totalQuantityMade;
   },
+
+  getTotalHoursWorkedInDay: async (employeeId: string, workDate: string, excludeRecordId?: string): Promise<number> => {
+    const params = excludeRecordId ? { excludeRecordId } : {};
+    const response = await api.get(`/work/records/hours/${employeeId}/${workDate}`, { params });
+    return response.data.data.totalHoursWorked;
+  },
 };
 
 // Monthly Salaries
