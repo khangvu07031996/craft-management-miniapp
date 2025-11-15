@@ -241,10 +241,6 @@ export const OvertimeConfigPage = () => {
                   );
                 })}
               </div>
-                    </div>
-                  );
-                })}
-              </div>
 
               {/* Tablet/Desktop: Table Layout */}
               <div className="hidden md:block overflow-x-auto">
