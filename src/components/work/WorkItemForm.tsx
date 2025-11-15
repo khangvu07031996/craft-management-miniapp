@@ -24,6 +24,7 @@ export const WorkItemForm = ({ workItem, onCancel, onSuccess }: WorkItemFormProp
     pricePerWeld: '',
     totalQuantity: '',
     weldsPerItem: '',
+    estimatedDeliveryDate: '',
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -36,6 +37,7 @@ export const WorkItemForm = ({ workItem, onCancel, onSuccess }: WorkItemFormProp
         pricePerWeld: workItem.pricePerWeld.toString(),
         totalQuantity: workItem.totalQuantity.toString(),
         weldsPerItem: workItem.weldsPerItem.toString(),
+        estimatedDeliveryDate: workItem.estimatedDeliveryDate || '',
       });
     } else {
       setFormData({
@@ -44,6 +46,7 @@ export const WorkItemForm = ({ workItem, onCancel, onSuccess }: WorkItemFormProp
         pricePerWeld: '',
         totalQuantity: '0',
         weldsPerItem: '0',
+        estimatedDeliveryDate: '',
       });
     }
   }, [workItem]);
@@ -85,6 +88,7 @@ export const WorkItemForm = ({ workItem, onCancel, onSuccess }: WorkItemFormProp
         pricePerWeld: parseFloat(formData.pricePerWeld),
         totalQuantity: parseInt(formData.totalQuantity),
         weldsPerItem: parseInt(formData.weldsPerItem),
+        estimatedDeliveryDate: formData.estimatedDeliveryDate || undefined,
       };
 
       if (isEditMode && workItem) {
@@ -188,6 +192,17 @@ export const WorkItemForm = ({ workItem, onCancel, onSuccess }: WorkItemFormProp
             required
             step="1"
             min="0"
+          />
+        </div>
+
+        <div>
+          <Input
+            label="Ngày ước tính cần xuất hàng"
+            type="date"
+            name="estimatedDeliveryDate"
+            value={formData.estimatedDeliveryDate}
+            onChange={handleChange}
+            error={errors.estimatedDeliveryDate}
           />
         </div>
       </div>

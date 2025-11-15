@@ -1,11 +1,12 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
 import { fetchWorkItems, deleteWorkItem } from '../store/slices/workSlice';
 import { Layout } from '../components/layout/Layout';
 import { WorkItemForm } from '../components/work/WorkItemForm';
 import { ErrorMessage } from '../components/common/ErrorMessage';
+import { WorkItemDeleteConfirm } from '../components/work/WorkItemDeleteConfirm';
 import type { WorkItemResponse, DifficultyLevel } from '../types/work.types';
-import { PencilIcon, TrashIcon, FunnelIcon, ChartBarIcon } from '@heroicons/react/24/outline';
+import { PencilIcon, TrashIcon, FunnelIcon, ChartBarIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import { PlusIcon } from '@heroicons/react/24/solid';
 
 export const WorkItemPage = () => {
@@ -15,6 +16,8 @@ export const WorkItemPage = () => {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<WorkItemResponse | null>(null);
   const [filterDifficulty, setFilterDifficulty] = useState<DifficultyLevel | ''>('');
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState<WorkItemResponse | null>(null);
 
   useEffect(() => {
     loadWorkItems();
@@ -34,10 +37,20 @@ export const WorkItemPage = () => {
     setIsFormOpen(true);
   };
 
-  const handleDelete = async (id: string) => {
-    if (window.confirm('Bạn có chắc chắn muốn xóa loại hàng này?')) {
+  const handleDelete = (id: string) => {
+    const item = workItems.find((i) => i.id === id);
+    if (item) {
+      setItemToDelete(item);
+      setIsDeleteModalOpen(true);
+    }
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (itemToDelete) {
       try {
-        await dispatch(deleteWorkItem(id)).unwrap();
+        await dispatch(deleteWorkItem(itemToDelete.id)).unwrap();
+        setIsDeleteModalOpen(false);
+        setItemToDelete(null);
         loadWorkItems();
       } catch (error) {
         console.error('Error deleting work item:', error);
@@ -65,6 +78,65 @@ export const WorkItemPage = () => {
       style: 'currency',
       currency: 'VND',
     }).format(amount);
+  };
+
+  const formatDate = (dateString?: string): string => {
+    if (!dateString) return '-';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('vi-VN');
+  };
+
+  // Calculate items approaching delivery date (within 3 days and not completed)
+  const itemsApproachingDelivery = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    return filteredItems.filter((item) => {
+      if (!item.estimatedDeliveryDate || item.status === 'Hoàn thành') {
+        return false;
+      }
+
+      const deliveryDate = new Date(item.estimatedDeliveryDate);
+      deliveryDate.setHours(0, 0, 0, 0);
+
+      const diffTime = deliveryDate.getTime() - today.getTime();
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+      return diffDays <= 3 && diffDays >= -1; // Within 3 days or overdue by 1 day
+    });
+  }, [filteredItems]);
+
+  const getDaysRemaining = (dateString: string): string => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const deliveryDate = new Date(dateString);
+    deliveryDate.setHours(0, 0, 0, 0);
+
+    const diffTime = deliveryDate.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays < 0) {
+      return `Quá hạn ${Math.abs(diffDays)} ngày`;
+    } else if (diffDays === 0) {
+      return 'Hôm nay';
+    } else if (diffDays === 1) {
+      return 'Còn 1 ngày';
+    } else {
+      return `Còn ${diffDays} ngày`;
+    }
+  };
+
+  const getStatusBadgeColor = (status: string) => {
+    switch (status) {
+      case 'Tạo mới':
+        return 'bg-green-100 text-green-800';
+      case 'Đang sản xuất':
+        return 'bg-blue-100 text-blue-800';
+      case 'Hoàn thành':
+        return 'bg-gray-100 text-gray-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
   };
 
   return (
@@ -112,6 +184,53 @@ export const WorkItemPage = () => {
 
         {error && <ErrorMessage message={error} className="mb-4" />}
 
+        {/* Alert for items approaching delivery date */}
+        {itemsApproachingDelivery.length > 0 && (
+          <div className="mb-6 bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-lg">
+            <div className="flex items-start">
+              <ExclamationTriangleIcon className="h-5 w-5 text-yellow-600 mt-0.5 mr-3 flex-shrink-0" />
+              <div className="flex-1">
+                <h3 className="text-sm font-medium text-yellow-800 mb-2">
+                  Cảnh báo: Có {itemsApproachingDelivery.length} loại hàng sắp đến ngày xuất hàng
+                </h3>
+                <ul className="list-disc list-inside space-y-2 text-sm text-yellow-700">
+                  {itemsApproachingDelivery.map((item) => (
+                    <li key={item.id} className="pl-2">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-medium">{item.name}</span>
+                        <span className="text-yellow-600">•</span>
+                        <span>Trạng thái: <span className="font-medium">{item.status}</span></span>
+                        <span className="text-yellow-600">•</span>
+                        <span>Sản xuất: <span className="font-medium">{(item.quantityMade || 0).toLocaleString('vi-VN')}</span> / <span className="font-medium">{item.totalQuantity.toLocaleString('vi-VN')}</span> SP</span>
+                        <span className="text-yellow-600">•</span>
+                        <span className={getDaysRemaining(item.estimatedDeliveryDate!).includes('Quá hạn') ? 'text-red-600 font-medium' : ''}>
+                          {getDaysRemaining(item.estimatedDeliveryDate!)} ({formatDate(item.estimatedDeliveryDate)})
+                        </span>
+                      </div>
+                      {item.totalQuantity > 0 && item.quantityMade !== undefined && (
+                        <div className="mt-1 ml-4">
+                          <div className="w-full bg-yellow-200 rounded-full h-2">
+                            <div
+                              className={`h-2 rounded-full ${
+                                (item.quantityMade / item.totalQuantity) >= 1
+                                  ? 'bg-green-500'
+                                  : (item.quantityMade / item.totalQuantity) >= 0.8
+                                  ? 'bg-blue-500'
+                                  : 'bg-yellow-500'
+                              }`}
+                              style={{ width: `${Math.min((item.quantityMade / item.totalQuantity) * 100, 100)}%` }}
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </div>
+        )}
+
         {isFormOpen && (
           <div className="mb-6 bg-white rounded-lg border border-gray-200 shadow-sm p-6">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">
@@ -152,7 +271,16 @@ export const WorkItemPage = () => {
                       Số lượng cần làm
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Số lượng đã sản xuất
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Mối hàn/SP
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Trạng thái
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Ngày ước tính xuất hàng
                     </th>
                     <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Thao tác
@@ -185,7 +313,31 @@ export const WorkItemPage = () => {
                         {item.totalQuantity.toLocaleString('vi-VN')}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <span className={item.quantityMade !== undefined && item.quantityMade > 0 ? 'font-medium' : ''}>
+                          {(item.quantityMade || 0).toLocaleString('vi-VN')}
+                        </span>
+                        {item.totalQuantity > 0 && item.quantityMade !== undefined && (
+                          <span className="ml-2 text-xs text-gray-500">
+                            ({Math.round((item.quantityMade / item.totalQuantity) * 100)}%)
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {item.weldsPerItem}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${getStatusBadgeColor(item.status)}`}>
+                          {item.status}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {item.estimatedDeliveryDate ? (
+                          <span className={itemsApproachingDelivery.some(i => i.id === item.id) ? 'font-medium text-yellow-600' : ''}>
+                            {formatDate(item.estimatedDeliveryDate)}
+                          </span>
+                        ) : (
+                          '-'
+                        )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <div className="flex justify-end gap-2">
@@ -211,6 +363,18 @@ export const WorkItemPage = () => {
           )}
         </div>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      <WorkItemDeleteConfirm
+        isOpen={isDeleteModalOpen}
+        onClose={() => {
+          setIsDeleteModalOpen(false);
+          setItemToDelete(null);
+        }}
+        onConfirm={handleDeleteConfirm}
+        workItem={itemToDelete}
+        isLoading={isLoading}
+      />
     </Layout>
   );
 };
