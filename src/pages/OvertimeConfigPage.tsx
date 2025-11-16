@@ -9,7 +9,7 @@ import {
 import { OvertimeConfigForm } from '../components/work/OvertimeConfigForm';
 import { Layout } from '../components/layout/Layout';
 import { ErrorMessage } from '../components/common/ErrorMessage';
-import { PencilIcon, FunnelIcon, BuildingOfficeIcon } from '@heroicons/react/24/outline';
+import { PencilIcon, BuildingOfficeIcon } from '@heroicons/react/24/outline';
 import type { WorkTypeResponse, OvertimeConfigResponse, CalculationType } from '../types/work.types';
 
 const formatCurrency = (amount: number) => {

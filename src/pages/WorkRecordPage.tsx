@@ -10,12 +10,11 @@ import { Layout } from '../components/layout/Layout';
 import { WorkRecordForm } from '../components/work/WorkRecordForm';
 import { WorkRecordList } from '../components/work/WorkRecordList';
 import { WorkRecordDeleteConfirm } from '../components/work/WorkRecordDeleteConfirm';
-import { Button } from '../components/common/Button';
 import { ErrorMessage } from '../components/common/ErrorMessage';
 import { LoadingOverlay } from '../components/common/LoadingOverlay';
 import { Pagination } from '../components/employees/Pagination';
 import type { WorkRecordResponse } from '../types/work.types';
-import { PencilIcon, TrashIcon, FunnelIcon, CalendarDaysIcon, UserGroupIcon } from '@heroicons/react/24/outline';
+import { FunnelIcon, CalendarDaysIcon, UserGroupIcon } from '@heroicons/react/24/outline';
 import { PlusIcon } from '@heroicons/react/24/solid';
 
 export const WorkRecordPage = () => {
@@ -303,8 +302,8 @@ export const WorkRecordPage = () => {
               <div className="flex justify-center py-4 border-t border-gray-200">
                 <Pagination
                   currentPage={pagination.page || 1}
-                  totalPages={pagination.totalPages}
-                  hasNextPage={(pagination.page || 1) < pagination.totalPages}
+                  totalPages={pagination.totalPages || 1}
+                  hasNextPage={(pagination.page || 1) < (pagination.totalPages || 1)}
                   hasPreviousPage={(pagination.page || 1) > 1}
                   onPageChange={handlePageChange}
                 />

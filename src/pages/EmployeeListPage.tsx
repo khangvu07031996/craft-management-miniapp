@@ -10,7 +10,7 @@ import { LoadingOverlay } from '../components/common/LoadingOverlay';
 import { EmployeeModal } from '../components/employees/EmployeeModal';
 import { ChevronRightIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import { PlusIcon } from '@heroicons/react/24/solid';
-import type { CreateEmployeeDto, UpdateEmployeeDto } from '../types/employee.types';
+import type { CreateEmployeeDto, UpdateEmployeeDto, EmployeeResponse } from '../types/employee.types';
 
 export const EmployeeListPage = () => {
   const dispatch = useAppDispatch();

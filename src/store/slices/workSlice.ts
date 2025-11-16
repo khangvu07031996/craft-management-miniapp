@@ -70,7 +70,7 @@ const initialState: WorkState = {
 // Work Types Thunks
 export const fetchWorkTypes = createAsyncThunk(
   'work/fetchWorkTypes',
-  async (department?: string, { rejectWithValue }) => {
+  async (department: string | undefined, { rejectWithValue }) => {
     try {
       const data = await workTypeService.getAllWorkTypes(department);
       return data;
@@ -119,7 +119,7 @@ export const deleteWorkType = createAsyncThunk(
 // Work Items Thunks
 export const fetchWorkItems = createAsyncThunk(
   'work/fetchWorkItems',
-  async (difficultyLevel?: string, { rejectWithValue }) => {
+  async (difficultyLevel: string | undefined, { rejectWithValue }) => {
     try {
       const data = await workItemService.getAllWorkItems(difficultyLevel);
       return data;

@@ -62,7 +62,7 @@ export const MonthlySalaryDetailModal = ({
   const overtimeTotal = workRecords
     .filter((r) => r.isOvertime)
     .reduce((sum, r) => sum + r.totalAmount, 0);
-  const baseTotal = totalAmount - overtimeTotal;
+  // const baseTotal = totalAmount - overtimeTotal; // Not used but kept for clarity
   const allowances = monthlySalary.allowances || 0;
   const grandTotal = totalAmount + allowances;
 

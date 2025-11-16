@@ -3,6 +3,7 @@ import type { FormEvent } from 'react';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
 import { createWorkType, updateWorkType } from '../../store/slices/workSlice';
 import type { CreateWorkTypeDto, UpdateWorkTypeDto, WorkTypeResponse, CalculationType } from '../../types/work.types';
+import { CalculationType as CalculationTypeEnum } from '../../types/work.types';
 import { Input } from '../common/Input';
 import { Button } from '../common/Button';
 
@@ -39,7 +40,7 @@ export const WorkTypeForm = ({ workType, onCancel, onSuccess }: WorkTypeFormProp
       setFormData({
         name: '',
         department: '',
-        calculationType: 'weld_count',
+        calculationType: CalculationTypeEnum.WELD_COUNT,
         unitPrice: '0',
       });
     }

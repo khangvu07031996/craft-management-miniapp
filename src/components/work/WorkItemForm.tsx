@@ -3,6 +3,7 @@ import type { FormEvent } from 'react';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
 import { createWorkItem, updateWorkItem } from '../../store/slices/workSlice';
 import type { CreateWorkItemDto, UpdateWorkItemDto, WorkItemResponse, DifficultyLevel } from '../../types/work.types';
+import { DifficultyLevel as DifficultyLevelEnum } from '../../types/work.types';
 import { Input } from '../common/Input';
 import { Button } from '../common/Button';
 
@@ -42,7 +43,7 @@ export const WorkItemForm = ({ workItem, onCancel, onSuccess }: WorkItemFormProp
     } else {
       setFormData({
         name: '',
-        difficultyLevel: 'dễ',
+        difficultyLevel: DifficultyLevelEnum.EASY,
         pricePerWeld: '',
         totalQuantity: '0',
         weldsPerItem: '0',

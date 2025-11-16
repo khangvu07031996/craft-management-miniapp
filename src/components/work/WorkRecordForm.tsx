@@ -22,7 +22,6 @@ import type { EmployeeResponse } from '../../types/employee.types';
 import { CalculationType } from '../../types/work.types';
 import { Input } from '../common/Input';
 import { Button } from '../common/Button';
-import { formatDateForInput } from '../../utils/date';
 
 interface WorkRecordFormProps {
   workRecord?: WorkRecordResponse | null;
@@ -138,12 +137,8 @@ export const WorkRecordForm = ({ workRecord, onCancel, onSuccess }: WorkRecordFo
         setSelectedEmployee(employee);
         setEmployeeSearchQuery(`${employee.firstName} ${employee.lastName} - ${employee.department}`);
         
-        // Auto-select work type if employee has workTypeId and workTypeId is not already set
-        if (employee.workTypeId && !formData.workTypeId) {
-          setFormData((prev) => ({ ...prev, workTypeId: employee.workTypeId! }));
-        }
-        // If no workTypeId but only one work type in department, auto-select it
-        else if (!employee.workTypeId && !formData.workTypeId) {
+        // If only one work type in department, auto-select it
+        if (!formData.workTypeId) {
           const departmentWorkTypes = workTypes.filter((wt) => wt.department === employee.department);
           if (departmentWorkTypes.length === 1) {
             setFormData((prev) => ({ ...prev, workTypeId: departmentWorkTypes[0].id }));
@@ -662,24 +657,12 @@ export const WorkRecordForm = ({ workRecord, onCancel, onSuccess }: WorkRecordFo
     const uniqueMap = new Map<string, typeof workTypes[0]>();
     departmentWorkTypes.forEach((wt) => {
       const key = `${wt.name.toLowerCase()}|${wt.department}`;
-      // Keep the first one or prefer the one matching employee's workTypeId
+      // Keep the first one
       if (!uniqueMap.has(key)) {
-        uniqueMap.set(key, wt);
-      } else if (selectedEmployee.workTypeId && wt.id === selectedEmployee.workTypeId) {
         uniqueMap.set(key, wt);
       }
     });
     departmentWorkTypes = Array.from(uniqueMap.values());
-
-    // If employee has workTypeId, prioritize that work type
-    if (selectedEmployee.workTypeId) {
-      // Sort: employee's work type first, then others
-      return departmentWorkTypes.sort((a, b) => {
-        if (a.id === selectedEmployee.workTypeId) return -1;
-        if (b.id === selectedEmployee.workTypeId) return 1;
-        return a.name.localeCompare(b.name);
-      });
-    }
 
     // Sort alphabetically by name
     return departmentWorkTypes.sort((a, b) => a.name.localeCompare(b.name));
@@ -741,16 +724,10 @@ export const WorkRecordForm = ({ workRecord, onCancel, onSuccess }: WorkRecordFo
                 if (errors.employeeId) {
                   setErrors((prev) => ({ ...prev, employeeId: '' }));
                 }
-                // Auto-select work type if employee has workTypeId
-                if (employee.workTypeId) {
-                  setFormData((prev) => ({ ...prev, workTypeId: employee.workTypeId! }));
-                }
-                // If no workTypeId but only one work type in department, auto-select it
-                else {
-                  const departmentWorkTypes = workTypes.filter((wt) => wt.department === employee.department);
-                  if (departmentWorkTypes.length === 1) {
-                    setFormData((prev) => ({ ...prev, workTypeId: departmentWorkTypes[0].id }));
-                  }
+                // If only one work type in department, auto-select it
+                const departmentWorkTypes = workTypes.filter((wt) => wt.department === employee.department);
+                if (departmentWorkTypes.length === 1) {
+                  setFormData((prev) => ({ ...prev, workTypeId: departmentWorkTypes[0].id }));
                 }
               } else {
                 setFormData((prev) => ({ ...prev, employeeId: '', workTypeId: '', workItemId: '', unitPrice: '', isOvertime: false, overtimeQuantity: '', overtimeHours: '' }));
@@ -885,11 +862,6 @@ export const WorkRecordForm = ({ workRecord, onCancel, onSuccess }: WorkRecordFo
           {selectedEmployee && getFilteredWorkTypes().length === 0 && (
             <p className="mt-1 text-xs text-yellow-600">
               Không tìm thấy loại công việc nào cho phòng ban "{selectedEmployee.department}". Vui lòng tạo loại công việc mới trong phần Quản lý Loại công việc.
-            </p>
-          )}
-          {selectedEmployee && selectedEmployee.workTypeId && (
-            <p className="mt-1 text-xs text-gray-500">
-              Loại công việc đã được tự động chọn dựa trên thông tin nhân viên.
             </p>
           )}
         </div>

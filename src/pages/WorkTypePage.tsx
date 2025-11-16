@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
-import { fetchWorkTypes, createWorkType, updateWorkType, deleteWorkType } from '../store/slices/workSlice';
+import { fetchWorkTypes, deleteWorkType } from '../store/slices/workSlice';
 import { WorkTypeForm } from '../components/work/WorkTypeForm';
 import { Layout } from '../components/layout/Layout';
 import { LoadingOverlay } from '../components/common/LoadingOverlay';
-import { PencilIcon, TrashIcon, FunnelIcon, BuildingOfficeIcon } from '@heroicons/react/24/outline';
+import { PencilIcon, TrashIcon, BuildingOfficeIcon } from '@heroicons/react/24/outline';
 import { PlusIcon } from '@heroicons/react/24/solid';
 import type { WorkTypeResponse, CalculationType } from '../types/work.types';
 
@@ -30,7 +30,7 @@ const getCalculationTypeLabel = (type: CalculationType) => {
 
 export const WorkTypePage = () => {
   const dispatch = useAppDispatch();
-  const { workTypes, isLoadingFetch, isLoadingDelete } = useAppSelector((state) => state.work);
+  const { workTypes, isLoadingFetch } = useAppSelector((state) => state.work);
   const [showForm, setShowForm] = useState(false);
   const [selectedType, setSelectedType] = useState<WorkTypeResponse | null>(null);
   const [departmentFilter, setDepartmentFilter] = useState<string>('');
