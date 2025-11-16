@@ -7,12 +7,14 @@ interface MonthlySalaryDetailModalProps {
   isOpen: boolean;
   onClose: () => void;
   monthlySalary: MonthlySalaryResponse | null;
+  onPay?: (id: string) => void;
 }
 
 export const MonthlySalaryDetailModal = ({
   isOpen,
   onClose,
   monthlySalary,
+  onPay,
 }: MonthlySalaryDetailModalProps) => {
   const [workRecords, setWorkRecords] = useState<WorkRecordResponse[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -57,6 +59,12 @@ export const MonthlySalaryDetailModal = ({
   if (!isOpen || !monthlySalary) return null;
 
   const totalAmount = workRecords.reduce((sum, record) => sum + record.totalAmount, 0);
+  const overtimeTotal = workRecords
+    .filter((r) => r.isOvertime)
+    .reduce((sum, r) => sum + r.totalAmount, 0);
+  const baseTotal = totalAmount - overtimeTotal;
+  const allowances = monthlySalary.allowances || 0;
+  const grandTotal = totalAmount + allowances;
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
@@ -71,7 +79,7 @@ export const MonthlySalaryDetailModal = ({
               <h2 className="text-xl font-semibold text-gray-900">
                 Chi tiết tính lương tháng {monthlySalary.month}/{monthlySalary.year}
               </h2>
-              <p className="text-sm text-gray-500 mt-1">
+              <p className="text-base font-semibold text-gray-900 mt-1">
                 {monthlySalary.employee
                   ? `${monthlySalary.employee.firstName} ${monthlySalary.employee.lastName}`
                   : 'Nhân viên'}
@@ -85,24 +93,6 @@ export const MonthlySalaryDetailModal = ({
             </button>
           </div>
           <div className="p-6">
-            <div className="mb-6 p-4 bg-gray-50 rounded-lg">
-              <div className="grid grid-cols-3 gap-4">
-                <div>
-                  <p className="text-sm text-gray-500">Số ngày làm việc</p>
-                  <p className="text-lg font-semibold text-gray-900">{monthlySalary.totalWorkDays} ngày</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">Số bản ghi công việc</p>
-                  <p className="text-lg font-semibold text-gray-900">{workRecords.length} bản ghi</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">Tổng lương</p>
-                  <p className="text-lg font-semibold text-green-600">
-                    {formatCurrency(monthlySalary.totalAmount)}
-                  </p>
-                </div>
-              </div>
-            </div>
             {isLoading ? (
               <div className="text-center py-12">
                 <p className="text-gray-500">Đang tải chi tiết...</p>
@@ -122,7 +112,9 @@ export const MonthlySalaryDetailModal = ({
                     <tr>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ngày</th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Loại công việc</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sản phẩm</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Loại hàng</th>
+                      <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Tăng ca</th>
+                      <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">SL/giờ TC</th>
                       <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Số lượng</th>
                       <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Đơn giá</th>
                       <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Thành tiền</th>
@@ -136,6 +128,14 @@ export const MonthlySalaryDetailModal = ({
                         </td>
                         <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{record.workType?.name || '-'}</td>
                         <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{record.workItem?.name || '-'}</td>
+                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900 text-center">
+                          {record.isOvertime ? 'Có' : 'Không'}
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900 text-right">
+                          {record.isOvertime
+                            ? (record.overtimeQuantity ?? record.overtimeHours ?? 0)
+                            : 0}
+                        </td>
                         <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900 text-right">{record.quantity}</td>
                         <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900 text-right">{formatCurrency(record.unitPrice)}</td>
                         <td className="px-4 py-3 whitespace-nowrap text-sm font-semibold text-gray-900 text-right">{formatCurrency(record.totalAmount)}</td>
@@ -144,18 +144,46 @@ export const MonthlySalaryDetailModal = ({
                   </tbody>
                   <tfoot className="bg-gray-50">
                     <tr>
-                      <td colSpan={5} className="px-4 py-3 text-right text-sm font-medium text-gray-900">Tổng cộng:</td>
-                      <td className="px-4 py-3 text-right text-sm font-bold text-green-600">{formatCurrency(totalAmount)}</td>
+                      <td colSpan={7} className="px-4 py-2 text-right text-sm font-medium text-gray-900">
+                        Tổng lương (chưa phụ cấp):
+                      </td>
+                      <td className="px-4 py-2 text-right text-sm font-semibold text-gray-900">
+                        {formatCurrency(totalAmount)}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td colSpan={7} className="px-4 py-2 text-right text-sm font-medium text-gray-900">
+                        Phụ cấp:
+                      </td>
+                      <td className="px-4 py-2 text-right text-sm font-semibold text-gray-900">
+                        {formatCurrency(allowances)}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td colSpan={7} className="px-4 py-3 text-right text-sm font-medium text-gray-900">
+                        Tổng lương cần thanh toán:
+                      </td>
+                      <td className="px-4 py-3 text-right text-sm font-bold text-green-600">
+                        {formatCurrency(grandTotal)}
+                      </td>
                     </tr>
                   </tfoot>
                 </table>
               </div>
             )}
           </div>
-          <div className="flex items-center justify-end p-6 border-t border-gray-200">
+          <div className="flex flex-col sm:flex-row gap-2 items-center justify-end p-6 border-t border-gray-200">
+            {monthlySalary.status === 'Tạm tính' && onPay && (
+              <button
+                onClick={() => onPay(monthlySalary.id)}
+                className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                Thanh toán
+              </button>
+            )}
             <button
               onClick={onClose}
-              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+              className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
             >
               Đóng
             </button>

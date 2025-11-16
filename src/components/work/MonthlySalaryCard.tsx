@@ -3,13 +3,17 @@ import type { MonthlySalaryResponse, MonthlySalaryStatus } from '../../types/wor
 interface MonthlySalaryCardProps {
   monthlySalary: MonthlySalaryResponse;
   onViewDetails?: (id: string) => void;
-  onUpdateStatus?: (id: string, status: MonthlySalaryStatus) => void;
+  onUpdateAllowances?: (id: string, allowances: number) => void;
+  onPay?: (id: string) => void;
+  onDelete?: (id: string) => void;
 }
 
 export const MonthlySalaryCard = ({
   monthlySalary,
   onViewDetails,
-  onUpdateStatus,
+  onUpdateAllowances,
+  onPay,
+  onDelete,
 }: MonthlySalaryCardProps) => {
   const formatCurrency = (amount: number): string => {
     return new Intl.NumberFormat('vi-VN', {
@@ -20,11 +24,9 @@ export const MonthlySalaryCard = ({
 
   const getStatusColor = (status: MonthlySalaryStatus) => {
     switch (status) {
-      case 'draft':
-        return 'bg-gray-100 text-gray-800';
-      case 'confirmed':
-        return 'bg-blue-100 text-blue-800';
-      case 'paid':
+      case 'Tạm tính':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'Thanh toán':
         return 'bg-green-100 text-green-800';
       default:
         return 'bg-gray-100 text-gray-800';
@@ -33,11 +35,9 @@ export const MonthlySalaryCard = ({
 
   const getStatusLabel = (status: MonthlySalaryStatus) => {
     switch (status) {
-      case 'draft':
-        return 'Nháp';
-      case 'confirmed':
-        return 'Đã xác nhận';
-      case 'paid':
+      case 'Tạm tính':
+        return 'Tạm tính';
+      case 'Thanh toán':
         return 'Đã thanh toán';
       default:
         return status;
@@ -77,6 +77,34 @@ export const MonthlySalaryCard = ({
             {formatCurrency(monthlySalary.totalAmount)}
           </span>
         </div>
+        <div className="flex items-center justify-between gap-2">
+          <span className="text-sm text-gray-600">Phụ cấp:</span>
+          {monthlySalary.status === 'Tạm tính' ? (
+            <div className="flex items-center gap-1.5">
+              <input
+                type="number"
+                min={0}
+                step={1}
+                inputMode="numeric"
+                defaultValue={((monthlySalary.allowances || 0) / 1000).toFixed(0)}
+                onBlur={(e) => {
+                  const thousands = Math.max(0, Number(e.target.value || 0));
+                  const vndValue = thousands * 1000;
+                  if (onUpdateAllowances && vndValue !== (monthlySalary.allowances || 0)) {
+                    onUpdateAllowances(monthlySalary.id, vndValue);
+                  }
+                }}
+                className="w-16 text-right px-2 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                aria-label="Phụ cấp (nghìn đồng)"
+              />
+              <span className="text-xs text-gray-600 whitespace-nowrap">.000đ</span>
+            </div>
+          ) : (
+            <span className="text-sm font-medium text-gray-900">
+              {(((monthlySalary.allowances || 0) / 1000) || 0).toLocaleString('vi-VN')}.000đ
+            </span>
+          )}
+        </div>
       </div>
 
       <div className="flex gap-2">
@@ -88,20 +116,20 @@ export const MonthlySalaryCard = ({
             Xem chi tiết
           </button>
         )}
-        {onUpdateStatus && monthlySalary.status === 'draft' && (
+        {onPay && monthlySalary.status === 'Tạm tính' && (
           <button
-            onClick={() => onUpdateStatus(monthlySalary.id, 'confirmed')}
+            onClick={() => onPay(monthlySalary.id)}
             className="px-3 py-2 text-sm font-medium text-green-600 bg-green-50 rounded-lg hover:bg-green-100 transition-colors"
           >
-            Xác nhận
+            Thanh toán
           </button>
         )}
-        {onUpdateStatus && monthlySalary.status === 'confirmed' && (
+        {onDelete && monthlySalary.status === 'Tạm tính' && (
           <button
-            onClick={() => onUpdateStatus(monthlySalary.id, 'paid')}
-            className="px-3 py-2 text-sm font-medium text-green-600 bg-green-50 rounded-lg hover:bg-green-100 transition-colors"
+            onClick={() => onDelete(monthlySalary.id)}
+            className="px-3 py-2 text-sm font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors"
           >
-            Đã thanh toán
+            Xoá
           </button>
         )}
       </div>

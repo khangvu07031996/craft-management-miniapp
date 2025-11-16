@@ -3,7 +3,9 @@ import { useAppDispatch, useAppSelector } from '../store/hooks';
 import {
   fetchMonthlySalaries,
   calculateMonthlySalary,
-  updateMonthlySalaryStatus,
+  updateMonthlySalaryAllowances,
+  payMonthlySalary,
+  deleteMonthlySalary,
   setPagination,
 } from '../store/slices/workSlice';
 import { fetchEmployees } from '../store/slices/employeeSlice';
@@ -13,7 +15,9 @@ import { MonthlySalaryDetailModal } from '../components/work/MonthlySalaryDetail
 import { ErrorMessage } from '../components/common/ErrorMessage';
 import { Pagination } from '../components/employees/Pagination';
 import { CalendarDaysIcon, UserGroupIcon, CalculatorIcon } from '@heroicons/react/24/outline';
-import type { MonthlySalaryStatus, MonthlySalaryResponse } from '../types/work.types';
+import type { MonthlySalaryResponse } from '../types/work.types';
+import { SalaryPayConfirm } from '../components/work/SalaryPayConfirm';
+import { SalaryDeleteConfirm } from '../components/work/SalaryDeleteConfirm';
 
 export const MonthlySalaryPage = () => {
   const dispatch = useAppDispatch();
@@ -26,6 +30,8 @@ export const MonthlySalaryPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [selectedSalary, setSelectedSalary] = useState<MonthlySalaryResponse | null>(null);
+  const [isPayModalOpen, setIsPayModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   useEffect(() => {
     dispatch(fetchEmployees({ filters: {}, pagination: { page: 1, pageSize: 1000 }, sort: {} }));
@@ -102,33 +108,64 @@ export const MonthlySalaryPage = () => {
     }
   };
 
-  const handleUpdateStatus = async (id: string, status: MonthlySalaryStatus) => {
+  const refreshList = () => {
+    const filters: { year?: number; month?: number; employeeId?: string } = {
+      year: selectedYear,
+      month: selectedMonth,
+    };
+    if (selectedEmployeeId && selectedEmployeeId.trim() !== '') {
+      filters.employeeId = selectedEmployeeId;
+    }
+    dispatch(
+      fetchMonthlySalaries({
+        filters,
+        pagination: { page: currentPage, pageSize: pagination.pageSize },
+      })
+    );
+  };
+
+  const handleUpdateAllowances = async (id: string, allowances: number) => {
     try {
-      await dispatch(updateMonthlySalaryStatus({ id, status })).unwrap();
-      const filters: {
-        year?: number;
-        month?: number;
-        employeeId?: string;
-      } = {
-        year: selectedYear,
-        month: selectedMonth,
-      };
-
-      if (selectedEmployeeId && selectedEmployeeId.trim() !== '') {
-        filters.employeeId = selectedEmployeeId;
-      }
-
-      dispatch(
-        fetchMonthlySalaries({
-          filters,
-          pagination: {
-            page: currentPage,
-            pageSize: pagination.pageSize,
-          },
-        })
-      );
+      await dispatch(updateMonthlySalaryAllowances({ id, allowances })).unwrap();
+      refreshList();
     } catch (error) {
-      console.error('Error updating status:', error);
+      console.error('Error updating allowances:', error);
+    }
+  };
+
+  const handlePay = (id: string) => {
+    const salary = monthlySalaries.find((s) => s.id === id) || null;
+    setSelectedSalary(salary);
+    setIsPayModalOpen(true);
+  };
+
+  const confirmPay = async () => {
+    if (!selectedSalary) return;
+    try {
+      await dispatch(payMonthlySalary(selectedSalary.id)).unwrap();
+      setIsPayModalOpen(false);
+      setSelectedSalary(null);
+      refreshList();
+    } catch (error) {
+      console.error('Error paying monthly salary:', error);
+    }
+  };
+
+  const handleDelete = (id: string) => {
+    const salary = monthlySalaries.find((s) => s.id === id) || null;
+    setSelectedSalary(salary);
+    setIsDeleteModalOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!selectedSalary) return;
+    try {
+      await dispatch(deleteMonthlySalary(selectedSalary.id)).unwrap();
+      setIsDeleteModalOpen(false);
+      setSelectedSalary(null);
+      refreshList();
+    } catch (error) {
+      console.error('Error deleting monthly salary:', error);
     }
   };
 
@@ -267,7 +304,8 @@ export const MonthlySalaryPage = () => {
                   key={salary.id}
                   monthlySalary={salary}
                   onViewDetails={handleViewDetails}
-                  onUpdateStatus={handleUpdateStatus}
+                  onUpdateAllowances={handleUpdateAllowances}
+                  onDelete={handleDelete}
                 />
               ))}
             </div>
@@ -290,6 +328,21 @@ export const MonthlySalaryPage = () => {
           isOpen={isDetailModalOpen}
           onClose={handleCloseDetailModal}
           monthlySalary={selectedSalary}
+          onPay={(id) => {
+            handlePay(id);
+          }}
+        />
+        <SalaryPayConfirm
+          isOpen={isPayModalOpen}
+          onClose={() => setIsPayModalOpen(false)}
+          monthlySalary={selectedSalary}
+          onConfirm={confirmPay}
+        />
+        <SalaryDeleteConfirm
+          isOpen={isDeleteModalOpen}
+          onClose={() => setIsDeleteModalOpen(false)}
+          monthlySalary={selectedSalary}
+          onConfirm={confirmDelete}
         />
       </div>
     </Layout>

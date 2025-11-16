@@ -302,17 +302,38 @@ export const calculateMonthlySalary = createAsyncThunk(
   }
 );
 
-export const updateMonthlySalaryStatus = createAsyncThunk(
-  'work/updateMonthlySalaryStatus',
-  async (
-    { id, status }: { id: string; status: 'draft' | 'confirmed' | 'paid' },
-    { rejectWithValue }
-  ) => {
+export const updateMonthlySalaryAllowances = createAsyncThunk(
+  'work/updateMonthlySalaryAllowances',
+  async ({ id, allowances }: { id: string; allowances: number }, { rejectWithValue }) => {
     try {
-      const result = await monthlySalaryService.updateMonthlySalaryStatus(id, status);
+      const result = await monthlySalaryService.updateAllowances(id, allowances);
       return result;
     } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to update monthly salary status');
+      return rejectWithValue(error.response?.data?.message || 'Failed to update monthly salary allowances');
+    }
+  }
+);
+
+export const payMonthlySalary = createAsyncThunk(
+  'work/payMonthlySalary',
+  async (id: string, { rejectWithValue }) => {
+    try {
+      const result = await monthlySalaryService.payMonthlySalary(id);
+      return result;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to pay monthly salary');
+    }
+  }
+);
+
+export const deleteMonthlySalary = createAsyncThunk(
+  'work/deleteMonthlySalary',
+  async (id: string, { rejectWithValue }) => {
+    try {
+      await monthlySalaryService.deleteMonthlySalary(id);
+      return id;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to delete monthly salary');
     }
   }
 );
@@ -646,11 +667,11 @@ const workSlice = createSlice({
         state.isLoadingCreate = false;
         state.error = action.payload as string;
       })
-      .addCase(updateMonthlySalaryStatus.pending, (state) => {
+      .addCase(updateMonthlySalaryAllowances.pending, (state) => {
         state.isLoadingUpdate = true;
         state.error = null;
       })
-      .addCase(updateMonthlySalaryStatus.fulfilled, (state, action) => {
+      .addCase(updateMonthlySalaryAllowances.fulfilled, (state, action) => {
         state.isLoadingUpdate = false;
         const index = state.monthlySalaries.findIndex(
           (salary) => salary.id === action.payload.id
@@ -659,8 +680,33 @@ const workSlice = createSlice({
           state.monthlySalaries[index] = action.payload;
         }
       })
-      .addCase(updateMonthlySalaryStatus.rejected, (state, action) => {
+      .addCase(updateMonthlySalaryAllowances.rejected, (state, action) => {
         state.isLoadingUpdate = false;
+        state.error = action.payload as string;
+      })
+      .addCase(payMonthlySalary.pending, (state) => {
+        state.isLoadingUpdate = true;
+        state.error = null;
+      })
+      .addCase(payMonthlySalary.fulfilled, (state, action) => {
+        state.isLoadingUpdate = false;
+        const index = state.monthlySalaries.findIndex((s) => s.id === action.payload.id);
+        if (index !== -1) state.monthlySalaries[index] = action.payload;
+      })
+      .addCase(payMonthlySalary.rejected, (state, action) => {
+        state.isLoadingUpdate = false;
+        state.error = action.payload as string;
+      })
+      .addCase(deleteMonthlySalary.pending, (state) => {
+        state.isLoadingDelete = true;
+        state.error = null;
+      })
+      .addCase(deleteMonthlySalary.fulfilled, (state, action) => {
+        state.isLoadingDelete = false;
+        state.monthlySalaries = state.monthlySalaries.filter((s) => s.id !== action.payload);
+      })
+      .addCase(deleteMonthlySalary.rejected, (state, action) => {
+        state.isLoadingDelete = false;
         state.error = action.payload as string;
       })
       // Reports

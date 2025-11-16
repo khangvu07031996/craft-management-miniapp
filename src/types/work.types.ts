@@ -10,11 +10,7 @@ export enum DifficultyLevel {
   HARD = 'khó',
 }
 
-export enum MonthlySalaryStatus {
-  DRAFT = 'draft',
-  CONFIRMED = 'confirmed',
-  PAID = 'paid',
-}
+export type MonthlySalaryStatus = 'Tạm tính' | 'Thanh toán';
 
 // Work Type
 export interface WorkTypeResponse {
@@ -155,7 +151,9 @@ export interface MonthlySalaryResponse {
   month: number;
   totalWorkDays: number;
   totalAmount: number;
+  allowances?: number;
   status: MonthlySalaryStatus;
+  paidAt?: string | null;
   createdAt: string;
   updatedAt: string;
 }

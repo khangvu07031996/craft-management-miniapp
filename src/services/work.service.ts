@@ -192,12 +192,18 @@ export const monthlySalaryService = {
     return response.data.data;
   },
 
-  updateMonthlySalaryStatus: async (
-    id: string,
-    status: 'draft' | 'confirmed' | 'paid'
-  ): Promise<MonthlySalaryResponse> => {
-    const response = await api.put(`/work/monthly-salaries/${id}/status`, { status });
+  updateAllowances: async (id: string, allowances: number): Promise<MonthlySalaryResponse> => {
+    const response = await api.put(`/work/monthly-salaries/${id}/allowances`, { allowances });
     return response.data.data;
+  },
+
+  payMonthlySalary: async (id: string): Promise<MonthlySalaryResponse> => {
+    const response = await api.post(`/work/monthly-salaries/${id}/pay`);
+    return response.data.data;
+  },
+
+  deleteMonthlySalary: async (id: string): Promise<void> => {
+    await api.delete(`/work/monthly-salaries/${id}`);
   },
 };
 
