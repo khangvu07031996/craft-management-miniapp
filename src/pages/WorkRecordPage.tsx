@@ -27,7 +27,7 @@ export const WorkRecordPage = () => {
   const [selectedRecord, setSelectedRecord] = useState<WorkRecordResponse | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [recordToDelete, setRecordToDelete] = useState<WorkRecordResponse | null>(null);
-  const [filterType, setFilterType] = useState<'single' | 'range' | 'all'>('single');
+  const [filterType, setFilterType] = useState<'single' | 'range' | 'all'>('all');
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [dateFrom, setDateFrom] = useState(new Date().toISOString().split('T')[0]);
   const [dateTo, setDateTo] = useState(new Date().toISOString().split('T')[0]);
@@ -299,7 +299,7 @@ export const WorkRecordPage = () => {
               onEdit={handleEdit}
               onDelete={handleDelete}
             />
-            {pagination.totalPages && pagination.totalPages > 1 && (
+            {(pagination.totalPages ?? 0) > 1 && (
               <div className="flex justify-center py-4 border-t border-gray-200">
                 <Pagination
                   currentPage={pagination.page || 1}
