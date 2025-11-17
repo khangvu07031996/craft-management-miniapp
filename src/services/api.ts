@@ -9,17 +9,22 @@ const getApiBaseUrl = () => {
   // In production with domain, use API subdomain
   const hostname = window.location.hostname;
   if (hostname === 'admin.thucongmyngheviet.com') {
-    return 'https://api.thucongmyngheviet.com';
+    const apiUrl = 'https://api.thucongmyngheviet.com';
+    console.log('[API] Using API subdomain:', apiUrl);
+    return apiUrl;
   }
   // In production (not localhost), use relative path so Nginx can proxy
   if (hostname !== 'localhost' && hostname !== '127.0.0.1') {
+    console.log('[API] Using relative path /api for hostname:', hostname);
     return '/api';
   }
   // Default to localhost for local development
+  console.log('[API] Using localhost for development');
   return 'http://localhost:3000/api';
 };
 
 const API_BASE_URL = getApiBaseUrl();
+console.log('[API] Final API_BASE_URL:', API_BASE_URL);
 
 const api = axios.create({
   baseURL: API_BASE_URL,
