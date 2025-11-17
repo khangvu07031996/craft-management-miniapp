@@ -1,4 +1,5 @@
 import type { MonthlySalaryResponse, MonthlySalaryStatus } from '../../types/work.types';
+import { formatDateTimeVN } from '../../utils/date';
 
 interface MonthlySalaryCardProps {
   monthlySalary: MonthlySalaryResponse;
@@ -57,13 +58,20 @@ export const MonthlySalaryCard = ({
             Tháng {monthlySalary.month}/{monthlySalary.year}
           </p>
         </div>
-        <span
-          className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${getStatusColor(
-            monthlySalary.status
-          )}`}
-        >
-          {getStatusLabel(monthlySalary.status)}
-        </span>
+        <div className="flex flex-col items-end gap-1">
+          <span
+            className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${getStatusColor(
+              monthlySalary.status
+            )}`}
+          >
+            {getStatusLabel(monthlySalary.status)}
+          </span>
+          {monthlySalary.calculatedAt && (
+            <span className="text-xs text-gray-500" title={`Raw: ${monthlySalary.calculatedAt}`}>
+              {formatDateTimeVN(monthlySalary.calculatedAt)}
+            </span>
+          )}
+        </div>
       </div>
 
       <div className="space-y-2 mb-4">

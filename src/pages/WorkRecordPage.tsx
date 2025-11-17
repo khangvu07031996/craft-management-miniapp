@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
 import {
@@ -15,7 +15,7 @@ import { ErrorMessage } from '../components/common/ErrorMessage';
 import { LoadingOverlay } from '../components/common/LoadingOverlay';
 import { Pagination } from '../components/employees/Pagination';
 import type { WorkRecordResponse } from '../types/work.types';
-import { FunnelIcon, CalendarDaysIcon, UserGroupIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
+import { FunnelIcon, CalendarDaysIcon, UserGroupIcon, ChevronRightIcon, ArrowUpIcon, ArrowDownIcon } from '@heroicons/react/24/outline';
 import { PlusIcon } from '@heroicons/react/24/solid';
 
 export const WorkRecordPage = () => {
@@ -33,6 +33,8 @@ export const WorkRecordPage = () => {
   const [dateTo, setDateTo] = useState(new Date().toISOString().split('T')[0]);
   const [selectedEmployeeId, setSelectedEmployeeId] = useState<string>('');
   const [currentPage, setCurrentPage] = useState(1);
+  const [sortBy, setSortBy] = useState<string>('');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
 
   // Fetch employees on mount
   useEffect(() => {
@@ -165,6 +167,59 @@ export const WorkRecordPage = () => {
     setCurrentPage(page);
     dispatch(setPagination({ ...pagination, page, pageSize: 10 }));
   };
+
+  const handleSort = (column: string) => {
+    if (sortBy === column) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortBy(column);
+      setSortOrder('asc');
+    }
+  };
+
+  const getSortIcon = (column: string) => {
+    if (sortBy !== column) return null;
+    return sortOrder === 'asc' ? (
+      <ArrowUpIcon className="w-4 h-4 inline ml-1" />
+    ) : (
+      <ArrowDownIcon className="w-4 h-4 inline ml-1" />
+    );
+  };
+
+  // Sort work records
+  const sortedWorkRecords = useMemo(() => {
+    if (!sortBy) return workRecords;
+    
+    const sorted = [...workRecords].sort((a, b) => {
+      let aValue: any;
+      let bValue: any;
+
+      if (sortBy === 'workDate') {
+        aValue = new Date(a.workDate).getTime();
+        bValue = new Date(b.workDate).getTime();
+      } else if (sortBy === 'employee') {
+        const aName = a.employee 
+          ? `${a.employee.lastName} ${a.employee.firstName}`.toLowerCase()
+          : a.employeeId?.toLowerCase() || '';
+        const bName = b.employee 
+          ? `${b.employee.lastName} ${b.employee.firstName}`.toLowerCase()
+          : b.employeeId?.toLowerCase() || '';
+        aValue = aName;
+        bValue = bName;
+      } else if (sortBy === 'totalAmount') {
+        aValue = a.totalAmount || 0;
+        bValue = b.totalAmount || 0;
+      } else {
+        return 0;
+      }
+
+      if (aValue < bValue) return sortOrder === 'asc' ? -1 : 1;
+      if (aValue > bValue) return sortOrder === 'asc' ? 1 : -1;
+      return 0;
+    });
+
+    return sorted;
+  }, [workRecords, sortBy, sortOrder]);
 
   return (
     <Layout>
@@ -304,9 +359,13 @@ export const WorkRecordPage = () => {
         <LoadingOverlay isLoading={isLoadingFetch}>
           <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
             <WorkRecordList
-              workRecords={workRecords}
+              workRecords={sortedWorkRecords}
               onEdit={handleEdit}
               onDelete={handleDelete}
+              sortBy={sortBy}
+              sortOrder={sortOrder}
+              onSort={handleSort}
+              getSortIcon={getSortIcon}
             />
             {(pagination.totalPages ?? 0) > 1 && (
               <div className="flex justify-center py-4 border-t border-gray-200">

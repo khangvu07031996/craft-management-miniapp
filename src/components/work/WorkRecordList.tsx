@@ -1,11 +1,16 @@
 import { useMemo } from 'react';
 import { formatDate } from '../../utils/date';
 import type { WorkRecordResponse } from '../../types/work.types';
+import { PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
 
 interface WorkRecordListProps {
   workRecords: WorkRecordResponse[];
   onEdit?: (record: WorkRecordResponse) => void;
   onDelete?: (id: string) => void;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
+  onSort?: (column: string) => void;
+  getSortIcon?: (column: string) => React.ReactNode;
 }
 
 interface GroupedRecord {
@@ -14,7 +19,15 @@ interface GroupedRecord {
   isNewEmployee: boolean;
 }
 
-export const WorkRecordList = ({ workRecords, onEdit, onDelete }: WorkRecordListProps) => {
+export const WorkRecordList = ({ 
+  workRecords, 
+  onEdit, 
+  onDelete,
+  sortBy,
+  sortOrder,
+  onSort,
+  getSortIcon
+}: WorkRecordListProps) => {
   const formatCurrency = (amount: number): string => {
     return new Intl.NumberFormat('vi-VN', {
       style: 'currency',
@@ -161,21 +174,23 @@ export const WorkRecordList = ({ workRecords, onEdit, onDelete }: WorkRecordList
 
               {/* Actions */}
               {(onEdit || onDelete) && (
-                <div className="mt-3 pt-3 border-t border-gray-200 flex justify-end gap-3">
+                <div className="mt-3 pt-3 border-t border-gray-200 flex justify-end gap-2">
                   {onEdit && (
                     <button
                       onClick={() => onEdit(record)}
-                      className="text-blue-600 hover:text-blue-900 text-sm font-medium px-3 py-1.5 rounded hover:bg-blue-50 transition-colors"
+                      className="text-blue-600 hover:text-blue-900 p-1"
+                      aria-label="Edit"
                     >
-                      Sửa
+                      <PencilIcon className="w-5 h-5" />
                     </button>
                   )}
                   {onDelete && (
                     <button
                       onClick={() => onDelete(record.id)}
-                      className="text-red-600 hover:text-red-900 text-sm font-medium px-3 py-1.5 rounded hover:bg-red-50 transition-colors"
+                      className="text-red-600 hover:text-red-900 p-1"
+                      aria-label="Delete"
                     >
-                      Xóa
+                      <TrashIcon className="w-5 h-5" />
                     </button>
                   )}
                 </div>
@@ -190,11 +205,21 @@ export const WorkRecordList = ({ workRecords, onEdit, onDelete }: WorkRecordList
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Ngày
+              <th 
+                className={`px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider ${
+                  onSort ? 'cursor-pointer hover:bg-gray-100 select-none' : ''
+                }`}
+                onClick={() => onSort && onSort('workDate')}
+              >
+                Ngày {getSortIcon && getSortIcon('workDate')}
               </th>
-              <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Nhân viên
+              <th 
+                className={`px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider ${
+                  onSort ? 'cursor-pointer hover:bg-gray-100 select-none' : ''
+                }`}
+                onClick={() => onSort && onSort('employee')}
+              >
+                Nhân viên {getSortIcon && getSortIcon('employee')}
               </th>
               <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Loại công việc
@@ -211,8 +236,13 @@ export const WorkRecordList = ({ workRecords, onEdit, onDelete }: WorkRecordList
               <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Tăng ca
               </th>
-              <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Tổng tiền
+              <th 
+                className={`px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider ${
+                  onSort ? 'cursor-pointer hover:bg-gray-100 select-none' : ''
+                }`}
+                onClick={() => onSort && onSort('totalAmount')}
+              >
+                Tổng tiền {getSortIcon && getSortIcon('totalAmount')}
               </th>
               {(onEdit || onDelete) && (
                 <th className="px-4 lg:px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -286,17 +316,19 @@ export const WorkRecordList = ({ workRecords, onEdit, onDelete }: WorkRecordList
                         {onEdit && (
                           <button
                             onClick={() => onEdit(record)}
-                            className="text-blue-600 hover:text-blue-900"
+                            className="text-blue-600 hover:text-blue-900 p-1"
+                            aria-label="Edit"
                           >
-                            Sửa
+                            <PencilIcon className="w-4 h-4" />
                           </button>
                         )}
                         {onDelete && (
                           <button
                             onClick={() => onDelete(record.id)}
-                            className="text-red-600 hover:text-red-900"
+                            className="text-red-600 hover:text-red-900 p-1"
+                            aria-label="Delete"
                           >
-                            Xóa
+                            <TrashIcon className="w-4 h-4" />
                           </button>
                         )}
                       </div>
