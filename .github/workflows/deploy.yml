@@ -1,0 +1,46 @@
+name: Deploy Frontend
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'package*.json'
+      - 'Dockerfile'
+      - 'vite.config.ts'
+      - 'tsconfig*.json'
+      - 'tailwind.config.js'
+      - '.github/workflows/deploy.yml'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.DO_SSH_PRIVATE_KEY }}
+      
+      - name: Deploy to Droplet
+        run: |
+          ssh -o StrictHostKeyChecking=no root@138.68.228.14 << 'EOF'
+            set -e
+            echo "🚀 Starting frontend deployment..."
+            
+            cd /opt/craft/craft-management-miniapp
+            echo "📥 Pulling latest code..."
+            git pull origin main
+            
+            cd /opt/craft/deploy
+            echo "🔨 Building frontend Docker image..."
+            docker compose -f docker-compose.prod.yml build --no-cache frontend
+            
+            echo "🔄 Restarting frontend service..."
+            docker compose -f docker-compose.prod.yml up -d frontend
+            
+            echo "✅ Frontend deployment completed successfully!"
+          EOF
+
