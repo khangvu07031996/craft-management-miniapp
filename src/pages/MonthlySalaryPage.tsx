@@ -24,7 +24,7 @@ import { SalaryNoDataModal } from '../components/work/SalaryNoDataModal';
 
 export const MonthlySalaryPage = () => {
   const dispatch = useAppDispatch();
-  const { monthlySalaries, pagination, isLoading, error } = useAppSelector((state) => state.work);
+  const { monthlySalaries, pagination, isLoading } = useAppSelector((state) => state.work);
   const { employees } = useAppSelector((state) => state.employees);
 
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());

@@ -23,8 +23,8 @@ export const WorkRecordList = ({
   workRecords, 
   onEdit, 
   onDelete,
-  sortBy,
-  sortOrder,
+  sortBy: _sortBy,
+  sortOrder: _sortOrder,
   onSort,
   getSortIcon
 }: WorkRecordListProps) => {

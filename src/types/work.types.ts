@@ -154,6 +154,7 @@ export interface MonthlySalaryResponse {
   allowances?: number;
   status: MonthlySalaryStatus;
   paidAt?: string | null;
+  calculatedAt?: string | null;
   createdAt: string;
   updatedAt: string;
 }
