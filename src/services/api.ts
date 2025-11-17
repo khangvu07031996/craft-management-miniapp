@@ -3,15 +3,19 @@ import axios from 'axios';
 // Use API subdomain in production, relative path for IP access, localhost for dev
 // Use env variable if provided, otherwise detect based on environment
 const getApiBaseUrl = () => {
+  // Priority 1: Use VITE_API_BASE_URL if provided (for production)
   if (import.meta.env.VITE_API_BASE_URL) {
+    console.log('[API] Using VITE_API_BASE_URL:', import.meta.env.VITE_API_BASE_URL);
     return import.meta.env.VITE_API_BASE_URL;
   }
   
   const hostname = window.location.hostname;
   const origin = window.location.origin;
   const protocol = window.location.protocol;
+  const mode = import.meta.env.MODE;
   
   // Debug logging
+  console.log('[API] mode:', mode);
   console.log('[API] hostname:', hostname);
   console.log('[API] origin:', origin);
   console.log('[API] protocol:', protocol);
