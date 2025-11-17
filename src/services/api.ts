@@ -7,11 +7,12 @@ const getApiBaseUrl = () => {
     return import.meta.env.VITE_API_BASE_URL;
   }
   // In production with domain, use API subdomain
-  if (window.location.hostname === 'admin.thucongmyngheviet.com') {
+  const hostname = window.location.hostname;
+  if (hostname === 'admin.thucongmyngheviet.com') {
     return 'https://api.thucongmyngheviet.com';
   }
   // In production (not localhost), use relative path so Nginx can proxy
-  if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+  if (hostname !== 'localhost' && hostname !== '127.0.0.1') {
     return '/api';
   }
   // Default to localhost for local development
