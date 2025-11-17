@@ -6,8 +6,8 @@ COPY package*.json ./
 RUN npm ci
 COPY . .
 # Set API base URL for production
-# Use API subdomain when deployed to production
-ENV VITE_API_BASE_URL=https://api.thucongmyngheviet.com
+# Use API subdomain when deployed to production (include /api prefix)
+ENV VITE_API_BASE_URL=https://api.thucongmyngheviet.com/api
 RUN npm run build
 
 # Nginx stage to serve static files
