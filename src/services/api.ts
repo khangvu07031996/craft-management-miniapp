@@ -1,10 +1,14 @@
 import axios from 'axios';
 
-// Use relative path in production (Nginx will proxy /api to backend)
+// Use API subdomain in production, relative path for IP access, localhost for dev
 // Use env variable if provided, otherwise detect based on environment
 const getApiBaseUrl = () => {
   if (import.meta.env.VITE_API_BASE_URL) {
     return import.meta.env.VITE_API_BASE_URL;
+  }
+  // In production with domain, use API subdomain
+  if (window.location.hostname === 'admin.thucongmyngheviet.com') {
+    return 'https://api.thucongmyngheviet.com';
   }
   // In production (not localhost), use relative path so Nginx can proxy
   if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
