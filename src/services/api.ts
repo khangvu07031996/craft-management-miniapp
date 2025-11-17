@@ -16,11 +16,17 @@ const getApiBaseUrl = () => {
   console.log('[API] origin:', origin);
   console.log('[API] protocol:', protocol);
   
-  // Check if we're on the admin subdomain - check FIRST before other conditions
-  const isAdminSubdomain = hostname === 'admin.thucongmyngheviet.com' || 
-                          hostname === 'www.admin.thucongmyngheviet.com' ||
-                          hostname.includes('admin.thucongmyngheviet.com') ||
-                          hostname.endsWith('.thucongmyngheviet.com') && hostname.startsWith('admin');
+  // Check if we're on the admin subdomain - check by origin or hostname
+  // Cloudflare might proxy, so check both origin and hostname
+  const isAdminSubdomain = 
+    origin.includes('admin.thucongmyngheviet.com') ||
+    hostname === 'admin.thucongmyngheviet.com' || 
+    hostname === 'www.admin.thucongmyngheviet.com' ||
+    hostname.includes('admin.thucongmyngheviet.com') ||
+    (hostname.endsWith('.thucongmyngheviet.com') && hostname.startsWith('admin')) ||
+    (protocol === 'https:' && hostname.includes('thucongmyngheviet.com') && hostname.includes('admin'));
+  
+  console.log('[API] isAdminSubdomain check:', isAdminSubdomain);
   
   if (isAdminSubdomain) {
     const apiUrl = 'https://api.thucongmyngheviet.com';
