@@ -8,7 +8,16 @@ const getApiBaseUrl = () => {
   }
   // In production with domain, use API subdomain
   const hostname = window.location.hostname;
-  if (hostname === 'admin.thucongmyngheviet.com') {
+  const origin = window.location.origin;
+  
+  // Debug logging
+  console.log('[API] hostname:', hostname);
+  console.log('[API] origin:', origin);
+  
+  // Check if we're on the admin subdomain (case-insensitive, handle www prefix)
+  if (hostname === 'admin.thucongmyngheviet.com' || 
+      hostname === 'www.admin.thucongmyngheviet.com' ||
+      hostname.includes('admin.thucongmyngheviet.com')) {
     const apiUrl = 'https://api.thucongmyngheviet.com';
     console.log('[API] Using API subdomain:', apiUrl);
     return apiUrl;
