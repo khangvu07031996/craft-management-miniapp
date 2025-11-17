@@ -3,6 +3,7 @@ import { useAppDispatch, useAppSelector } from '../store/hooks';
 import {
   fetchMonthlySalaries,
   calculateMonthlySalary,
+  calculateMonthlySalaryForAll,
   updateMonthlySalaryAllowances,
   payMonthlySalary,
   deleteMonthlySalary,
@@ -12,12 +13,13 @@ import { fetchEmployees } from '../store/slices/employeeSlice';
 import { Layout } from '../components/layout/Layout';
 import { MonthlySalaryCard } from '../components/work/MonthlySalaryCard';
 import { MonthlySalaryDetailModal } from '../components/work/MonthlySalaryDetailModal';
-import { ErrorMessage } from '../components/common/ErrorMessage';
 import { Pagination } from '../components/employees/Pagination';
 import { CalendarDaysIcon, UserGroupIcon, CalculatorIcon } from '@heroicons/react/24/outline';
 import type { MonthlySalaryResponse } from '../types/work.types';
 import { SalaryPayConfirm } from '../components/work/SalaryPayConfirm';
 import { SalaryDeleteConfirm } from '../components/work/SalaryDeleteConfirm';
+import { SalaryNoEmployeeModal } from '../components/work/SalaryNoEmployeeModal';
+import { SalaryNoDataModal } from '../components/work/SalaryNoDataModal';
 
 export const MonthlySalaryPage = () => {
   const dispatch = useAppDispatch();
@@ -32,6 +34,10 @@ export const MonthlySalaryPage = () => {
   const [selectedSalary, setSelectedSalary] = useState<MonthlySalaryResponse | null>(null);
   const [isPayModalOpen, setIsPayModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isNoEmployeeModalOpen, setIsNoEmployeeModalOpen] = useState(false);
+  const [isNoDataModalOpen, setIsNoDataModalOpen] = useState(false);
+  const [noDataEmployeeName, setNoDataEmployeeName] = useState('');
+  const [isCalculatingAll, setIsCalculatingAll] = useState(false);
 
   useEffect(() => {
     dispatch(fetchEmployees({ filters: {}, pagination: { page: 1, pageSize: 1000 }, sort: {} }));
@@ -72,39 +78,60 @@ export const MonthlySalaryPage = () => {
     }
   }, [pagination.page, currentPage]);
 
-  const handleCalculateSalary = async (employeeId: string) => {
+  const handleCalculateSalary = async () => {
+    // If "Tất cả nhân viên" is selected (value is empty string "")
+    // Calculate for all active employees
+    if (!selectedEmployeeId || selectedEmployeeId.trim() === '') {
+      setIsCalculatingAll(true);
+      try {
+        await dispatch(
+          calculateMonthlySalaryForAll({
+            year: selectedYear,
+            month: selectedMonth,
+          })
+        ).unwrap();
+        refreshList();
+      } catch (error: any) {
+        console.error('Error calculating monthly salary for all:', error);
+      } finally {
+        setIsCalculatingAll(false);
+      }
+      return;
+    }
+
+    // Calculate for single employee
     try {
       await dispatch(
         calculateMonthlySalary({
-          employeeId,
+          employeeId: selectedEmployeeId,
           year: selectedYear,
           month: selectedMonth,
         })
       ).unwrap();
-      const filters: {
-        year?: number;
-        month?: number;
-        employeeId?: string;
-      } = {
-        year: selectedYear,
-        month: selectedMonth,
-      };
-
-      if (selectedEmployeeId && selectedEmployeeId.trim() !== '') {
-        filters.employeeId = selectedEmployeeId;
-      }
-
-      dispatch(
-        fetchMonthlySalaries({
-          filters,
-          pagination: {
-            page: currentPage,
-            pageSize: pagination.pageSize,
-          },
-        })
-      );
-    } catch (error) {
+      refreshList();
+    } catch (error: any) {
       console.error('Error calculating monthly salary:', error);
+      // Check if error is about no salary data
+      // When using unwrap(), rejectWithValue returns the value in error.payload or error itself
+      // The error from unwrap() can be the string directly or an object with payload
+      let errorMessage = '';
+      if (typeof error === 'string') {
+        errorMessage = error;
+      } else if (error?.payload) {
+        errorMessage = error.payload;
+      } else if (error?.message) {
+        errorMessage = error.message;
+      } else {
+        errorMessage = String(error);
+      }
+      
+      if (errorMessage.includes('Không có dữ liệu lương cho nhân viên')) {
+        // Extract employee name from error message or get from employees list
+        const employee = employees.find(emp => emp.id === selectedEmployeeId);
+        const employeeName = employee ? `${employee.firstName} ${employee.lastName}` : 'nhân viên này';
+        setNoDataEmployeeName(employeeName);
+        setIsNoDataModalOpen(true);
+      }
     }
   };
 
@@ -270,23 +297,16 @@ export const MonthlySalaryPage = () => {
 
             <div className="flex items-end">
               <button
-                onClick={() => {
-                  if (selectedEmployeeId) {
-                    handleCalculateSalary(selectedEmployeeId);
-                  } else {
-                    alert('Vui lòng chọn nhân viên để tính lương');
-                  }
-                }}
-                className="w-full inline-flex items-center justify-center gap-2.5 px-5 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold rounded-xl shadow-lg shadow-blue-500/30 hover:from-blue-700 hover:to-blue-800 hover:shadow-xl hover:shadow-blue-500/40 transform hover:-translate-y-0.5 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                onClick={handleCalculateSalary}
+                disabled={isCalculatingAll}
+                className="w-full inline-flex items-center justify-center gap-2.5 px-5 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold rounded-xl shadow-lg shadow-blue-500/30 hover:from-blue-700 hover:to-blue-800 hover:shadow-xl hover:shadow-blue-500/40 transform hover:-translate-y-0.5 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
               >
                 <CalculatorIcon className="w-5 h-5" />
-                <span>Tính lương</span>
+                <span>{isCalculatingAll ? 'Đang tính lương...' : 'Tính lương'}</span>
               </button>
             </div>
           </div>
         </div>
-
-        {error && <ErrorMessage message={error} className="mb-4" />}
 
         {isLoading ? (
           <div className="p-12 text-center">
@@ -343,6 +363,15 @@ export const MonthlySalaryPage = () => {
           onClose={() => setIsDeleteModalOpen(false)}
           monthlySalary={selectedSalary}
           onConfirm={confirmDelete}
+        />
+        <SalaryNoEmployeeModal
+          isOpen={isNoEmployeeModalOpen}
+          onClose={() => setIsNoEmployeeModalOpen(false)}
+        />
+        <SalaryNoDataModal
+          isOpen={isNoDataModalOpen}
+          onClose={() => setIsNoDataModalOpen(false)}
+          employeeName={noDataEmployeeName}
         />
       </div>
     </Layout>

@@ -297,7 +297,21 @@ export const calculateMonthlySalary = createAsyncThunk(
       const result = await monthlySalaryService.calculateMonthlySalary(data);
       return result;
     } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to calculate monthly salary');
+      // Try to get message from response data (could be in message or error field)
+      const errorMessage = error.response?.data?.message || error.response?.data?.error || error.message || 'Failed to calculate monthly salary';
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
+
+export const calculateMonthlySalaryForAll = createAsyncThunk(
+  'work/calculateMonthlySalaryForAll',
+  async (data: { year: number; month: number }, { rejectWithValue }) => {
+    try {
+      const result = await monthlySalaryService.calculateMonthlySalaryForAll(data);
+      return result;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to calculate monthly salary for all employees');
     }
   }
 );

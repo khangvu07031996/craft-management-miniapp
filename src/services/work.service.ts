@@ -192,6 +192,16 @@ export const monthlySalaryService = {
     return response.data.data;
   },
 
+  calculateMonthlySalaryForAll: async (data: { year: number; month: number }): Promise<{
+    total: number;
+    success: number;
+    failed: number;
+    results: Array<{ employeeId: string; employeeName: string; success: boolean; message?: string }>;
+  }> => {
+    const response = await api.post('/work/calculate-monthly-all', data);
+    return response.data.data;
+  },
+
   updateAllowances: async (id: string, allowances: number): Promise<MonthlySalaryResponse> => {
     const response = await api.put(`/work/monthly-salaries/${id}/allowances`, { allowances });
     return response.data.data;
