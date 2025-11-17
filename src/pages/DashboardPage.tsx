@@ -22,14 +22,14 @@ export const DashboardPage = () => {
 
   return (
     <Layout>
-      <div>
+      <div className="pt-8 lg:pt-10">
         {/* Breadcrumbs */}
-        <div className="flex items-center gap-1.5 text-sm text-gray-500 mb-4">
-          <Link to="/dashboard" className="hover:text-gray-700 transition-colors">
+        <div className="flex items-center gap-1.5 text-xs sm:text-sm text-gray-500 mb-4 overflow-x-auto">
+          <Link to="/dashboard" className="hover:text-gray-700 transition-colors whitespace-nowrap">
             Trang chủ
           </Link>
-          <ChevronRightIcon className="w-4 h-4" />
-          <span className="text-gray-900 font-medium">Bảng điều khiển</span>
+          <ChevronRightIcon className="w-4 h-4 flex-shrink-0" />
+          <span className="text-gray-900 font-medium whitespace-nowrap">Bảng điều khiển</span>
         </div>
 
         {/* Page Title */}

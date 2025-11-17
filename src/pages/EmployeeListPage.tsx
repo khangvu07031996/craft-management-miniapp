@@ -138,21 +138,23 @@ export const EmployeeListPage = () => {
 
   return (
     <Layout>
-      <div className="pt-4 lg:pt-6">
+      <div className="pt-8 lg:pt-10">
         {/* Breadcrumbs */}
         <div className="flex items-center gap-1.5 text-xs sm:text-sm text-gray-500 mb-4 overflow-x-auto">
           <Link to="/dashboard" className="hover:text-gray-700 transition-colors whitespace-nowrap">
             Trang chủ
           </Link>
           <ChevronRightIcon className="w-4 h-4 flex-shrink-0" />
-          <Link to="/employees" className="hover:text-gray-700 transition-colors whitespace-nowrap">
-            Nhân viên
-          </Link>
-          {filters.department && (
+          {filters.department ? (
             <>
+              <Link to="/employees" className="hover:text-gray-700 transition-colors whitespace-nowrap">
+                Nhân viên
+              </Link>
               <ChevronRightIcon className="w-4 h-4 flex-shrink-0" />
               <span className="text-gray-900 font-medium whitespace-nowrap">{filters.department}</span>
             </>
+          ) : (
+            <span className="text-gray-900 font-medium whitespace-nowrap">Nhân viên</span>
           )}
         </div>
 

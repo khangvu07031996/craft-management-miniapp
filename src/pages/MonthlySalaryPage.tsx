@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
 import {
   fetchMonthlySalaries,
@@ -14,7 +15,7 @@ import { Layout } from '../components/layout/Layout';
 import { MonthlySalaryCard } from '../components/work/MonthlySalaryCard';
 import { MonthlySalaryDetailModal } from '../components/work/MonthlySalaryDetailModal';
 import { Pagination } from '../components/employees/Pagination';
-import { CalendarDaysIcon, UserGroupIcon, CalculatorIcon } from '@heroicons/react/24/outline';
+import { CalendarDaysIcon, UserGroupIcon, CalculatorIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 import type { MonthlySalaryResponse } from '../types/work.types';
 import { SalaryPayConfirm } from '../components/work/SalaryPayConfirm';
 import { SalaryDeleteConfirm } from '../components/work/SalaryDeleteConfirm';
@@ -216,7 +217,16 @@ export const MonthlySalaryPage = () => {
 
   return (
     <Layout>
-      <div className="pt-4 lg:pt-6">
+      <div className="pt-8 lg:pt-10">
+        {/* Breadcrumbs */}
+        <div className="flex items-center gap-1.5 text-xs sm:text-sm text-gray-500 mb-4 overflow-x-auto">
+          <Link to="/dashboard" className="hover:text-gray-700 transition-colors whitespace-nowrap">
+            Trang chủ
+          </Link>
+          <ChevronRightIcon className="w-4 h-4 flex-shrink-0" />
+          <span className="text-gray-900 font-medium whitespace-nowrap">Lương tháng</span>
+        </div>
+
         <div className="mb-6 lg:mb-8">
           <h1 className="text-xl lg:text-2xl font-bold text-gray-900">Lương tháng</h1>
         </div>

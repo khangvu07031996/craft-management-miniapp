@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
 import { fetchWeeklyReport, fetchMonthlyReport } from '../store/slices/workSlice';
 import { Layout } from '../components/layout/Layout';
 import { ErrorMessage } from '../components/common/ErrorMessage';
 import { Button } from '../components/common/Button';
+import { ChevronRightIcon } from '@heroicons/react/24/outline';
 import type { WorkReportParams } from '../types/work.types';
 
 export const WorkReportPage = () => {
@@ -114,9 +116,18 @@ export const WorkReportPage = () => {
 
   return (
     <Layout>
-      <div>
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">Báo cáo</h1>
+      <div className="pt-8 lg:pt-10">
+        {/* Breadcrumbs */}
+        <div className="flex items-center gap-1.5 text-xs sm:text-sm text-gray-500 mb-4 overflow-x-auto">
+          <Link to="/dashboard" className="hover:text-gray-700 transition-colors whitespace-nowrap">
+            Trang chủ
+          </Link>
+          <ChevronRightIcon className="w-4 h-4 flex-shrink-0" />
+          <span className="text-gray-900 font-medium whitespace-nowrap">Báo cáo</span>
+        </div>
+
+        <div className="mb-6 lg:mb-8">
+          <h1 className="text-xl lg:text-2xl font-bold text-gray-900">Báo cáo</h1>
         </div>
 
         <div className="mb-6 bg-white rounded-lg border border-gray-200 shadow-sm p-4">

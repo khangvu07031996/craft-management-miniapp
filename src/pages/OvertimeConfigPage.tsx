@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
 import {
   fetchWorkTypes,
@@ -9,7 +10,7 @@ import {
 import { OvertimeConfigForm } from '../components/work/OvertimeConfigForm';
 import { Layout } from '../components/layout/Layout';
 import { ErrorMessage } from '../components/common/ErrorMessage';
-import { PencilIcon, BuildingOfficeIcon } from '@heroicons/react/24/outline';
+import { PencilIcon, BuildingOfficeIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 import type { WorkTypeResponse, OvertimeConfigResponse, CalculationType } from '../types/work.types';
 
 const formatCurrency = (amount: number) => {
@@ -111,7 +112,16 @@ export const OvertimeConfigPage = () => {
 
   return (
     <Layout>
-      <div className="pt-4 lg:pt-6">
+      <div className="pt-8 lg:pt-10">
+        {/* Breadcrumbs */}
+        <div className="flex items-center gap-1.5 text-xs sm:text-sm text-gray-500 mb-4 overflow-x-auto">
+          <Link to="/dashboard" className="hover:text-gray-700 transition-colors whitespace-nowrap">
+            Trang chủ
+          </Link>
+          <ChevronRightIcon className="w-4 h-4 flex-shrink-0" />
+          <span className="text-gray-900 font-medium whitespace-nowrap">Cấu hình Tăng ca</span>
+        </div>
+
         <div className="mb-6 lg:mb-8">
           <h1 className="text-xl lg:text-2xl font-bold text-gray-900">Cấu hình Tăng ca</h1>
         </div>

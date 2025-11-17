@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
 import {
   fetchWorkRecords,
@@ -14,7 +15,7 @@ import { ErrorMessage } from '../components/common/ErrorMessage';
 import { LoadingOverlay } from '../components/common/LoadingOverlay';
 import { Pagination } from '../components/employees/Pagination';
 import type { WorkRecordResponse } from '../types/work.types';
-import { FunnelIcon, CalendarDaysIcon, UserGroupIcon } from '@heroicons/react/24/outline';
+import { FunnelIcon, CalendarDaysIcon, UserGroupIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 import { PlusIcon } from '@heroicons/react/24/solid';
 
 export const WorkRecordPage = () => {
@@ -167,7 +168,16 @@ export const WorkRecordPage = () => {
 
   return (
     <Layout>
-      <div className="pt-4 lg:pt-6">
+      <div className="pt-8 lg:pt-10">
+        {/* Breadcrumbs */}
+        <div className="flex items-center gap-1.5 text-xs sm:text-sm text-gray-500 mb-4 overflow-x-auto">
+          <Link to="/dashboard" className="hover:text-gray-700 transition-colors whitespace-nowrap">
+            Trang chủ
+          </Link>
+          <ChevronRightIcon className="w-4 h-4 flex-shrink-0" />
+          <span className="text-gray-900 font-medium whitespace-nowrap">Nhập công việc</span>
+        </div>
+
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 lg:mb-8">
           <h1 className="text-xl lg:text-2xl font-bold text-gray-900">Nhập công việc</h1>
           <button

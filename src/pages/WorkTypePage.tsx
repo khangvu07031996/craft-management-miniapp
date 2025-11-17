@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
 import { fetchWorkTypes, deleteWorkType } from '../store/slices/workSlice';
 import { WorkTypeForm } from '../components/work/WorkTypeForm';
 import { Layout } from '../components/layout/Layout';
 import { LoadingOverlay } from '../components/common/LoadingOverlay';
-import { PencilIcon, TrashIcon, BuildingOfficeIcon } from '@heroicons/react/24/outline';
+import { PencilIcon, TrashIcon, BuildingOfficeIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 import { PlusIcon } from '@heroicons/react/24/solid';
 import type { WorkTypeResponse, CalculationType } from '../types/work.types';
 
@@ -79,7 +80,16 @@ export const WorkTypePage = () => {
 
   return (
     <Layout>
-      <div className="pt-4 lg:pt-6">
+      <div className="pt-8 lg:pt-10">
+        {/* Breadcrumbs */}
+        <div className="flex items-center gap-1.5 text-xs sm:text-sm text-gray-500 mb-4 overflow-x-auto">
+          <Link to="/dashboard" className="hover:text-gray-700 transition-colors whitespace-nowrap">
+            Trang chủ
+          </Link>
+          <ChevronRightIcon className="w-4 h-4 flex-shrink-0" />
+          <span className="text-gray-900 font-medium whitespace-nowrap">Quản lý Loại công việc</span>
+        </div>
+
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 lg:mb-8">
           <h1 className="text-xl lg:text-2xl font-bold text-gray-900">Quản lý Loại công việc</h1>
           <button
