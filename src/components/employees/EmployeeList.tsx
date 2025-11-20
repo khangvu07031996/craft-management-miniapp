@@ -144,12 +144,12 @@ export const EmployeeList = ({ hideControls = false }: EmployeeListProps) => {
 
     if (sort.sortBy === backendField) {
       return sort.sortOrder === 'asc' ? (
-        <ArrowUpIcon className="w-3.5 h-3.5 text-blue-600" />
+        <ArrowUpIcon className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
       ) : (
-        <ArrowDownIcon className="w-3.5 h-3.5 text-blue-600" />
+        <ArrowDownIcon className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
       );
     }
-    return <ArrowsUpDownIcon className="w-3.5 h-3.5 text-gray-400" />;
+      return <ArrowsUpDownIcon className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500" />;
   };
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -159,7 +159,7 @@ export const EmployeeList = ({ hideControls = false }: EmployeeListProps) => {
   if (isLoading && employees.length === 0) {
       return (
         <div className="flex justify-center items-center h-64">
-          <div className="text-gray-500">Đang tải nhân viên...</div>
+          <div className="text-gray-500 dark:text-gray-400">Đang tải nhân viên...</div>
         </div>
       );
   }
@@ -173,13 +173,13 @@ export const EmployeeList = ({ hideControls = false }: EmployeeListProps) => {
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
       case 'active':
-        return 'bg-green-100 text-green-800';
+        return 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300';
       case 'pending':
-        return 'bg-orange-100 text-orange-800';
+        return 'bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-300';
       case 'inactive':
-        return 'bg-red-100 text-red-800';
+        return 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200';
     }
   };
 
@@ -187,16 +187,16 @@ export const EmployeeList = ({ hideControls = false }: EmployeeListProps) => {
     <div>
       {/* Table Controls - Only show if not hidden */}
       {!hideControls && (
-        <div className="px-4 sm:px-6 py-4 border-b border-gray-200 flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-3 bg-white">
+        <div className="px-4 sm:px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-3 bg-white dark:bg-gray-800">
           <div className="flex items-center gap-3 flex-1 sm:flex-none">
             <div className="relative flex-1 sm:flex-none sm:w-64">
-              <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500" />
               <input
                 type="text"
                 placeholder="Tìm kiếm..."
                 value={searchValue}
                 onChange={handleSearchChange}
-                className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg bg-white text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent"
               />
             </div>
             <Button onClick={handleCreate} size="sm" className="whitespace-nowrap flex-shrink-0">Thêm nhân viên</Button>
@@ -206,9 +206,9 @@ export const EmployeeList = ({ hideControls = false }: EmployeeListProps) => {
 
       {employees.length === 0 ? (
         <div className="px-4 lg:px-6 py-12 text-center">
-          <p className="text-sm text-gray-500">Không tìm thấy nhân viên</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Không tìm thấy nhân viên</p>
           {searchValue && (
-            <p className="text-xs text-gray-400 mt-2">
+            <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">
               Thử điều chỉnh tiêu chí tìm kiếm
             </p>
           )}
@@ -220,10 +220,10 @@ export const EmployeeList = ({ hideControls = false }: EmployeeListProps) => {
             {employees.map((employee) => (
               <div
                 key={employee.id}
-                className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm"
+                className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 shadow-sm"
               >
                 {/* Header: Avatar, Name, and Actions */}
-                <div className="flex items-start gap-3 mb-3 pb-3 border-b border-gray-200">
+                <div className="flex items-start gap-3 mb-3 pb-3 border-b border-gray-200 dark:border-gray-700">
                   <div className="flex-shrink-0 h-12 w-12">
                     <div className="h-12 w-12 rounded-full bg-blue-600 flex items-center justify-center text-white text-sm font-semibold">
                       {getInitials(employee.firstName, employee.lastName)}
@@ -232,23 +232,23 @@ export const EmployeeList = ({ hideControls = false }: EmployeeListProps) => {
                   <div className="flex-1 min-w-0 pr-2">
                     <button
                       onClick={() => navigate(`/employees/${employee.id}`)}
-                      className="text-base font-semibold text-gray-900 hover:text-blue-600 transition-colors text-left block w-full truncate"
+                      className="text-base font-semibold text-gray-900 dark:text-gray-100 hover:text-blue-600 dark:hover:text-blue-400 transition-colors text-left block w-full truncate"
                     >
                       {employee.firstName} {employee.lastName}
                     </button>
-                    <div className="text-xs text-gray-500 mt-0.5 w-full truncate">{employee.email}</div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 w-full truncate">{employee.email}</div>
                   </div>
                   <div className="flex gap-1.5 flex-shrink-0">
                     <button
                       onClick={() => handleEdit(employee)}
-                      className="text-blue-600 hover:text-blue-700 transition-colors p-1.5 rounded-md hover:bg-blue-50 flex-shrink-0"
+                      className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-500 transition-colors p-1.5 rounded-md hover:bg-blue-50 dark:hover:bg-blue-900/30 flex-shrink-0"
                       aria-label="Edit"
                     >
                       <PencilIcon className="h-5 w-5" />
                     </button>
                     <button
                       onClick={() => handleDelete(employee)}
-                      className="text-red-600 hover:text-red-700 transition-colors p-1.5 rounded-md hover:bg-red-50 flex-shrink-0"
+                      className="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-500 transition-colors p-1.5 rounded-md hover:bg-red-50 dark:hover:bg-red-900/30 flex-shrink-0"
                       aria-label="Delete"
                     >
                       <TrashIcon className="h-5 w-5" />
@@ -259,15 +259,15 @@ export const EmployeeList = ({ hideControls = false }: EmployeeListProps) => {
                 {/* Details */}
                 <div className="space-y-2.5 text-sm">
                   <div className="flex justify-between items-start gap-2">
-                    <span className="text-gray-500 flex-shrink-0">Vị trí:</span>
-                    <span className="text-gray-900 font-medium text-right break-words">{employee.position}</span>
+                    <span className="text-gray-500 dark:text-gray-400 flex-shrink-0">Vị trí:</span>
+                    <span className="text-gray-900 dark:text-gray-100 font-medium text-right break-words">{employee.position}</span>
                   </div>
                   <div className="flex justify-between items-start gap-2">
-                    <span className="text-gray-500 flex-shrink-0">Phòng ban:</span>
-                    <span className="text-gray-900 text-right break-words">{employee.department}</span>
+                    <span className="text-gray-500 dark:text-gray-400 flex-shrink-0">Phòng ban:</span>
+                    <span className="text-gray-900 dark:text-gray-100 text-right break-words">{employee.department}</span>
                   </div>
                   <div className="flex justify-between items-center gap-2">
-                    <span className="text-gray-500 flex-shrink-0">Trạng thái:</span>
+                    <span className="text-gray-500 dark:text-gray-400 flex-shrink-0">Trạng thái:</span>
                     <span
                       className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium whitespace-nowrap ${getStatusColor(
                         employee.status
@@ -277,8 +277,8 @@ export const EmployeeList = ({ hideControls = false }: EmployeeListProps) => {
                     </span>
                   </div>
                   <div className="flex justify-between items-start gap-2">
-                    <span className="text-gray-500 flex-shrink-0">Thời gian làm việc:</span>
-                    <span className="text-gray-900 text-right">{calculateWorkingDuration(employee.hireDate)}</span>
+                    <span className="text-gray-500 dark:text-gray-400 flex-shrink-0">Thời gian làm việc:</span>
+                    <span className="text-gray-900 dark:text-gray-100 text-right">{calculateWorkingDuration(employee.hireDate)}</span>
                   </div>
                 </div>
               </div>
@@ -287,45 +287,45 @@ export const EmployeeList = ({ hideControls = false }: EmployeeListProps) => {
 
           {/* Tablet/Desktop: Table Layout */}
           <div className="hidden md:block overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-white">
+            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <thead className="bg-white dark:bg-gray-800">
                 <tr>
                   <th className="px-4 lg:px-6 py-3.5 text-left">
                     <button
                       onClick={() => handleSort('firstName')}
-                      className="flex items-center gap-1.5 hover:bg-gray-50 -ml-1 px-1 py-1 rounded transition-colors group"
+                      className="flex items-center gap-1.5 hover:bg-gray-50 dark:hover:bg-gray-700 -ml-1 px-1 py-1 rounded transition-colors group"
                     >
-                      <span className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Nhân viên</span>
+                      <span className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">Nhân viên</span>
                       {getSortIcon('firstName')}
                     </button>
                   </th>
                   <th className="px-4 lg:px-6 py-3.5 text-left">
                     <button
                       onClick={() => handleSort('position')}
-                      className="flex items-center gap-1.5 hover:bg-gray-50 -ml-1 px-1 py-1 rounded transition-colors group"
+                      className="flex items-center gap-1.5 hover:bg-gray-50 dark:hover:bg-gray-700 -ml-1 px-1 py-1 rounded transition-colors group"
                     >
-                      <span className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Vị trí</span>
+                      <span className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">Vị trí</span>
                       {getSortIcon('position')}
                     </button>
                   </th>
                   <th className="px-4 lg:px-6 py-3.5 text-left">
                     <button
                       onClick={() => handleSort('department')}
-                      className="flex items-center gap-1.5 hover:bg-gray-50 -ml-1 px-1 py-1 rounded transition-colors group"
+                      className="flex items-center gap-1.5 hover:bg-gray-50 dark:hover:bg-gray-700 -ml-1 px-1 py-1 rounded transition-colors group"
                     >
-                      <span className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Phòng ban</span>
+                      <span className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">Phòng ban</span>
                       {getSortIcon('department')}
                     </button>
                   </th>
                   <th className="px-4 lg:px-6 py-3.5 text-left">
-                    <span className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Trạng thái</span>
+                    <span className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">Trạng thái</span>
                   </th>
                   <th className="px-4 lg:px-6 py-3.5 text-left">
                     <button
                       onClick={() => handleSort('hireDate')}
-                      className="flex items-center gap-1.5 hover:bg-gray-50 -ml-1 px-1 py-1 rounded transition-colors group"
+                      className="flex items-center gap-1.5 hover:bg-gray-50 dark:hover:bg-gray-700 -ml-1 px-1 py-1 rounded transition-colors group"
                     >
-                      <span className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Thời gian làm việc</span>
+                      <span className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">Thời gian làm việc</span>
                       {getSortIcon('hireDate')}
                     </button>
                   </th>
@@ -334,9 +334,9 @@ export const EmployeeList = ({ hideControls = false }: EmployeeListProps) => {
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                 {employees.map((employee) => (
-                  <tr key={employee.id} className="hover:bg-gray-50/50 transition-colors">
+                  <tr key={employee.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
                     <td className="px-4 lg:px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <div className="flex-shrink-0 h-9 w-9">
@@ -347,16 +347,16 @@ export const EmployeeList = ({ hideControls = false }: EmployeeListProps) => {
                         <div className="ml-3">
                           <button
                             onClick={() => navigate(`/employees/${employee.id}`)}
-                            className="text-sm font-semibold text-gray-900 hover:text-blue-600 transition-colors text-left"
+                            className="text-sm font-semibold text-gray-900 dark:text-gray-100 hover:text-blue-600 dark:hover:text-blue-400 transition-colors text-left"
                           >
                             {employee.firstName} {employee.lastName}
                           </button>
-                          <div className="text-xs text-gray-500 mt-0.5">{employee.email}</div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{employee.email}</div>
                         </div>
                       </div>
                     </td>
                     <td className="px-4 lg:px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-700">{employee.position}</div>
+                      <div className="text-sm text-gray-700 dark:text-gray-300">{employee.position}</div>
                     </td>
                     <td className="px-4 lg:px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-700">{employee.department}</div>
@@ -377,14 +377,14 @@ export const EmployeeList = ({ hideControls = false }: EmployeeListProps) => {
                       <div className="flex justify-end gap-3">
                         <button
                           onClick={() => handleEdit(employee)}
-                          className="text-blue-600 hover:text-blue-700 transition-colors p-1 rounded-md hover:bg-blue-50"
+                          className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-500 transition-colors p-1 rounded-md hover:bg-blue-50 dark:hover:bg-blue-900/30"
                           title="Chỉnh sửa"
                         >
                           <PencilIcon className="h-4 w-4" />
                         </button>
                         <button
                           onClick={() => handleDelete(employee)}
-                          className="text-red-600 hover:text-red-700 transition-colors p-1 rounded-md hover:bg-red-50"
+                          className="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-500 transition-colors p-1 rounded-md hover:bg-red-50 dark:hover:bg-red-900/30"
                           title="Xóa"
                         >
                           <TrashIcon className="h-4 w-4" />

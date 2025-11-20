@@ -130,7 +130,7 @@ export const EmployeeListPage = () => {
     return (
       <Layout>
         <div className="flex justify-center items-center min-h-screen">
-          <div className="text-gray-500">Đang tải nhân viên...</div>
+          <div className="text-gray-500 dark:text-gray-400">Đang tải nhân viên...</div>
         </div>
       </Layout>
     );
@@ -173,13 +173,13 @@ export const EmployeeListPage = () => {
         {/* Search Bar */}
         <div className="mb-4 lg:mb-6">
           <div className="relative w-full max-w-md">
-            <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500" />
             <input
               type="text"
               placeholder="Tìm kiếm..."
               value={searchValue}
               onChange={handleSearchChange}
-              className="w-full pl-10 pr-4 py-2.5 text-sm border border-gray-300/80 rounded-lg bg-white text-gray-700 placeholder-gray-400 shadow-sm hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200"
+              className="w-full pl-10 pr-4 py-2.5 text-sm border border-gray-300/80 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-400 shadow-sm hover:border-gray-400 dark:hover:border-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 dark:focus:ring-blue-400/50 focus:border-blue-500 dark:focus:border-blue-400 transition-all duration-200"
             />
           </div>
         </div>
@@ -193,9 +193,9 @@ export const EmployeeListPage = () => {
 
             {/* Pagination Footer */}
             {pagination.total > 0 && (
-              <div className="px-4 lg:px-6 py-4 border-t border-gray-200 bg-white rounded-b-lg">
+              <div className="px-4 lg:px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-b-lg">
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                  <p className="text-xs sm:text-sm text-gray-600">
+                  <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
                     Hiển thị <span className="font-medium">{((pagination.page - 1) * pagination.pageSize) + 1}</span> đến{' '}
                     <span className="font-medium">{Math.min(pagination.page * pagination.pageSize, pagination.total)}</span> trong tổng số{' '}
                     <span className="font-medium">{pagination.total}</span> bản ghi

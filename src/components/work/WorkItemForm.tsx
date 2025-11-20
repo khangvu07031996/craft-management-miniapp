@@ -115,7 +115,7 @@ export const WorkItemForm = ({ workItem, onCancel, onSuccess }: WorkItemFormProp
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       {errors.submit && (
-        <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-800">
+        <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-sm text-red-800 dark:text-red-300">
           {errors.submit}
         </div>
       )}
@@ -133,16 +133,16 @@ export const WorkItemForm = ({ workItem, onCancel, onSuccess }: WorkItemFormProp
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
             Độ khó
-            <span className="text-red-500 ml-1">*</span>
+            <span className="text-red-500 dark:text-red-400 ml-1">*</span>
           </label>
           <select
             name="difficultyLevel"
             value={formData.difficultyLevel}
             onChange={handleChange}
-            className={`w-full px-3 py-2 text-sm border rounded-lg bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
-              errors.difficultyLevel ? 'border-red-500' : 'border-gray-200'
+            className={`w-full px-3 py-2 text-sm border rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all ${
+              errors.difficultyLevel ? 'border-red-500 dark:border-red-400' : 'border-gray-200 dark:border-gray-600'
             }`}
           >
             <option value="dễ">Dễ</option>
@@ -150,7 +150,7 @@ export const WorkItemForm = ({ workItem, onCancel, onSuccess }: WorkItemFormProp
             <option value="khó">Khó</option>
           </select>
           {errors.difficultyLevel && (
-            <p className="mt-1 text-xs text-red-600">{errors.difficultyLevel}</p>
+            <p className="mt-1 text-xs text-red-600 dark:text-red-400">{errors.difficultyLevel}</p>
           )}
         </div>
 

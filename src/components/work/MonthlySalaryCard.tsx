@@ -26,11 +26,11 @@ export const MonthlySalaryCard = ({
   const getStatusColor = (status: MonthlySalaryStatus) => {
     switch (status) {
       case 'Tạm tính':
-        return 'bg-yellow-100 text-yellow-800';
+        return 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300';
       case 'Thanh toán':
-        return 'bg-green-100 text-green-800';
+        return 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200';
     }
   };
 
@@ -46,15 +46,15 @@ export const MonthlySalaryCard = ({
   };
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6 hover:shadow-md transition-shadow">
+    <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm dark:shadow-gray-900/50 p-6 hover:shadow-md dark:hover:shadow-gray-900/70 transition-shadow">
       <div className="flex items-start justify-between mb-4">
         <div>
-          <h3 className="text-lg font-semibold text-gray-900">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
             {monthlySalary.employee
               ? `${monthlySalary.employee.firstName} ${monthlySalary.employee.lastName}`
               : 'Nhân viên'}
           </h3>
-          <p className="text-sm text-gray-500 mt-1">
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
             Tháng {monthlySalary.month}/{monthlySalary.year}
           </p>
         </div>
@@ -67,7 +67,7 @@ export const MonthlySalaryCard = ({
             {getStatusLabel(monthlySalary.status)}
           </span>
           {monthlySalary.calculatedAt && (
-            <span className="text-xs text-gray-500" title={`Raw: ${monthlySalary.calculatedAt}`}>
+            <span className="text-xs text-gray-500 dark:text-gray-400" title={`Raw: ${monthlySalary.calculatedAt}`}>
               {formatDateTimeVN(monthlySalary.calculatedAt)}
             </span>
           )}
@@ -76,17 +76,17 @@ export const MonthlySalaryCard = ({
 
       <div className="space-y-2 mb-4">
         <div className="flex justify-between">
-          <span className="text-sm text-gray-600">Số ngày làm việc:</span>
-          <span className="text-sm font-medium text-gray-900">{monthlySalary.totalWorkDays} ngày</span>
+          <span className="text-sm text-gray-600 dark:text-gray-400">Số ngày làm việc:</span>
+          <span className="text-sm font-medium text-gray-900 dark:text-gray-100">{monthlySalary.totalWorkDays} ngày</span>
         </div>
         <div className="flex justify-between">
-          <span className="text-sm text-gray-600">Tổng lương:</span>
-          <span className="text-sm font-semibold text-gray-900">
+          <span className="text-sm text-gray-600 dark:text-gray-400">Tổng lương:</span>
+          <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">
             {formatCurrency(monthlySalary.totalAmount)}
           </span>
         </div>
         <div className="flex items-center justify-between gap-2">
-          <span className="text-sm text-gray-600">Phụ cấp:</span>
+          <span className="text-sm text-gray-600 dark:text-gray-400">Phụ cấp:</span>
           {monthlySalary.status === 'Tạm tính' ? (
             <div className="flex items-center gap-1.5">
               <input
@@ -102,13 +102,13 @@ export const MonthlySalaryCard = ({
                     onUpdateAllowances(monthlySalary.id, vndValue);
                   }
                 }}
-                className="w-16 text-right px-2 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-16 text-right px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
                 aria-label="Phụ cấp (nghìn đồng)"
               />
-              <span className="text-xs text-gray-600 whitespace-nowrap">.000đ</span>
+              <span className="text-xs text-gray-600 dark:text-gray-400 whitespace-nowrap">.000đ</span>
             </div>
           ) : (
-            <span className="text-sm font-medium text-gray-900">
+            <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
               {(((monthlySalary.allowances || 0) / 1000) || 0).toLocaleString('vi-VN')}.000đ
             </span>
           )}
@@ -119,7 +119,7 @@ export const MonthlySalaryCard = ({
         {onViewDetails && (
           <button
             onClick={() => onViewDetails(monthlySalary.id)}
-            className="flex-1 px-3 py-2 text-sm font-medium text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
+            className="flex-1 px-3 py-2 text-sm font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors"
           >
             Xem chi tiết
           </button>
@@ -127,7 +127,7 @@ export const MonthlySalaryCard = ({
         {onPay && monthlySalary.status === 'Tạm tính' && (
           <button
             onClick={() => onPay(monthlySalary.id)}
-            className="px-3 py-2 text-sm font-medium text-green-600 bg-green-50 rounded-lg hover:bg-green-100 transition-colors"
+            className="px-3 py-2 text-sm font-medium text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/30 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/50 transition-colors"
           >
             Thanh toán
           </button>
@@ -135,7 +135,7 @@ export const MonthlySalaryCard = ({
         {onDelete && monthlySalary.status === 'Tạm tính' && (
           <button
             onClick={() => onDelete(monthlySalary.id)}
-            className="px-3 py-2 text-sm font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors"
+            className="px-3 py-2 text-sm font-medium text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/30 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/50 transition-colors"
           >
             Xoá
           </button>

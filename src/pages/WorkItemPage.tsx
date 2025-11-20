@@ -296,13 +296,13 @@ export const WorkItemPage = () => {
   const getStatusBadgeColor = (status: string) => {
     switch (status) {
       case 'Tạo mới':
-        return 'bg-green-100 text-green-800';
+        return 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300';
       case 'Đang sản xuất':
-        return 'bg-blue-100 text-blue-800';
+        return 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300';
       case 'Hoàn thành':
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200';
     }
   };
 
@@ -330,10 +330,10 @@ export const WorkItemPage = () => {
         </div>
 
         {/* Filter */}
-        <div className="mb-4 lg:mb-6 bg-gradient-to-br from-white to-gray-50 rounded-xl border border-gray-200/60 shadow-md shadow-gray-100/50 p-4 lg:p-6">
+        <div className="mb-4 lg:mb-6 bg-gradient-to-br from-white dark:from-gray-800 to-gray-50 dark:to-gray-800 rounded-xl border border-gray-200/60 dark:border-gray-700 shadow-md dark:shadow-gray-900/50 shadow-gray-100/50 p-4 lg:p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 lg:gap-5">
             <div>
-              <label className="flex items-center gap-2 text-xs font-semibold text-gray-600 uppercase tracking-wider mb-2.5">
+              <label className="flex items-center gap-2 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-2.5">
                 <MagnifyingGlassIcon className="w-3.5 h-3.5" />
                 Tên loại hàng
               </label>
@@ -353,7 +353,7 @@ export const WorkItemPage = () => {
                 <div className="relative">
                   <div className="relative w-full">
                     <Combobox.Input
-                      className="w-full pl-4 pr-10 py-2.5 text-sm border border-gray-300/80 rounded-lg bg-white text-gray-700 shadow-sm hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200"
+                      className="w-full pl-4 pr-10 py-2.5 text-sm border border-gray-300/80 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 shadow-sm hover:border-gray-400 dark:hover:border-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 dark:focus:ring-blue-400/50 focus:border-blue-500 dark:focus:border-blue-400 transition-all duration-200"
                       displayValue={(item: WorkItemResponse | null) => item ? item.name : filterNameQuery}
                       onChange={(event) => {
                         const value = event.target.value;
@@ -365,14 +365,14 @@ export const WorkItemPage = () => {
                     />
                     <Combobox.Button className="absolute inset-y-0 right-0 flex items-center pr-2">
                       <ChevronUpDownIcon
-                        className="h-5 w-5 text-gray-400"
+                        className="h-5 w-5 text-gray-400 dark:text-gray-500"
                         aria-hidden="true"
                       />
                     </Combobox.Button>
                   </div>
-                  <Combobox.Options className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
+                  <Combobox.Options className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white dark:bg-gray-800 py-1 text-base shadow-lg dark:shadow-gray-900/50 ring-1 ring-black dark:ring-gray-700 ring-opacity-5 dark:ring-opacity-50 focus:outline-none sm:text-sm">
                     {filteredWorkItemsForAutocomplete.length === 0 && filterNameQuery !== '' ? (
-                      <div className="relative cursor-default select-none px-4 py-2 text-gray-700">
+                      <div className="relative cursor-default select-none px-4 py-2 text-gray-700 dark:text-gray-300">
                         Không tìm thấy loại hàng nào.
                       </div>
                     ) : (
@@ -381,7 +381,7 @@ export const WorkItemPage = () => {
                           key={item.id}
                           className={({ active }) =>
                             `relative cursor-default select-none py-2 pl-10 pr-4 ${
-                              active ? 'bg-blue-600 text-white' : 'text-gray-900'
+                              active ? 'bg-blue-600 dark:bg-blue-500 text-white' : 'text-gray-900 dark:text-gray-100'
                             }`
                           }
                           value={item}
@@ -414,7 +414,7 @@ export const WorkItemPage = () => {
               </Combobox>
             </div>
             <div>
-              <label className="flex items-center gap-2 text-xs font-semibold text-gray-600 uppercase tracking-wider mb-2.5">
+              <label className="flex items-center gap-2 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-2.5">
                 <ChartBarIcon className="w-3.5 h-3.5" />
                 Độ khó
               </label>
@@ -422,7 +422,7 @@ export const WorkItemPage = () => {
                 <select
                   value={filterDifficulty}
                   onChange={(e) => setFilterDifficulty(e.target.value as DifficultyLevel | '')}
-                  className="w-full pl-4 pr-10 py-2.5 text-sm border border-gray-300/80 rounded-lg bg-white text-gray-700 shadow-sm hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200 appearance-none cursor-pointer"
+                  className="w-full pl-4 pr-10 py-2.5 text-sm border border-gray-300/80 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 shadow-sm hover:border-gray-400 dark:hover:border-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 dark:focus:ring-blue-400/50 focus:border-blue-500 dark:focus:border-blue-400 transition-all duration-200 appearance-none cursor-pointer"
                 >
                   <option value="">Tất cả</option>
                   <option value="dễ">Dễ</option>
@@ -430,14 +430,14 @@ export const WorkItemPage = () => {
                   <option value="khó">Khó</option>
                 </select>
                 <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                  <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
                 </div>
               </div>
             </div>
             <div>
-              <label className="flex items-center gap-2 text-xs font-semibold text-gray-600 uppercase tracking-wider mb-2.5">
+              <label className="flex items-center gap-2 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-2.5">
                 <FunnelIcon className="w-3.5 h-3.5" />
                 Trạng thái
               </label>
@@ -445,7 +445,7 @@ export const WorkItemPage = () => {
                 <select
                   value={filterStatus}
                   onChange={(e) => setFilterStatus(e.target.value as 'Tạo mới' | 'Đang sản xuất' | 'Hoàn thành' | '')}
-                  className="w-full pl-4 pr-10 py-2.5 text-sm border border-gray-300/80 rounded-lg bg-white text-gray-700 shadow-sm hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200 appearance-none cursor-pointer"
+                  className="w-full pl-4 pr-10 py-2.5 text-sm border border-gray-300/80 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 shadow-sm hover:border-gray-400 dark:hover:border-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 dark:focus:ring-blue-400/50 focus:border-blue-500 dark:focus:border-blue-400 transition-all duration-200 appearance-none cursor-pointer"
                 >
                   <option value="">Tất cả</option>
                   <option value="Tạo mới">Tạo mới</option>
@@ -453,14 +453,14 @@ export const WorkItemPage = () => {
                   <option value="Hoàn thành">Hoàn thành</option>
                 </select>
                 <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                  <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
                 </div>
               </div>
             </div>
             <div>
-              <label className="flex items-center gap-2 text-xs font-semibold text-gray-600 uppercase tracking-wider mb-2.5">
+              <label className="flex items-center gap-2 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-2.5">
                 <ChartBarIcon className="w-3.5 h-3.5" />
                 Ngày xuất hàng từ
               </label>
@@ -468,11 +468,11 @@ export const WorkItemPage = () => {
                 type="date"
                 value={filterDateFrom}
                 onChange={(e) => setFilterDateFrom(e.target.value)}
-                className="w-full pl-4 pr-4 py-2.5 text-sm border border-gray-300/80 rounded-lg bg-white text-gray-700 shadow-sm hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200"
+                className="w-full pl-4 pr-4 py-2.5 text-sm border border-gray-300/80 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 shadow-sm hover:border-gray-400 dark:hover:border-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 dark:focus:ring-blue-400/50 focus:border-blue-500 dark:focus:border-blue-400 transition-all duration-200"
               />
             </div>
             <div>
-              <label className="flex items-center gap-2 text-xs font-semibold text-gray-600 uppercase tracking-wider mb-2.5">
+              <label className="flex items-center gap-2 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-2.5">
                 <ChartBarIcon className="w-3.5 h-3.5" />
                 Ngày xuất hàng đến
               </label>
@@ -480,7 +480,7 @@ export const WorkItemPage = () => {
                 type="date"
                 value={filterDateTo}
                 onChange={(e) => setFilterDateTo(e.target.value)}
-                className="w-full pl-4 pr-4 py-2.5 text-sm border border-gray-300/80 rounded-lg bg-white text-gray-700 shadow-sm hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200"
+                className="w-full pl-4 pr-4 py-2.5 text-sm border border-gray-300/80 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 shadow-sm hover:border-gray-400 dark:hover:border-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 dark:focus:ring-blue-400/50 focus:border-blue-500 dark:focus:border-blue-400 transition-all duration-200"
               />
             </div>
           </div>
@@ -536,8 +536,8 @@ export const WorkItemPage = () => {
         )}
 
         {isFormOpen && (
-          <div className="mb-6 bg-white rounded-lg border border-gray-200 shadow-sm p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">
+          <div className="mb-6 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm dark:shadow-gray-900/50 p-6">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
               {selectedItem ? 'Chỉnh sửa loại hàng' : 'Thêm loại hàng mới'}
             </h2>
             <WorkItemForm
@@ -561,24 +561,24 @@ export const WorkItemPage = () => {
                 {paginatedItems.map((item) => (
                   <div
                     key={item.id}
-                    className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm"
+                    className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 shadow-sm"
                   >
                     {/* Header: Name and Actions */}
-                    <div className="flex items-start justify-between mb-3 pb-3 border-b border-gray-200">
-                      <h3 className="text-base font-semibold text-gray-900 flex-1 pr-2">
+                    <div className="flex items-start justify-between mb-3 pb-3 border-b border-gray-200 dark:border-gray-700">
+                      <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 flex-1 pr-2">
                         {item.name}
                       </h3>
                       <div className="flex gap-2 flex-shrink-0">
                         <button
                           onClick={() => handleEdit(item)}
-                          className="text-blue-600 hover:text-blue-900 p-1"
+                          className="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-500 p-1"
                           aria-label="Edit"
                         >
                           <PencilIcon className="w-5 h-5" />
                         </button>
                         <button
                           onClick={() => handleDelete(item.id)}
-                          className="text-red-600 hover:text-red-900 p-1"
+                          className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-500 p-1"
                           aria-label="Delete"
                         >
                           <TrashIcon className="w-5 h-5" />
@@ -589,22 +589,22 @@ export const WorkItemPage = () => {
                     {/* Details */}
                     <div className="space-y-2 text-sm">
                       <div className="flex justify-between items-center">
-                        <span className="text-gray-500">Độ khó:</span>
+                        <span className="text-gray-500 dark:text-gray-400">Độ khó:</span>
                         <span
                           className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${
                             item.difficultyLevel === 'dễ'
-                              ? 'bg-green-100 text-green-800'
+                              ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300'
                               : item.difficultyLevel === 'trung bình'
-                              ? 'bg-yellow-100 text-yellow-800'
-                              : 'bg-red-100 text-red-800'
+                              ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300'
+                              : 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300'
                           }`}
                         >
                           {formatDifficultyLevel(item.difficultyLevel)}
                         </span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-gray-500">Giá mỗi mối hàn:</span>
-                        <span className="text-gray-900 font-medium">{formatCurrency(item.pricePerWeld)}</span>
+                        <span className="text-gray-500 dark:text-gray-400">Giá mỗi mối hàn:</span>
+                        <span className="text-gray-900 dark:text-gray-100 font-medium">{formatCurrency(item.pricePerWeld)}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-500">Số lượng cần làm:</span>
@@ -617,7 +617,7 @@ export const WorkItemPage = () => {
                             {(item.quantityMade || 0).toLocaleString('vi-VN')}
                           </span>
                           {item.totalQuantity > 0 && item.quantityMade !== undefined && (
-                            <span className="ml-2 text-xs text-gray-500">
+                            <span className="ml-2 text-xs text-gray-500 dark:text-gray-400">
                               ({Math.round((item.quantityMade / item.totalQuantity) * 100)}%)
                             </span>
                           )}
@@ -648,47 +648,47 @@ export const WorkItemPage = () => {
 
               {/* Tablet/Desktop: Table Layout */}
               <div className="hidden md:block overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead className="bg-gray-50 dark:bg-gray-800">
                   <tr>
                     <th 
-                      className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
+                      className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 select-none"
                       onClick={() => handleSort('name')}
                     >
                       Tên loại hàng {getSortIcon('name')}
                     </th>
                     <th 
-                      className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
+                      className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 select-none"
                       onClick={() => handleSort('difficulty')}
                     >
                       Độ khó {getSortIcon('difficulty')}
                     </th>
-                    <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       Giá mỗi mối hàn
                     </th>
                     <th 
-                      className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
+                      className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 select-none"
                       onClick={() => handleSort('totalQuantity')}
                     >
                       Số lượng cần làm {getSortIcon('totalQuantity')}
                     </th>
                     <th 
-                      className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
+                      className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 select-none"
                       onClick={() => handleSort('quantityMade')}
                     >
                       Số lượng đã sản xuất {getSortIcon('quantityMade')}
                     </th>
-                    <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       Mối hàn/SP
                     </th>
                     <th 
-                      className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
+                      className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 select-none"
                       onClick={() => handleSort('status')}
                     >
                       Trạng thái {getSortIcon('status')}
                     </th>
                     <th 
-                      className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
+                      className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 select-none"
                       onClick={() => handleSort('estimatedDeliveryDate')}
                     >
                       Ngày ước tính xuất hàng {getSortIcon('estimatedDeliveryDate')}
@@ -698,52 +698,52 @@ export const WorkItemPage = () => {
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+                <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                   {paginatedItems.map((item) => (
-                    <tr key={item.id} className="hover:bg-gray-50">
-                      <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    <tr key={item.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                      <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
                         {item.name}
                       </td>
-                      <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
                         <span
                           className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${
                             item.difficultyLevel === 'dễ'
-                              ? 'bg-green-100 text-green-800'
+                              ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300'
                               : item.difficultyLevel === 'trung bình'
-                              ? 'bg-yellow-100 text-yellow-800'
-                              : 'bg-red-100 text-red-800'
+                              ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300'
+                              : 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300'
                           }`}
                         >
                           {formatDifficultyLevel(item.difficultyLevel)}
                         </span>
                       </td>
-                      <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
                         {formatCurrency(item.pricePerWeld)}
                       </td>
-                      <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
                         {item.totalQuantity.toLocaleString('vi-VN')}
                       </td>
-                      <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
                         <span className={item.quantityMade !== undefined && item.quantityMade > 0 ? 'font-medium' : ''}>
                           {(item.quantityMade || 0).toLocaleString('vi-VN')}
                         </span>
                         {item.totalQuantity > 0 && item.quantityMade !== undefined && (
-                          <span className="ml-2 text-xs text-gray-500">
+                          <span className="ml-2 text-xs text-gray-500 dark:text-gray-400">
                             ({Math.round((item.quantityMade / item.totalQuantity) * 100)}%)
                           </span>
                         )}
                       </td>
-                      <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
                         {item.weldsPerItem}
                       </td>
-                      <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
                         <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${getStatusBadgeColor(item.status)}`}>
                           {item.status}
                         </span>
                       </td>
-                      <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
                         {item.estimatedDeliveryDate ? (
-                          <span className={itemsApproachingDelivery.some(i => i.id === item.id) ? 'font-medium text-yellow-600' : ''}>
+                            <span className={itemsApproachingDelivery.some(i => i.id === item.id) ? 'font-medium text-yellow-600 dark:text-yellow-400' : ''}>
                             {formatDate(item.estimatedDeliveryDate)}
                           </span>
                         ) : (

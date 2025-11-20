@@ -705,7 +705,7 @@ export const WorkRecordForm = ({ workRecord, onCancel, onSuccess }: WorkRecordFo
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
             Nhân viên
             <span className="text-red-500 ml-1">*</span>
           </label>
@@ -742,8 +742,8 @@ export const WorkRecordForm = ({ workRecord, onCancel, onSuccess }: WorkRecordFo
             <div className="relative">
               <div className="relative">
                 <Combobox.Input
-                  className={`w-full pl-10 pr-10 py-2.5 text-sm border rounded-lg bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
-                    errors.employeeId ? 'border-red-500' : 'border-gray-200'
+                  className={`w-full pl-10 pr-10 py-2.5 text-sm border rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all ${
+                    errors.employeeId ? 'border-red-500 dark:border-red-400' : 'border-gray-200 dark:border-gray-600'
                   }`}
                   displayValue={(employee: EmployeeResponse | null) => 
                     employee ? `${employee.firstName} ${employee.lastName} - ${employee.department}` : ''
@@ -760,9 +760,9 @@ export const WorkRecordForm = ({ workRecord, onCancel, onSuccess }: WorkRecordFo
                   }}
                   placeholder="Tìm kiếm nhân viên..."
                 />
-                <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500" />
                 <Combobox.Button className="absolute inset-y-0 right-0 flex items-center pr-2">
-                  <ChevronUpDownIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
+                  <ChevronUpDownIcon className="h-5 w-5 text-gray-400 dark:text-gray-500" aria-hidden="true" />
                 </Combobox.Button>
               </div>
               <Transition
@@ -827,11 +827,11 @@ export const WorkRecordForm = ({ workRecord, onCancel, onSuccess }: WorkRecordFo
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
             Loại công việc
             <span className="text-red-500 ml-1">*</span>
             {selectedEmployee && (
-              <span className="text-xs text-gray-500 font-normal ml-2">
+              <span className="text-xs text-gray-500 dark:text-gray-400 font-normal ml-2">
                 (Vị trí: {selectedEmployee.position})
               </span>
             )}
@@ -841,9 +841,9 @@ export const WorkRecordForm = ({ workRecord, onCancel, onSuccess }: WorkRecordFo
             value={formData.workTypeId}
             onChange={handleChange}
             disabled={!formData.employeeId}
-            className={`w-full px-3 py-2 text-sm border rounded-lg bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
-              errors.workTypeId ? 'border-red-500' : 'border-gray-200'
-            } ${!formData.employeeId ? 'bg-gray-50 cursor-not-allowed' : ''}`}
+            className={`w-full px-3 py-2 text-sm border rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all ${
+              errors.workTypeId ? 'border-red-500 dark:border-red-400' : 'border-gray-200 dark:border-gray-600'
+            } ${!formData.employeeId ? 'bg-gray-50 dark:bg-gray-800 cursor-not-allowed' : ''}`}
           >
             <option value="">
               {!formData.employeeId 
@@ -869,7 +869,7 @@ export const WorkRecordForm = ({ workRecord, onCancel, onSuccess }: WorkRecordFo
         {selectedWorkType === CalculationType.WELD_COUNT && (
           <>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
                 Loại hàng
                 <span className="text-red-500 ml-1">*</span>
               </label>
@@ -893,8 +893,8 @@ export const WorkRecordForm = ({ workRecord, onCancel, onSuccess }: WorkRecordFo
                 <div className="relative">
                   <div className="relative">
                     <Combobox.Input
-                      className={`w-full pl-10 pr-10 py-2.5 text-sm border rounded-lg bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
-                        errors.workItemId ? 'border-red-500' : 'border-gray-200'
+                      className={`w-full pl-10 pr-10 py-2.5 text-sm border rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all ${
+                        errors.workItemId ? 'border-red-500 dark:border-red-400' : 'border-gray-200 dark:border-gray-600'
                       }`}
                       displayValue={(item: any) => item ? `${item.name} (${item.difficultyLevel})` : ''}
                       onChange={(event) => {
@@ -906,9 +906,9 @@ export const WorkRecordForm = ({ workRecord, onCancel, onSuccess }: WorkRecordFo
                       }}
                       placeholder="Tìm kiếm loại hàng..."
                     />
-                    <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500" />
                     <Combobox.Button className="absolute inset-y-0 right-0 flex items-center pr-2">
-                      <ChevronUpDownIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
+                      <ChevronUpDownIcon className="h-5 w-5 text-gray-400 dark:text-gray-500" aria-hidden="true" />
                     </Combobox.Button>
                   </div>
                   <Transition
@@ -929,7 +929,7 @@ export const WorkRecordForm = ({ workRecord, onCancel, onSuccess }: WorkRecordFo
                             key={item.id}
                             className={({ active }) =>
                               `relative cursor-default select-none py-2 pl-10 pr-4 ${
-                                active ? 'bg-blue-600 text-white' : 'text-gray-900'
+                                active ? 'bg-blue-600 dark:bg-blue-500 text-white' : 'text-gray-900 dark:text-gray-100'
                               }`
                             }
                             value={item}
@@ -942,7 +942,7 @@ export const WorkRecordForm = ({ workRecord, onCancel, onSuccess }: WorkRecordFo
                                 {selected ? (
                                   <span
                                     className={`absolute inset-y-0 left-0 flex items-center pl-3 ${
-                                      active ? 'text-white' : 'text-blue-600'
+                                      active ? 'text-white' : 'text-blue-600 dark:text-blue-400'
                                     }`}
                                   >
                                     <CheckIcon className="h-5 w-5" aria-hidden="true" />
@@ -957,10 +957,10 @@ export const WorkRecordForm = ({ workRecord, onCancel, onSuccess }: WorkRecordFo
                   </Transition>
                 </div>
               </Combobox>
-              {errors.workItemId && <p className="mt-1 text-xs text-red-600">{errors.workItemId}</p>}
+              {errors.workItemId && <p className="mt-1 text-xs text-red-600 dark:text-red-400">{errors.workItemId}</p>}
               {selectedWorkItem && (
                 <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                  <p className="text-xs text-gray-600">
+                  <p className="text-xs text-gray-600 dark:text-gray-400">
                     <span className="font-medium">Số mối hàn/SP:</span> {selectedWorkItem.weldsPerItem} mối
                   </p>
                   <p className="text-xs text-gray-600 mt-1">
@@ -986,7 +986,7 @@ export const WorkRecordForm = ({ workRecord, onCancel, onSuccess }: WorkRecordFo
           />
           {/* Display remaining quantity for weld_count */}
           {selectedWorkType === CalculationType.WELD_COUNT && selectedWorkItem && totalQuantityMade !== undefined && (
-            <div className="mt-2 text-xs text-gray-600">
+            <div className="mt-2 text-xs text-gray-600 dark:text-gray-400">
               <p>
                 <span className="font-medium">Đã làm:</span> {totalQuantityMade.toLocaleString('vi-VN')} SP /{' '}
                 <span className="font-medium">Cần làm:</span> {selectedWorkItem.totalQuantity.toLocaleString('vi-VN')} SP
@@ -1023,9 +1023,9 @@ export const WorkRecordForm = ({ workRecord, onCancel, onSuccess }: WorkRecordFo
               name="isOvertime"
               checked={formData.isOvertime}
               onChange={handleChange}
-              className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+              className="w-4 h-4 text-blue-600 dark:text-blue-400 border-gray-300 dark:border-gray-600 rounded focus:ring-blue-500 dark:focus:ring-blue-400"
             />
-            <span className="text-sm font-medium text-gray-700">Tăng ca</span>
+            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Tăng ca</span>
           </label>
         </div>
 
@@ -1045,7 +1045,7 @@ export const WorkRecordForm = ({ workRecord, onCancel, onSuccess }: WorkRecordFo
             {/* Calculate and display total amount for weld_count with overtime */}
             {selectedWorkItem && formData.quantity && parseFloat(formData.quantity) > 0 && formData.overtimeQuantity && parseFloat(formData.overtimeQuantity) > 0 && (
               <div className="mt-2 p-3 bg-green-50 border border-green-200 rounded-lg">
-                <p className="text-sm font-medium text-gray-900 mb-1">Tổng tiền dự kiến:</p>
+                <p className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-1">Tổng tiền dự kiến:</p>
                 <p className="text-lg font-bold text-green-700">
                   {(() => {
                     const baseAmount = parseFloat(formData.quantity) * selectedWorkItem.weldsPerItem * selectedWorkItem.pricePerWeld;
@@ -1071,7 +1071,7 @@ export const WorkRecordForm = ({ workRecord, onCancel, onSuccess }: WorkRecordFo
             {/* Show base amount if no overtime quantity yet */}
             {selectedWorkItem && formData.quantity && parseFloat(formData.quantity) > 0 && (!formData.overtimeQuantity || parseFloat(formData.overtimeQuantity) <= 0) && (
               <div className="mt-2 p-3 bg-green-50 border border-green-200 rounded-lg">
-                <p className="text-sm font-medium text-gray-900 mb-1">Tổng tiền dự kiến:</p>
+                <p className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-1">Tổng tiền dự kiến:</p>
                 <p className="text-lg font-bold text-green-700">
                   {(
                     parseFloat(formData.quantity) *
@@ -1103,7 +1103,7 @@ export const WorkRecordForm = ({ workRecord, onCancel, onSuccess }: WorkRecordFo
             {/* Calculate and display total amount for hourly with overtime */}
             {formData.quantity && parseFloat(formData.quantity) > 0 && formData.unitPrice && parseFloat(formData.unitPrice) > 0 && formData.overtimeHours && parseFloat(formData.overtimeHours) > 0 && (
               <div className="mt-2 p-3 bg-green-50 border border-green-200 rounded-lg">
-                <p className="text-sm font-medium text-gray-900 mb-1">Tổng tiền dự kiến:</p>
+                <p className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-1">Tổng tiền dự kiến:</p>
                 <p className="text-lg font-bold text-green-700">
                   {(() => {
                     const baseAmount = parseFloat(formData.quantity) * parseFloat(formData.unitPrice);
@@ -1131,7 +1131,7 @@ export const WorkRecordForm = ({ workRecord, onCancel, onSuccess }: WorkRecordFo
             {/* Show base amount if no overtime hours yet */}
             {formData.quantity && parseFloat(formData.quantity) > 0 && formData.unitPrice && parseFloat(formData.unitPrice) > 0 && (!formData.overtimeHours || parseFloat(formData.overtimeHours) <= 0) && (
               <div className="mt-2 p-3 bg-green-50 border border-green-200 rounded-lg">
-                <p className="text-sm font-medium text-gray-900 mb-1">Tổng tiền dự kiến:</p>
+                <p className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-1">Tổng tiền dự kiến:</p>
                 <p className="text-lg font-bold text-green-700">
                   {(parseFloat(formData.quantity) * parseFloat(formData.unitPrice)).toLocaleString('vi-VN')} ₫
                 </p>
@@ -1178,7 +1178,7 @@ export const WorkRecordForm = ({ workRecord, onCancel, onSuccess }: WorkRecordFo
         )}
 
         <div className="md:col-span-2">
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
             Ghi chú
           </label>
           <textarea
@@ -1186,7 +1186,7 @@ export const WorkRecordForm = ({ workRecord, onCancel, onSuccess }: WorkRecordFo
             value={formData.notes}
             onChange={handleChange}
             rows={3}
-            className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+            className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all"
           />
         </div>
       </div>
@@ -1250,7 +1250,7 @@ export const WorkRecordForm = ({ workRecord, onCancel, onSuccess }: WorkRecordFo
                           <>
                             Số lượng sản phẩm làm được vượt quá số lượng cần làm. Vui lòng điều chỉnh số lượng hoặc số lượng tăng ca cho phù hợp.
                             <br />
-                            <span className="mt-2 inline-block text-xs text-gray-600 font-medium">
+                            <span className="mt-2 inline-block text-xs text-gray-600 dark:text-gray-400 font-medium">
                               {errors.quantity}
                             </span>
                           </>
@@ -1258,7 +1258,7 @@ export const WorkRecordForm = ({ workRecord, onCancel, onSuccess }: WorkRecordFo
                           <>
                             Số giờ làm việc vượt quá số giờ còn lại trong ngày. Vui lòng điều chỉnh số giờ hoặc số giờ tăng ca cho phù hợp.
                             <br />
-                            <span className="mt-2 inline-block text-xs text-gray-600 font-medium">
+                            <span className="mt-2 inline-block text-xs text-gray-600 dark:text-gray-400 font-medium">
                               {errors.quantity}
                             </span>
                           </>
@@ -1266,7 +1266,7 @@ export const WorkRecordForm = ({ workRecord, onCancel, onSuccess }: WorkRecordFo
                           <>
                             Tổng số lượng sản phẩm (bao gồm tăng ca) vượt quá số lượng cần làm. Vui lòng điều chỉnh số lượng tăng ca cho phù hợp.
                             <br />
-                            <span className="mt-2 inline-block text-xs text-gray-600 font-medium">
+                            <span className="mt-2 inline-block text-xs text-gray-600 dark:text-gray-400 font-medium">
                               {errors.overtimeQuantity}
                             </span>
                           </>
@@ -1274,7 +1274,7 @@ export const WorkRecordForm = ({ workRecord, onCancel, onSuccess }: WorkRecordFo
                           <>
                             Tổng số giờ làm việc (bao gồm tăng ca) vượt quá 24 giờ/ngày. Vui lòng điều chỉnh số giờ tăng ca cho phù hợp.
                             <br />
-                            <span className="mt-2 inline-block text-xs text-gray-600 font-medium">
+                            <span className="mt-2 inline-block text-xs text-gray-600 dark:text-gray-400 font-medium">
                               {errors.overtimeHours}
                             </span>
                           </>

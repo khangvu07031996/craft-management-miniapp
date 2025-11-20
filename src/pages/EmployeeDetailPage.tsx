@@ -30,7 +30,7 @@ export const EmployeeDetailPage = () => {
     return (
       <Layout>
         <div className="flex justify-center items-center min-h-screen">
-          <div className="text-gray-500">Đang tải thông tin nhân viên...</div>
+          <div className="text-gray-500 dark:text-gray-400">Đang tải thông tin nhân viên...</div>
         </div>
       </Layout>
     );

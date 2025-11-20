@@ -29,26 +29,26 @@ export const WorkItemDeleteConfirm = ({
   const getStatusBadgeColor = (status: string) => {
     switch (status) {
       case 'Tạo mới':
-        return 'bg-green-100 text-green-800';
+        return 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300';
       case 'Đang sản xuất':
-        return 'bg-blue-100 text-blue-800';
+        return 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300';
       case 'Hoàn thành':
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200';
     }
   };
 
   const getDifficultyBadgeColor = (difficulty: string) => {
     switch (difficulty) {
       case 'dễ':
-        return 'bg-green-100 text-green-800';
+        return 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300';
       case 'trung bình':
-        return 'bg-yellow-100 text-yellow-800';
+        return 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300';
       case 'khó':
-        return 'bg-red-100 text-red-800';
+        return 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200';
     }
   };
 
@@ -78,21 +78,21 @@ export const WorkItemDeleteConfirm = ({
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
             >
-              <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-4 sm:p-6 text-left align-middle shadow-xl transition-all mx-4">
+              <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white dark:bg-gray-800 p-4 sm:p-6 text-left align-middle shadow-xl dark:shadow-gray-900/50 transition-all mx-4">
                 <div className="flex items-start gap-3 sm:gap-4">
                   <div className="flex-shrink-0">
-                    <ExclamationTriangleIcon className="h-10 w-10 sm:h-12 sm:w-12 text-red-600" />
+                    <ExclamationTriangleIcon className="h-10 w-10 sm:h-12 sm:w-12 text-red-600 dark:text-red-400" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <Dialog.Title as="h3" className="text-base sm:text-lg font-medium leading-6 text-gray-900">
+                    <Dialog.Title as="h3" className="text-base sm:text-lg font-medium leading-6 text-gray-900 dark:text-gray-100">
                       Xác nhận xóa loại hàng
                     </Dialog.Title>
                     <div className="mt-2">
-                      <p className="text-sm text-gray-500">
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
                         Bạn có chắc chắn muốn xóa loại hàng này? Hành động này không thể hoàn tác.
                       </p>
                       {workItem && (
-                        <div className="mt-4 p-3 bg-gray-50 rounded-lg border border-gray-200 text-xs text-gray-700">
+                        <div className="mt-4 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600 text-xs text-gray-700 dark:text-gray-300">
                           <p><span className="font-medium">Tên loại hàng:</span> {workItem.name}</p>
                           <p>
                             <span className="font-medium">Độ khó:</span>{' '}

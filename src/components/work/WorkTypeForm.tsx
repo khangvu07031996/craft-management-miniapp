@@ -167,7 +167,7 @@ export const WorkTypeForm = ({ workType, onCancel, onSuccess }: WorkTypeFormProp
             disabled={formData.calculationType === 'weld_count'}
           />
           {formData.calculationType === 'weld_count' && (
-            <p className="mt-1 text-xs text-gray-500">
+            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
               Giá đơn vị được lấy từ loại hàng (work item)
             </p>
           )}

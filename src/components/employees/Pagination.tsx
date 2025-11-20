@@ -78,8 +78,8 @@ export const Pagination = ({
           flex items-center justify-center px-3 py-2 text-sm font-medium rounded-lg border transition-colors
           ${
             hasPreviousPage
-              ? 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-400'
-              : 'border-gray-200 bg-gray-50 text-gray-400 cursor-not-allowed'
+              ? 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-400 dark:hover:border-gray-500'
+              : 'border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-400 dark:text-gray-500 cursor-not-allowed'
           }
         `}
       >
@@ -94,7 +94,7 @@ export const Pagination = ({
             return (
               <span
                 key={`ellipsis-${index}`}
-                className="px-3 py-2 text-sm font-medium text-gray-500"
+                className="px-3 py-2 text-sm font-medium text-gray-500 dark:text-gray-400"
               >
                 ...
               </span>
@@ -112,8 +112,8 @@ export const Pagination = ({
                 min-w-[2.5rem] px-3 py-2 text-sm font-medium rounded-lg border transition-colors
                 ${
                   isActive
-                    ? 'bg-blue-600 border-blue-600 text-white hover:bg-blue-700 hover:border-blue-700'
-                    : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-400'
+                    ? 'bg-blue-600 dark:bg-blue-500 border-blue-600 dark:border-blue-500 text-white hover:bg-blue-700 dark:hover:bg-blue-600 hover:border-blue-700 dark:hover:border-blue-600'
+                    : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-400 dark:hover:border-gray-500'
                 }
               `}
             >

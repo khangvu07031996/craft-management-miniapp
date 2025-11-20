@@ -53,22 +53,22 @@ export const WorkRecordDeleteConfirm = ({
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
             >
-              <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-4 sm:p-6 text-left align-middle shadow-xl transition-all mx-4">
+              <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white dark:bg-gray-800 p-4 sm:p-6 text-left align-middle shadow-xl dark:shadow-gray-900/50 transition-all mx-4">
                 <div className="flex items-start gap-3 sm:gap-4">
                   <div className="flex-shrink-0">
-                    <ExclamationTriangleIcon className="h-10 w-10 sm:h-12 sm:w-12 text-red-600" />
+                    <ExclamationTriangleIcon className="h-10 w-10 sm:h-12 sm:w-12 text-red-600 dark:text-red-400" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <Dialog.Title as="h3" className="text-base sm:text-lg font-medium leading-6 text-gray-900">
+                    <Dialog.Title as="h3" className="text-base sm:text-lg font-medium leading-6 text-gray-900 dark:text-gray-100">
                       Xóa công việc
                     </Dialog.Title>
                     <div className="mt-2">
-                      <p className="text-sm text-gray-500">
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
                         Bạn có chắc chắn muốn xóa công việc này? Hành động này không thể hoàn tác.
                       </p>
                       {workRecord && (
-                        <div className="mt-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
-                          <div className="space-y-1 text-xs text-gray-600">
+                        <div className="mt-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
+                          <div className="space-y-1 text-xs text-gray-600 dark:text-gray-300">
                             <p>
                               <span className="font-medium">Ngày:</span> {formatDate(workRecord.workDate)}
                             </p>

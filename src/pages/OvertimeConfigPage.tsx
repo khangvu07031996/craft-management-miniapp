@@ -114,25 +114,25 @@ export const OvertimeConfigPage = () => {
     <Layout>
       <div className="pt-8 lg:pt-10">
         {/* Breadcrumbs */}
-        <div className="flex items-center gap-1.5 text-xs sm:text-sm text-gray-500 mb-4 overflow-x-auto">
-          <Link to="/dashboard" className="hover:text-gray-700 transition-colors whitespace-nowrap">
+        <div className="flex items-center gap-1.5 text-xs sm:text-sm text-gray-500 dark:text-gray-400 mb-4 overflow-x-auto">
+          <Link to="/dashboard" className="hover:text-gray-700 dark:hover:text-gray-300 transition-colors whitespace-nowrap">
             Trang chủ
           </Link>
           <ChevronRightIcon className="w-4 h-4 flex-shrink-0" />
-          <span className="text-gray-900 font-medium whitespace-nowrap">Cấu hình Tăng ca</span>
+          <span className="text-gray-900 dark:text-gray-100 font-medium whitespace-nowrap">Cấu hình Tăng ca</span>
         </div>
 
         <div className="mb-6 lg:mb-8">
-          <h1 className="text-xl lg:text-2xl font-bold text-gray-900">Cấu hình Tăng ca</h1>
+          <h1 className="text-xl lg:text-2xl font-bold text-gray-900 dark:text-gray-100">Cấu hình Tăng ca</h1>
         </div>
 
         {error && <ErrorMessage message={error} className="mb-4" />}
 
         {/* Filter */}
-        <div className="mb-4 lg:mb-6 bg-gradient-to-br from-white to-gray-50 rounded-xl border border-gray-200/60 shadow-md shadow-gray-100/50 p-4 lg:p-6">
+        <div className="mb-4 lg:mb-6 bg-gradient-to-br from-white dark:from-gray-800 to-gray-50 dark:to-gray-800 rounded-xl border border-gray-200/60 dark:border-gray-700 shadow-md dark:shadow-gray-900/50 shadow-gray-100/50 p-4 lg:p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 lg:gap-5">
             <div>
-              <label className="flex items-center gap-2 text-xs font-semibold text-gray-600 uppercase tracking-wider mb-2.5">
+              <label className="flex items-center gap-2 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-2.5">
                 <BuildingOfficeIcon className="w-3.5 h-3.5" />
                 Phòng ban
               </label>
@@ -140,7 +140,7 @@ export const OvertimeConfigPage = () => {
                 <select
                   value={departmentFilter}
                   onChange={(e) => setDepartmentFilter(e.target.value)}
-                  className="w-full pl-4 pr-10 py-2.5 text-sm border border-gray-300/80 rounded-lg bg-white text-gray-700 shadow-sm hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200 appearance-none cursor-pointer"
+                  className="w-full pl-4 pr-10 py-2.5 text-sm border border-gray-300/80 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 shadow-sm hover:border-gray-400 dark:hover:border-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 dark:focus:ring-blue-400/50 focus:border-blue-500 dark:focus:border-blue-400 transition-all duration-200 appearance-none cursor-pointer"
                 >
                   <option value="">Tất cả phòng ban</option>
                   {uniqueDepartments.map((dept) => (
@@ -150,7 +150,7 @@ export const OvertimeConfigPage = () => {
                   ))}
                 </select>
                 <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                  <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
                 </div>
@@ -186,9 +186,9 @@ export const OvertimeConfigPage = () => {
                     return (
                       <div
                         key={workType.id}
-                        className="bg-gray-50 rounded-lg p-4 border border-gray-200"
+                        className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 border border-gray-200 dark:border-gray-600"
                       >
-                        <h3 className="text-sm font-semibold text-gray-900 mb-3">
+                        <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">
                           Chỉnh sửa cấu hình tăng ca
                         </h3>
                         <OvertimeConfigForm
@@ -223,8 +223,8 @@ export const OvertimeConfigPage = () => {
                       {/* Details */}
                       <div className="space-y-2.5 text-sm">
                         <div className="flex justify-between items-start gap-2">
-                          <span className="text-gray-500 flex-shrink-0">Phòng ban:</span>
-                          <span className="text-gray-900 text-right break-words">{workType.department}</span>
+                          <span className="text-gray-500 dark:text-gray-400 flex-shrink-0">Phòng ban:</span>
+                          <span className="text-gray-900 dark:text-gray-100 text-right break-words">{workType.department}</span>
                         </div>
                         <div className="flex justify-between items-start gap-2">
                           <span className="text-gray-500 flex-shrink-0">Loại tính toán:</span>

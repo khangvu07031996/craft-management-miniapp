@@ -44,19 +44,19 @@ export const EmployeeDeleteConfirm = ({
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
             >
-              <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
+              <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white dark:bg-gray-800 p-6 text-left align-middle shadow-xl dark:shadow-gray-900/50 transition-all">
                 <div className="flex items-center gap-4">
                   <div className="flex-shrink-0">
-                    <ExclamationTriangleIcon className="h-12 w-12 text-red-600" />
+                    <ExclamationTriangleIcon className="h-12 w-12 text-red-600 dark:text-red-400" />
                   </div>
                   <div className="flex-1">
-                    <Dialog.Title as="h3" className="text-lg font-medium leading-6 text-gray-900">
+                    <Dialog.Title as="h3" className="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100">
                       Xóa nhân viên
                     </Dialog.Title>
                     <div className="mt-2">
-                      <p className="text-sm text-gray-500">
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
                         Bạn có chắc chắn muốn xóa{' '}
-                        {employeeName ? <strong>{employeeName}</strong> : 'nhân viên này'}? Hành động này không thể hoàn tác.
+                        {employeeName ? <strong className="text-gray-900 dark:text-gray-100">{employeeName}</strong> : 'nhân viên này'}? Hành động này không thể hoàn tác.
                       </p>
                     </div>
                   </div>

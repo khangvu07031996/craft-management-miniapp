@@ -210,22 +210,22 @@ export const EmployeeForm = ({ employee, onSubmit, onCancel, isLoading }: Employ
           error={errors.managerId}
         />
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
             Trạng thái
-            <span className="text-red-500 ml-1">*</span>
+            <span className="text-red-500 dark:text-red-400 ml-1">*</span>
           </label>
           <select
             name="status"
             value={formData.status}
             onChange={handleChange}
-            className={`w-full px-3 py-2 text-sm border rounded-lg bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
-              errors.status ? 'border-red-500' : 'border-gray-200'
+            className={`w-full px-3 py-2 text-sm border rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all ${
+              errors.status ? 'border-red-500 dark:border-red-400' : 'border-gray-200 dark:border-gray-600'
             }`}
           >
             <option value={EmployeeStatus.ACTIVE}>Đang làm việc</option>
             <option value={EmployeeStatus.INACTIVE}>Đã nghỉ việc</option>
           </select>
-          {errors.status && <p className="mt-1 text-xs text-red-600">{errors.status}</p>}
+          {errors.status && <p className="mt-1 text-xs text-red-600 dark:text-red-400">{errors.status}</p>}
         </div>
       </div>
 
