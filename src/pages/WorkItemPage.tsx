@@ -315,17 +315,17 @@ export const WorkItemPage = () => {
             Trang chủ
           </Link>
           <ChevronRightIcon className="w-4 h-4 flex-shrink-0" />
-          <span className="text-gray-900 font-medium whitespace-nowrap">Quản lý loại hàng</span>
+          <span className="text-gray-900 font-medium whitespace-nowrap">Quản lý sản phẩm</span>
         </div>
 
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 lg:mb-8">
-          <h1 className="text-xl lg:text-2xl font-bold text-gray-900">Quản lý loại hàng</h1>
+          <h1 className="text-xl lg:text-2xl font-bold text-gray-900">Quản lý sản phẩm</h1>
           <button
             onClick={handleCreate}
             className="inline-flex items-center justify-center gap-2 sm:gap-2.5 px-4 sm:px-5 py-2.5 sm:py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white text-sm sm:text-base font-semibold rounded-xl shadow-lg shadow-blue-500/30 hover:from-blue-700 hover:to-blue-800 hover:shadow-xl hover:shadow-blue-500/40 transform hover:-translate-y-0.5 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 w-full sm:w-auto"
           >
             <PlusIcon className="w-5 h-5" />
-            <span>Thêm loại hàng</span>
+            <span>Thêm sản phẩm</span>
           </button>
         </div>
 
@@ -335,7 +335,7 @@ export const WorkItemPage = () => {
             <div>
               <label className="flex items-center gap-2 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-2.5">
                 <MagnifyingGlassIcon className="w-3.5 h-3.5" />
-                Tên loại hàng
+                Tên sản phẩm
               </label>
               <Combobox
                 value={selectedWorkItemForFilter}
@@ -373,7 +373,7 @@ export const WorkItemPage = () => {
                   <Combobox.Options className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white dark:bg-gray-800 py-1 text-base shadow-lg dark:shadow-gray-900/50 ring-1 ring-black dark:ring-gray-700 ring-opacity-5 dark:ring-opacity-50 focus:outline-none sm:text-sm">
                     {filteredWorkItemsForAutocomplete.length === 0 && filterNameQuery !== '' ? (
                       <div className="relative cursor-default select-none px-4 py-2 text-gray-700 dark:text-gray-300">
-                        Không tìm thấy loại hàng nào.
+                        Không tìm thấy sản phẩm nào.
                       </div>
                     ) : (
                       filteredWorkItemsForAutocomplete.map((item) => (
@@ -495,7 +495,7 @@ export const WorkItemPage = () => {
               <ExclamationTriangleIcon className="h-5 w-5 text-yellow-600 mt-0.5 mr-3 flex-shrink-0" />
               <div className="flex-1">
                 <h3 className="text-sm font-medium text-yellow-800 mb-2">
-                  Cảnh báo: Có {itemsApproachingDelivery.length} loại hàng sắp đến ngày xuất hàng
+                  Cảnh báo: Có {itemsApproachingDelivery.length} sản phẩm sắp đến ngày xuất hàng
                 </h3>
                 <ul className="list-disc list-inside space-y-2 text-sm text-yellow-700">
                   {itemsApproachingDelivery.map((item) => (
@@ -538,7 +538,7 @@ export const WorkItemPage = () => {
         {isFormOpen && (
           <div className="mb-6 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm dark:shadow-gray-900/50 p-6">
             <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
-              {selectedItem ? 'Chỉnh sửa loại hàng' : 'Thêm loại hàng mới'}
+              {selectedItem ? 'Chỉnh sửa sản phẩm' : 'Thêm sản phẩm mới'}
             </h2>
             <WorkItemForm
               workItem={selectedItem}
@@ -552,7 +552,7 @@ export const WorkItemPage = () => {
           <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
             {filteredItems.length === 0 && !isLoadingFetch ? (
               <div className="p-12 text-center">
-                <p className="text-sm text-gray-500">Không có loại hàng nào</p>
+                <p className="text-sm text-gray-500">Không có sản phẩm nào</p>
               </div>
             ) : (
               <>
@@ -607,13 +607,13 @@ export const WorkItemPage = () => {
                         <span className="text-gray-900 dark:text-gray-100 font-medium">{formatCurrency(item.pricePerWeld)}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-gray-500">Số lượng cần làm:</span>
-                        <span className="text-gray-900 font-medium">{item.totalQuantity.toLocaleString('vi-VN')}</span>
+                        <span className="text-gray-500 dark:text-gray-400">Số lượng cần làm:</span>
+                        <span className="text-gray-900 dark:text-gray-100 font-medium">{item.totalQuantity.toLocaleString('vi-VN')}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-gray-500">Số lượng đã sản xuất:</span>
+                        <span className="text-gray-500 dark:text-gray-400">Số lượng đã sản xuất:</span>
                         <div className="text-right">
-                          <span className="text-gray-900 font-medium">
+                          <span className="text-gray-900 dark:text-gray-100 font-medium">
                             {(item.quantityMade || 0).toLocaleString('vi-VN')}
                           </span>
                           {item.totalQuantity > 0 && item.quantityMade !== undefined && (
@@ -624,19 +624,25 @@ export const WorkItemPage = () => {
                         </div>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-gray-500">Mối hàn/SP:</span>
-                        <span className="text-gray-900">{item.weldsPerItem}</span>
+                        <span className="text-gray-500 dark:text-gray-400">Mối hàn/SP:</span>
+                        <span className="text-gray-900 dark:text-gray-100">{item.weldsPerItem}</span>
                       </div>
+                      {item.weight !== undefined && (
+                        <div className="flex justify-between">
+                          <span className="text-gray-500 dark:text-gray-400">Cân nặng:</span>
+                          <span className="text-gray-900 dark:text-gray-100 font-medium">{item.weight.toFixed(2)} kg</span>
+                        </div>
+                      )}
                       <div className="flex justify-between items-center">
-                        <span className="text-gray-500">Trạng thái:</span>
+                        <span className="text-gray-500 dark:text-gray-400">Trạng thái:</span>
                         <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${getStatusBadgeColor(item.status)}`}>
                           {item.status}
                         </span>
                       </div>
                       {item.estimatedDeliveryDate && (
                         <div className="flex justify-between">
-                          <span className="text-gray-500">Ngày xuất hàng:</span>
-                          <span className={itemsApproachingDelivery.some(i => i.id === item.id) ? 'font-medium text-yellow-600' : 'text-gray-900'}>
+                          <span className="text-gray-500 dark:text-gray-400">Ngày xuất hàng:</span>
+                          <span className={itemsApproachingDelivery.some(i => i.id === item.id) ? 'font-medium text-yellow-600 dark:text-yellow-400' : 'text-gray-900 dark:text-gray-100'}>
                             {formatDate(item.estimatedDeliveryDate)}
                           </span>
                         </div>
@@ -655,7 +661,7 @@ export const WorkItemPage = () => {
                       className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 select-none"
                       onClick={() => handleSort('name')}
                     >
-                      Tên loại hàng {getSortIcon('name')}
+                      Tên sản phẩm {getSortIcon('name')}
                     </th>
                     <th 
                       className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 select-none"
@@ -681,6 +687,9 @@ export const WorkItemPage = () => {
                     <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       Mối hàn/SP
                     </th>
+                    <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      Cân nặng (kg)
+                    </th>
                     <th 
                       className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 select-none"
                       onClick={() => handleSort('status')}
@@ -693,7 +702,7 @@ export const WorkItemPage = () => {
                     >
                       Ngày ước tính xuất hàng {getSortIcon('estimatedDeliveryDate')}
                     </th>
-                    <th className="px-4 lg:px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 lg:px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       Thao tác
                     </th>
                   </tr>
@@ -735,6 +744,9 @@ export const WorkItemPage = () => {
                       </td>
                       <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
                         {item.weldsPerItem}
+                      </td>
+                      <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+                        {item.weight !== undefined ? `${item.weight.toFixed(2)} kg` : '-'}
                       </td>
                       <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
                         <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${getStatusBadgeColor(item.status)}`}>

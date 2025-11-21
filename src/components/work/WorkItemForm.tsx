@@ -26,6 +26,7 @@ export const WorkItemForm = ({ workItem, onCancel, onSuccess }: WorkItemFormProp
     totalQuantity: '',
     weldsPerItem: '',
     estimatedDeliveryDate: '',
+    weight: '',
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -39,6 +40,7 @@ export const WorkItemForm = ({ workItem, onCancel, onSuccess }: WorkItemFormProp
         totalQuantity: workItem.totalQuantity.toString(),
         weldsPerItem: workItem.weldsPerItem.toString(),
         estimatedDeliveryDate: workItem.estimatedDeliveryDate || '',
+        weight: workItem.weight !== undefined ? workItem.weight.toString() : '',
       });
     } else {
       setFormData({
@@ -48,6 +50,7 @@ export const WorkItemForm = ({ workItem, onCancel, onSuccess }: WorkItemFormProp
         totalQuantity: '0',
         weldsPerItem: '0',
         estimatedDeliveryDate: '',
+        weight: '',
       });
     }
   }, [workItem]);
@@ -56,7 +59,7 @@ export const WorkItemForm = ({ workItem, onCancel, onSuccess }: WorkItemFormProp
     const newErrors: Record<string, string> = {};
 
     if (!formData.name.trim()) {
-      newErrors.name = 'Tên loại hàng là bắt buộc';
+      newErrors.name = 'Tên sản phẩm là bắt buộc';
     }
 
     if (!formData.pricePerWeld || parseFloat(formData.pricePerWeld) < 0) {
@@ -69,6 +72,10 @@ export const WorkItemForm = ({ workItem, onCancel, onSuccess }: WorkItemFormProp
 
     if (formData.weldsPerItem === '' || parseInt(formData.weldsPerItem) < 0) {
       newErrors.weldsPerItem = 'Số mối hàn trên 1 sản phẩm phải lớn hơn hoặc bằng 0';
+    }
+
+    if (formData.weight !== '' && (isNaN(parseFloat(formData.weight)) || parseFloat(formData.weight) < 0)) {
+      newErrors.weight = 'Cân nặng phải lớn hơn hoặc bằng 0';
     }
 
     setErrors(newErrors);
@@ -90,6 +97,7 @@ export const WorkItemForm = ({ workItem, onCancel, onSuccess }: WorkItemFormProp
         totalQuantity: parseInt(formData.totalQuantity),
         weldsPerItem: parseInt(formData.weldsPerItem),
         estimatedDeliveryDate: formData.estimatedDeliveryDate || undefined,
+        weight: formData.weight !== '' ? parseFloat(formData.weight) : undefined,
       };
 
       if (isEditMode && workItem) {
@@ -100,7 +108,7 @@ export const WorkItemForm = ({ workItem, onCancel, onSuccess }: WorkItemFormProp
 
       onSuccess();
     } catch (error: any) {
-      setErrors({ submit: error.message || 'Có lỗi xảy ra khi lưu loại hàng' });
+      setErrors({ submit: error.message || 'Có lỗi xảy ra khi lưu sản phẩm' });
     }
   };
 
@@ -123,7 +131,7 @@ export const WorkItemForm = ({ workItem, onCancel, onSuccess }: WorkItemFormProp
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <Input
-            label="Tên loại hàng"
+            label="Tên sản phẩm"
             name="name"
             value={formData.name}
             onChange={handleChange}
@@ -204,6 +212,19 @@ export const WorkItemForm = ({ workItem, onCancel, onSuccess }: WorkItemFormProp
             value={formData.estimatedDeliveryDate}
             onChange={handleChange}
             error={errors.estimatedDeliveryDate}
+          />
+        </div>
+
+        <div>
+          <Input
+            label="Cân nặng (kg)"
+            type="number"
+            name="weight"
+            value={formData.weight}
+            onChange={handleChange}
+            error={errors.weight}
+            step="0.01"
+            min="0"
           />
         </div>
       </div>

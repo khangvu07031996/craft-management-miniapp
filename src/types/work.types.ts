@@ -48,6 +48,7 @@ export interface WorkItemResponse {
   status: 'Tạo mới' | 'Đang sản xuất' | 'Hoàn thành';
   estimatedDeliveryDate?: string;
   quantityMade?: number;
+  weight?: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -59,6 +60,7 @@ export interface CreateWorkItemDto {
   totalQuantity: number;
   weldsPerItem: number;
   estimatedDeliveryDate?: string;
+  weight?: number;
 }
 
 export interface UpdateWorkItemDto {
@@ -69,6 +71,7 @@ export interface UpdateWorkItemDto {
   weldsPerItem?: number;
   status?: string;
   estimatedDeliveryDate?: string;
+  weight?: number;
 }
 
 // Work Record

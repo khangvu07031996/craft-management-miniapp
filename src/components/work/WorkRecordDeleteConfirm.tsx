@@ -84,7 +84,7 @@ export const WorkRecordDeleteConfirm = ({
                             )}
                             {workRecord.workItem && (
                               <p>
-                                <span className="font-medium">Loại hàng:</span> {workRecord.workItem.name}
+                                <span className="font-medium">Sản phẩm:</span> {workRecord.workItem.name}
                               </p>
                             )}
                             <p>

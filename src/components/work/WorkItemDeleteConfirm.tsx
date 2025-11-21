@@ -85,15 +85,15 @@ export const WorkItemDeleteConfirm = ({
                   </div>
                   <div className="flex-1 min-w-0">
                     <Dialog.Title as="h3" className="text-base sm:text-lg font-medium leading-6 text-gray-900 dark:text-gray-100">
-                      Xác nhận xóa loại hàng
+                      Xác nhận xóa sản phẩm
                     </Dialog.Title>
                     <div className="mt-2">
                       <p className="text-sm text-gray-500 dark:text-gray-400">
-                        Bạn có chắc chắn muốn xóa loại hàng này? Hành động này không thể hoàn tác.
+                        Bạn có chắc chắn muốn xóa sản phẩm này? Hành động này không thể hoàn tác.
                       </p>
                       {workItem && (
                         <div className="mt-4 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600 text-xs text-gray-700 dark:text-gray-300">
-                          <p><span className="font-medium">Tên loại hàng:</span> {workItem.name}</p>
+                          <p><span className="font-medium">Tên sản phẩm:</span> {workItem.name}</p>
                           <p>
                             <span className="font-medium">Độ khó:</span>{' '}
                             <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${getDifficultyBadgeColor(workItem.difficultyLevel)}`}>
@@ -106,6 +106,9 @@ export const WorkItemDeleteConfirm = ({
                             <p>
                               <span className="font-medium">Số lượng đã sản xuất:</span> {workItem.quantityMade.toLocaleString('vi-VN')} SP
                             </p>
+                          )}
+                          {workItem.weight !== undefined && (
+                            <p><span className="font-medium">Cân nặng:</span> {workItem.weight.toFixed(2)} kg</p>
                           )}
                           <p>
                             <span className="font-medium">Trạng thái:</span>{' '}

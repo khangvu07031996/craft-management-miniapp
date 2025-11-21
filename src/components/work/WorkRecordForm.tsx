@@ -382,7 +382,7 @@ export const WorkRecordForm = ({ workRecord, onCancel, onSuccess }: WorkRecordFo
     }
 
     if (selectedWorkType === CalculationType.WELD_COUNT && !formData.workItemId) {
-      newErrors.workItemId = 'Loại hàng là bắt buộc cho thợ hàn';
+      newErrors.workItemId = 'Sản phẩm là bắt buộc cho thợ hàn';
     }
 
     if (!formData.quantity || parseFloat(formData.quantity) <= 0) {
@@ -870,7 +870,7 @@ export const WorkRecordForm = ({ workRecord, onCancel, onSuccess }: WorkRecordFo
           <>
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-                Loại hàng
+                Sản phẩm
                 <span className="text-red-500 ml-1">*</span>
               </label>
               <Combobox
@@ -904,7 +904,7 @@ export const WorkRecordForm = ({ workRecord, onCancel, onSuccess }: WorkRecordFo
                           setSelectedWorkItem(null);
                         }
                       }}
-                      placeholder="Tìm kiếm loại hàng..."
+                      placeholder="Tìm kiếm sản phẩm..."
                     />
                     <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500" />
                     <Combobox.Button className="absolute inset-y-0 right-0 flex items-center pr-2">
@@ -921,7 +921,7 @@ export const WorkRecordForm = ({ workRecord, onCancel, onSuccess }: WorkRecordFo
                     <Combobox.Options className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-lg bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
                       {filteredWorkItems.length === 0 && workItemSearchQuery !== '' ? (
                         <div className="relative cursor-default select-none px-4 py-2 text-gray-700">
-                          Không tìm thấy loại hàng nào.
+                          Không tìm thấy sản phẩm nào.
                         </div>
                       ) : (
                         filteredWorkItems.map((item) => (

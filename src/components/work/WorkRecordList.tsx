@@ -131,7 +131,7 @@ export const WorkRecordList = ({
                   <span className="text-gray-900 dark:text-gray-100 font-medium">{record.workType?.name || '-'}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-500 dark:text-gray-400">Loại hàng:</span>
+                  <span className="text-gray-500 dark:text-gray-400">Sản phẩm:</span>
                   <span className="text-gray-900 dark:text-gray-100">{record.workItem ? `${record.workItem.name}` : '-'}</span>
                 </div>
                 <div className="flex justify-between">
@@ -225,7 +225,7 @@ export const WorkRecordList = ({
                 Loại công việc
               </th>
               <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                Loại hàng
+                Sản phẩm
               </th>
               <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 Số lượng
