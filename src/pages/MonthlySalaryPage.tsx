@@ -4,7 +4,6 @@ import { useAppDispatch, useAppSelector } from '../store/hooks';
 import {
   fetchMonthlySalaries,
   calculateMonthlySalary,
-  calculateMonthlySalaryForAll,
   updateMonthlySalaryAllowances,
   payMonthlySalary,
   deleteMonthlySalary,
@@ -38,7 +37,6 @@ export const MonthlySalaryPage = () => {
   const [isNoEmployeeModalOpen, setIsNoEmployeeModalOpen] = useState(false);
   const [isNoDataModalOpen, setIsNoDataModalOpen] = useState(false);
   const [noDataEmployeeName, setNoDataEmployeeName] = useState('');
-  const [isCalculatingAll, setIsCalculatingAll] = useState(false);
 
   useEffect(() => {
     dispatch(fetchEmployees({ filters: {}, pagination: { page: 1, pageSize: 1000 }, sort: {} }));
@@ -81,32 +79,18 @@ export const MonthlySalaryPage = () => {
 
   const handleCalculateSalary = async () => {
     // If "Tất cả nhân viên" is selected (value is empty string "")
-    // Calculate for all active employees
+    // Show modal that employee must be selected
     if (!selectedEmployeeId || selectedEmployeeId.trim() === '') {
-      setIsCalculatingAll(true);
-      try {
-        await dispatch(
-          calculateMonthlySalaryForAll({
-            year: selectedYear,
-            month: selectedMonth,
-          })
-        ).unwrap();
-        refreshList();
-      } catch (error: any) {
-        console.error('Error calculating monthly salary for all:', error);
-      } finally {
-        setIsCalculatingAll(false);
-      }
+      setIsNoEmployeeModalOpen(true);
       return;
     }
 
-    // Calculate for single employee
+    // Calculate for single employee - year/month are optional, will be auto-detected
     try {
       await dispatch(
         calculateMonthlySalary({
           employeeId: selectedEmployeeId,
-          year: selectedYear,
-          month: selectedMonth,
+          // year and month are optional - will be auto-detected from work records
         })
       ).unwrap();
       refreshList();
@@ -126,7 +110,8 @@ export const MonthlySalaryPage = () => {
         errorMessage = String(error);
       }
       
-      if (errorMessage.includes('Không có dữ liệu lương cho nhân viên')) {
+      if (errorMessage.includes('Không có dữ liệu lương cho nhân viên') || 
+          errorMessage.includes('không có bản ghi công việc')) {
         // Extract employee name from error message or get from employees list
         const employee = employees.find(emp => emp.id === selectedEmployeeId);
         const employeeName = employee ? `${employee.firstName} ${employee.lastName}` : 'nhân viên này';
@@ -237,7 +222,7 @@ export const MonthlySalaryPage = () => {
             <div>
               <label className="flex items-center gap-2 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-2.5">
                 <CalendarDaysIcon className="w-3.5 h-3.5" />
-                Năm
+                Năm (Lọc)
               </label>
               <input
                 type="number"
@@ -253,7 +238,7 @@ export const MonthlySalaryPage = () => {
             <div>
               <label className="flex items-center gap-2 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-2.5">
                 <CalendarDaysIcon className="w-3.5 h-3.5" />
-                Tháng
+                Tháng (Lọc)
               </label>
               <div className="relative">
                 <select
@@ -280,7 +265,7 @@ export const MonthlySalaryPage = () => {
             <div>
               <label className="flex items-center gap-2 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-2.5">
                 <UserGroupIcon className="w-3.5 h-3.5" />
-                Nhân viên
+                Nhân viên <span className="text-red-500 dark:text-red-400">*</span>
               </label>
               <div className="relative">
                 <select
@@ -290,7 +275,7 @@ export const MonthlySalaryPage = () => {
                   }}
                   className="w-full pl-4 pr-10 py-2.5 text-sm border border-gray-300/80 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 shadow-sm hover:border-gray-400 dark:hover:border-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 dark:focus:ring-blue-400/50 focus:border-blue-500 dark:focus:border-blue-400 transition-all duration-200 appearance-none cursor-pointer"
                 >
-                  <option value="">Tất cả nhân viên</option>
+                  <option value="">Chọn nhân viên</option>
                   {employees.map((emp) => (
                     <option key={emp.id} value={emp.id}>
                       {emp.firstName} {emp.lastName}
@@ -303,16 +288,23 @@ export const MonthlySalaryPage = () => {
                   </svg>
                 </div>
               </div>
+              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                Tháng/năm sẽ tự động xác định từ bản ghi công việc
+              </p>
             </div>
 
-            <div className="flex items-end">
+            <div>
+              <label className="flex items-center gap-2 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-2.5 opacity-0 pointer-events-none">
+                <span className="w-3.5 h-3.5" />
+                Button
+              </label>
               <button
                 onClick={handleCalculateSalary}
-                disabled={isCalculatingAll}
+                disabled={!selectedEmployeeId || selectedEmployeeId.trim() === ''}
                 className="w-full inline-flex items-center justify-center gap-2.5 px-5 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold rounded-xl shadow-lg shadow-blue-500/30 hover:from-blue-700 hover:to-blue-800 hover:shadow-xl hover:shadow-blue-500/40 transform hover:-translate-y-0.5 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
               >
                 <CalculatorIcon className="w-5 h-5" />
-                <span>{isCalculatingAll ? 'Đang tính lương...' : 'Tính lương'}</span>
+                <span>Tính lương</span>
               </button>
             </div>
           </div>

@@ -170,6 +170,18 @@ export const WorkRecordList = ({
                   <span className="text-gray-900 dark:text-gray-100 font-semibold">Tổng tiền:</span>
                   <span className="text-gray-900 dark:text-gray-100 font-bold">{formatCurrency(record.totalAmount)}</span>
                 </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-500 dark:text-gray-400">Trạng thái:</span>
+                  <span
+                    className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${
+                      record.status === 'Tạo mới'
+                        ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300'
+                        : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300'
+                    }`}
+                  >
+                    {record.status || 'Tạo mới'}
+                  </span>
+                </div>
               </div>
 
               {/* Actions */}
@@ -244,6 +256,9 @@ export const WorkRecordList = ({
               >
                 Tổng tiền {getSortIcon && getSortIcon('totalAmount')}
               </th>
+              <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                Trạng thái
+              </th>
               {(onEdit || onDelete) && (
                 <th className="px-4 lg:px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Thao tác
@@ -309,6 +324,17 @@ export const WorkRecordList = ({
                   </td>
                   <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900 dark:text-gray-100">
                     {formatCurrency(record.totalAmount)}
+                  </td>
+                  <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+                    <span
+                      className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${
+                        record.status === 'Tạo mới'
+                          ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300'
+                          : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300'
+                      }`}
+                    >
+                      {record.status || 'Tạo mới'}
+                    </span>
                   </td>
                   {(onEdit || onDelete) && (
                     <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-right text-sm font-medium">

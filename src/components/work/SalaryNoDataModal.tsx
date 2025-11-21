@@ -42,14 +42,15 @@ export const SalaryNoDataModal = ({ isOpen, onClose, employeeName }: SalaryNoDat
                   </div>
                   <div className="flex-1 min-w-0">
                     <Dialog.Title as="h3" className="text-base sm:text-lg font-medium leading-6 text-gray-900 dark:text-gray-100">
-                      Không có dữ liệu lương
+                      Không có bản ghi công việc
                     </Dialog.Title>
                     <div className="mt-2 text-sm text-gray-600 dark:text-gray-300">
                       <p>
-                        Không có dữ liệu lương cho nhân viên{' '}
-                        <span className="font-medium text-gray-900 dark:text-gray-100">{employeeName}</span>.
+                        Nhân viên{' '}
+                        <span className="font-medium text-gray-900 dark:text-gray-100">{employeeName}</span>{' '}
+                        không có bản ghi công việc nào ở trạng thái "Tạo mới" để tính lương.
                       </p>
-                      <p className="mt-2">Vui lòng kiểm tra lại thông tin lương mặc định của nhân viên trong hệ thống.</p>
+                      <p className="mt-2">Vui lòng tạo bản ghi công việc mới trước khi tính lương.</p>
                     </div>
                   </div>
                 </div>

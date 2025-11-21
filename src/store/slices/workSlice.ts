@@ -178,6 +178,7 @@ export const fetchWorkRecords = createAsyncThunk(
         dateFrom?: string;
         dateTo?: string;
         workTypeId?: string;
+        status?: string;
       };
       pagination?: PaginationParams;
     },

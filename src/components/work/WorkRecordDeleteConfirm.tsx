@@ -90,6 +90,20 @@ export const WorkRecordDeleteConfirm = ({
                             <p>
                               <span className="font-medium">Tổng tiền:</span> {formatCurrency(workRecord.totalAmount)}
                             </p>
+                            {workRecord.status && (
+                              <p>
+                                <span className="font-medium">Trạng thái:</span>{' '}
+                                <span
+                                  className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${
+                                    workRecord.status === 'Tạo mới'
+                                      ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300'
+                                      : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300'
+                                  }`}
+                                >
+                                  {workRecord.status}
+                                </span>
+                              </p>
+                            )}
                           </div>
                         </div>
                       )}

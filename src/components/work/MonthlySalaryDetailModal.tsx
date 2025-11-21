@@ -36,11 +36,8 @@ export const MonthlySalaryDetailModal = ({
     setError(null);
 
     try {
-      const records = await workRecordService.getWorkRecordsByEmployeeAndMonth(
-        monthlySalary.employeeId,
-        monthlySalary.year,
-        monthlySalary.month
-      );
+      // Get work records from junction table using monthly_salary_id
+      const records = await workRecordService.getWorkRecordsByMonthlySalaryId(monthlySalary.id);
       setWorkRecords(records);
     } catch (err: any) {
       setError(err.message || 'Không thể tải chi tiết công việc');

@@ -83,6 +83,7 @@ export const workRecordService = {
       dateFrom?: string;
       dateTo?: string;
       workTypeId?: string;
+      status?: string;
     },
     pagination?: PaginationParams
   ): Promise<{ data: WorkRecordResponse[]; pagination: PaginationParams }> => {
@@ -92,6 +93,7 @@ export const workRecordService = {
     if (filters.dateFrom) params.date_from = filters.dateFrom;
     if (filters.dateTo) params.date_to = filters.dateTo;
     if (filters.workTypeId) params.work_type_id = filters.workTypeId;
+    if (filters.status) params.status = filters.status;
     if (pagination) {
       params.page = pagination.page;
       params.page_size = pagination.pageSize;
@@ -132,6 +134,13 @@ export const workRecordService = {
     const response = await api.get('/work/records/by-employee-month', {
       params: { employee_id: employeeId, year, month },
     });
+    return response.data.data;
+  },
+
+  getWorkRecordsByMonthlySalaryId: async (
+    monthlySalaryId: string
+  ): Promise<WorkRecordResponse[]> => {
+    const response = await api.get(`/work/records/by-monthly-salary/${monthlySalaryId}`);
     return response.data.data;
   },
 

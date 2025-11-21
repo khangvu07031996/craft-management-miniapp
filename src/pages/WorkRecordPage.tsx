@@ -32,6 +32,7 @@ export const WorkRecordPage = () => {
   const [dateFrom, setDateFrom] = useState(new Date().toISOString().split('T')[0]);
   const [dateTo, setDateTo] = useState(new Date().toISOString().split('T')[0]);
   const [selectedEmployeeId, setSelectedEmployeeId] = useState<string>('');
+  const [statusFilter, setStatusFilter] = useState<'Tạo mới' | 'Đã thanh toán' | 'all'>('Tạo mới');
   const [currentPage, setCurrentPage] = useState(1);
   const [sortBy, setSortBy] = useState<string>('');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
@@ -44,19 +45,20 @@ export const WorkRecordPage = () => {
   // Reset to page 1 when filters change (but not when currentPage changes)
   useEffect(() => {
     setCurrentPage(1);
-  }, [filterType, selectedDate, dateFrom, dateTo, selectedEmployeeId]);
+  }, [filterType, selectedDate, dateFrom, dateTo, selectedEmployeeId, statusFilter]);
 
   // Load work records when filters or pagination changes
   useEffect(() => {
     loadWorkRecords();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filterType, selectedDate, dateFrom, dateTo, selectedEmployeeId, currentPage]);
+  }, [filterType, selectedDate, dateFrom, dateTo, selectedEmployeeId, statusFilter, currentPage]);
 
   const loadWorkRecords = () => {
     const filters: {
       dateFrom?: string;
       dateTo?: string;
       employeeId?: string;
+      status?: string;
     } = {};
 
     if (filterType === 'single') {
@@ -71,6 +73,11 @@ export const WorkRecordPage = () => {
     // Add employee filter if selected
     if (selectedEmployeeId && selectedEmployeeId.trim() !== '') {
       filters.employeeId = selectedEmployeeId;
+    }
+
+    // Add status filter if not 'all'
+    if (statusFilter !== 'all') {
+      filters.status = statusFilter;
     }
 
     console.log('WorkRecordPage.loadWorkRecords - Filter type:', filterType);
@@ -327,6 +334,29 @@ export const WorkRecordPage = () => {
                 </div>
               </>
             )}
+
+            <div>
+              <label className="flex items-center gap-2 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-2.5">
+                <UserGroupIcon className="w-3.5 h-3.5" />
+                Trạng thái
+              </label>
+              <div className="relative">
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value as 'Tạo mới' | 'Đã thanh toán' | 'all')}
+                  className="w-full pl-4 pr-10 py-2.5 text-sm border border-gray-300/80 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 shadow-sm hover:border-gray-400 dark:hover:border-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 dark:focus:ring-blue-400/50 focus:border-blue-500 dark:focus:border-blue-400 transition-all duration-200 appearance-none cursor-pointer"
+                >
+                  <option value="Tạo mới">Tạo mới</option>
+                  <option value="Đã thanh toán">Đã thanh toán</option>
+                  <option value="all">Tất cả</option>
+                </select>
+                <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                  <svg className="w-4 h-4 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+              </div>
+            </div>
 
             <div>
               <label className="flex items-center gap-2 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-2.5">
