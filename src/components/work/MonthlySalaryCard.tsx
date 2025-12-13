@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import type { MonthlySalaryResponse, MonthlySalaryStatus } from '../../types/work.types';
 import { formatDateTimeVN } from '../../utils/date';
 
@@ -16,6 +17,14 @@ export const MonthlySalaryCard = ({
   onPay,
   onDelete,
 }: MonthlySalaryCardProps) => {
+  const [allowancesInput, setAllowancesInput] = useState(
+    ((monthlySalary.allowances || 0) / 1000).toFixed(0)
+  );
+
+  // Sync input value when monthlySalary.allowances changes
+  useEffect(() => {
+    setAllowancesInput(((monthlySalary.allowances || 0) / 1000).toFixed(0));
+  }, [monthlySalary.allowances]);
   const formatCurrency = (amount: number): string => {
     return new Intl.NumberFormat('vi-VN', {
       style: 'currency',
@@ -94,7 +103,8 @@ export const MonthlySalaryCard = ({
                 min={0}
                 step={1}
                 inputMode="numeric"
-                defaultValue={((monthlySalary.allowances || 0) / 1000).toFixed(0)}
+                value={allowancesInput}
+                onChange={(e) => setAllowancesInput(e.target.value)}
                 onBlur={(e) => {
                   const thousands = Math.max(0, Number(e.target.value || 0));
                   const vndValue = thousands * 1000;
@@ -102,7 +112,12 @@ export const MonthlySalaryCard = ({
                     onUpdateAllowances(monthlySalary.id, vndValue);
                   }
                 }}
-                className="w-16 text-right px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.currentTarget.blur();
+                  }
+                }}
+                className="w-16 text-right px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                 aria-label="Phụ cấp (nghìn đồng)"
               />
               <span className="text-xs text-gray-600 dark:text-gray-400 whitespace-nowrap">.000đ</span>
@@ -132,7 +147,7 @@ export const MonthlySalaryCard = ({
             Thanh toán
           </button>
         )}
-        {onDelete && monthlySalary.status === 'Tạm tính' && (
+        {onDelete && (
           <button
             onClick={() => onDelete(monthlySalary.id)}
             className="px-3 py-2 text-sm font-medium text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/30 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/50 transition-colors"

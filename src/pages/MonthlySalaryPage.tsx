@@ -10,6 +10,7 @@ import {
   setPagination,
 } from '../store/slices/workSlice';
 import { fetchEmployees } from '../store/slices/employeeSlice';
+import { monthlySalaryService } from '../services/work.service';
 import { Layout } from '../components/layout/Layout';
 import { MonthlySalaryCard } from '../components/work/MonthlySalaryCard';
 import { MonthlySalaryDetailModal } from '../components/work/MonthlySalaryDetailModal';
@@ -121,7 +122,7 @@ export const MonthlySalaryPage = () => {
     }
   };
 
-  const refreshList = () => {
+  const refreshList = async () => {
     const filters: { year?: number; month?: number; employeeId?: string } = {
       year: selectedYear,
       month: selectedMonth,
@@ -129,18 +130,19 @@ export const MonthlySalaryPage = () => {
     if (selectedEmployeeId && selectedEmployeeId.trim() !== '') {
       filters.employeeId = selectedEmployeeId;
     }
-    dispatch(
+    await dispatch(
       fetchMonthlySalaries({
         filters,
         pagination: { page: currentPage, pageSize: pagination.pageSize },
       })
-    );
+    ).unwrap();
   };
 
   const handleUpdateAllowances = async (id: string, allowances: number) => {
     try {
       await dispatch(updateMonthlySalaryAllowances({ id, allowances })).unwrap();
-      refreshList();
+      // Wait for refresh to complete before allowing modal to open
+      await refreshList();
     } catch (error) {
       console.error('Error updating allowances:', error);
     }
@@ -187,11 +189,20 @@ export const MonthlySalaryPage = () => {
     dispatch(setPagination({ ...pagination, page }));
   };
 
-  const handleViewDetails = (salaryId: string) => {
-    const salary = monthlySalaries.find((s) => s.id === salaryId);
-    if (salary) {
-      setSelectedSalary(salary);
+  const handleViewDetails = async (salaryId: string) => {
+    // Always fetch fresh data from server when opening modal
+    try {
+      const freshSalary = await monthlySalaryService.getMonthlySalaryById(salaryId);
+      setSelectedSalary(freshSalary);
       setIsDetailModalOpen(true);
+    } catch (error) {
+      console.error('Error fetching salary for details:', error);
+      // Fallback to state data if fetch fails
+      const salary = monthlySalaries.find((s) => s.id === salaryId);
+      if (salary) {
+        setSelectedSalary(salary);
+        setIsDetailModalOpen(true);
+      }
     }
   };
 

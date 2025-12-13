@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
-import { XMarkIcon } from '@heroicons/react/24/outline';
+import { XMarkIcon, DocumentArrowDownIcon, PrinterIcon } from '@heroicons/react/24/outline';
 import type { MonthlySalaryResponse, WorkRecordResponse } from '../../types/work.types';
-import { workRecordService } from '../../services/work.service';
+import { workRecordService, monthlySalaryService } from '../../services/work.service';
+import { exportSalaryToPDF } from '../../utils/pdfExport';
+import { printSalary } from '../../utils/printSalary';
 
 interface MonthlySalaryDetailModalProps {
   isOpen: boolean;
@@ -17,30 +19,41 @@ export const MonthlySalaryDetailModal = ({
   onPay,
 }: MonthlySalaryDetailModalProps) => {
   const [workRecords, setWorkRecords] = useState<WorkRecordResponse[]>([]);
+  const [salaryData, setSalaryData] = useState<MonthlySalaryResponse | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (isOpen && monthlySalary) {
-      loadWorkRecords();
+    if (isOpen && monthlySalary?.id) {
+      // Always fetch fresh data when modal opens, don't rely on prop
+      loadAllData(monthlySalary.id);
     } else {
       setWorkRecords([]);
+      setSalaryData(null);
       setError(null);
     }
-  }, [isOpen, monthlySalary]);
+  }, [isOpen, monthlySalary?.id]); // Reload when modal opens or salary ID changes
 
-  const loadWorkRecords = async () => {
-    if (!monthlySalary) return;
-
+  const loadAllData = async (salaryId: string) => {
     setIsLoading(true);
     setError(null);
 
     try {
-      // Get work records from junction table using monthly_salary_id
-      const records = await workRecordService.getWorkRecordsByMonthlySalaryId(monthlySalary.id);
+      // Always fetch fresh data from server, don't use prop
+      const [fetchedSalary, records] = await Promise.all([
+        monthlySalaryService.getMonthlySalaryById(salaryId),
+        workRecordService.getWorkRecordsByMonthlySalaryId(salaryId),
+      ]);
+      
+      setSalaryData(fetchedSalary);
       setWorkRecords(records);
     } catch (err: any) {
-      setError(err.message || 'Không thể tải chi tiết công việc');
+      console.error('Error loading salary details:', err);
+      setError(err.message || 'Không thể tải chi tiết');
+      // Fallback to prop only if fetch completely fails
+      if (monthlySalary) {
+        setSalaryData(monthlySalary);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -53,14 +66,38 @@ export const MonthlySalaryDetailModal = ({
     }).format(amount);
   };
 
+  // Always use fetched salary data, only use prop as initial fallback while loading
+  const displaySalary = salaryData || (isLoading ? null : monthlySalary);
+
   if (!isOpen || !monthlySalary) return null;
+  
+  // Show loading state while fetching fresh data
+  if (isLoading && !salaryData) {
+    return (
+      <div className="fixed inset-0 z-50 overflow-y-auto">
+        <div className="flex min-h-screen items-center justify-center p-4">
+          <div
+            className="fixed inset-0 bg-black bg-opacity-25 transition-opacity"
+            onClick={onClose}
+          />
+          <div className="relative w-full max-w-4xl bg-white dark:bg-gray-800 rounded-lg shadow-xl">
+            <div className="p-12 text-center">
+              <p className="text-gray-500 dark:text-gray-400">Đang tải chi tiết...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  
+  if (!displaySalary) return null;
 
   const totalAmount = workRecords.reduce((sum, record) => sum + record.totalAmount, 0);
   // const overtimeTotal = workRecords
   //   .filter((r) => r.isOvertime)
   //   .reduce((sum, r) => sum + r.totalAmount, 0);
   // const baseTotal = totalAmount - overtimeTotal; // Not used but kept for clarity
-  const allowances = monthlySalary.allowances || 0;
+  const allowances = displaySalary.allowances || 0;
   const grandTotal = totalAmount + allowances;
 
   return (
@@ -74,11 +111,11 @@ export const MonthlySalaryDetailModal = ({
           <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
             <div>
               <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-                Chi tiết tính lương tháng {monthlySalary.month}/{monthlySalary.year}
+                Chi tiết tính lương tháng {displaySalary.month}/{displaySalary.year}
               </h2>
               <p className="text-base font-semibold text-gray-900 dark:text-gray-100 mt-1">
-                {monthlySalary.employee
-                  ? `${monthlySalary.employee.firstName} ${monthlySalary.employee.lastName}`
+                {displaySalary.employee
+                  ? `${displaySalary.employee.firstName} ${displaySalary.employee.lastName}`
                   : 'Nhân viên'}
               </p>
             </div>
@@ -170,14 +207,40 @@ export const MonthlySalaryDetailModal = ({
             )}
           </div>
           <div className="flex flex-col sm:flex-row gap-2 items-center justify-end p-6 border-t border-gray-200 dark:border-gray-700">
-            {monthlySalary.status === 'Tạm tính' && onPay && (
+            {displaySalary.status === 'Tạm tính' && onPay && (
               <button
-                onClick={() => onPay(monthlySalary.id)}
-                className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-white bg-blue-600 dark:bg-blue-500 rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors"
+                onClick={() => onPay(displaySalary.id)}
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 dark:bg-blue-500 rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors"
               >
                 Thanh toán
               </button>
             )}
+            <button
+              onClick={async () => {
+                try {
+                  await exportSalaryToPDF(displaySalary, workRecords);
+                } catch (error: any) {
+                  alert(error.message || 'Không thể xuất PDF. Vui lòng thử lại.');
+                }
+              }}
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 dark:bg-indigo-500 rounded-lg hover:bg-indigo-700 dark:hover:bg-indigo-600 transition-colors"
+            >
+              <DocumentArrowDownIcon className="w-4 h-4" />
+              Xuất PDF
+            </button>
+            <button
+              onClick={() => {
+                try {
+                  printSalary(displaySalary, workRecords);
+                } catch (error: any) {
+                  alert(error.message || 'Không thể in phiếu lương. Vui lòng thử lại.');
+                }
+              }}
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-green-600 dark:bg-green-500 rounded-lg hover:bg-green-700 dark:hover:bg-green-600 transition-colors"
+            >
+              <PrinterIcon className="w-4 h-4" />
+              In phiếu lương
+            </button>
             <button
               onClick={onClose}
               className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
