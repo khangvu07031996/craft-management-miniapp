@@ -83,7 +83,7 @@ export const WorkRecordForm = ({ workRecord, onCancel, onSuccess, isEmployee = f
       }
       
       // Use currentEmployee if available (fetched via fetchCurrentEmployee)
-      const employee = currentEmployee || (employees.length > 0 ? employees.find((emp) => emp.id === user.employeeId) : null);
+      const employee: EmployeeResponse | null = currentEmployee || (employees.length > 0 ? employees.find((emp) => emp.id === user.employeeId) || null : null);
       
       if (employee) {
         setSelectedEmployee(employee);

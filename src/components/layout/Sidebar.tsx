@@ -75,7 +75,7 @@ export const Sidebar = ({ isOpen, onClose, isCollapsed }: SidebarProps) => {
   const isActive = (path: string) => location.pathname === path;
 
   // Filter menu items based on user role
-  const filteredMenuItems = user?.role === UserRole.EMPLOYEE
+  const menuItemsToShow = user?.role === UserRole.EMPLOYEE
     ? menuItems.filter(item => item.path === '/work/records')
     : menuItems;
 
@@ -127,7 +127,7 @@ export const Sidebar = ({ isOpen, onClose, isCollapsed }: SidebarProps) => {
               </p>
             )}
             <div className="space-y-0.5">
-              {menuItems.map((item) => {
+              {menuItemsToShow.map((item) => {
                 const Icon = item.icon;
                 const active = isActive(item.path);
                 return (

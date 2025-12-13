@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { useAppDispatch } from './store/hooks';
 import { checkAuth } from './store/slices/authSlice';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';

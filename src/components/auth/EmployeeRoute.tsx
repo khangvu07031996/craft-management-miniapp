@@ -1,4 +1,4 @@
-import { Navigate, useLocation } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 import { useAppSelector } from '../../store/hooks';
 import { UserRole } from '../../types/auth.types';
 
@@ -8,7 +8,6 @@ interface EmployeeRouteProps {
 
 export const EmployeeRoute = ({ children }: EmployeeRouteProps) => {
   const { isAuthenticated, user, isLoading } = useAppSelector((state) => state.auth);
-  const location = useLocation();
 
   // Show loading state while checking authentication
   if (isLoading) {
