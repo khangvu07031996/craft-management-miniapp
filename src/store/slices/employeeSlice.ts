@@ -127,6 +127,21 @@ export const fetchEmployeeById = createAsyncThunk(
   }
 );
 
+export const fetchCurrentEmployee = createAsyncThunk(
+  'employees/fetchCurrentEmployee',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await employeeService.getCurrentEmployee();
+      if (response.success && response.data) {
+        return response.data;
+      }
+      return rejectWithValue(response.message || 'Failed to fetch current employee');
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to fetch current employee');
+    }
+  }
+);
+
 export const fetchDepartmentStats = createAsyncThunk(
   'employees/fetchDepartmentStats',
   async (_, { rejectWithValue }) => {
@@ -250,6 +265,23 @@ const employeeSlice = createSlice({
         state.error = null;
       })
       .addCase(fetchEmployeeById.rejected, (state, action) => {
+        state.isLoading = false;
+        state.isLoadingFetch = false;
+        state.error = action.payload as string;
+      })
+      // Fetch Current Employee
+      .addCase(fetchCurrentEmployee.pending, (state) => {
+        state.isLoading = true;
+        state.isLoadingFetch = true;
+        state.error = null;
+      })
+      .addCase(fetchCurrentEmployee.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.isLoadingFetch = false;
+        state.currentEmployee = action.payload;
+        state.error = null;
+      })
+      .addCase(fetchCurrentEmployee.rejected, (state, action) => {
         state.isLoading = false;
         state.isLoadingFetch = false;
         state.error = action.payload as string;

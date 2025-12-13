@@ -12,7 +12,7 @@ import {
   fetchTotalQuantityMadeByWorkItem,
   fetchTotalHoursWorkedInDay,
 } from '../../store/slices/workSlice';
-import { fetchEmployees } from '../../store/slices/employeeSlice';
+import { fetchEmployees, fetchCurrentEmployee } from '../../store/slices/employeeSlice';
 import type {
   CreateWorkRecordDto,
   UpdateWorkRecordDto,
@@ -33,7 +33,7 @@ interface WorkRecordFormProps {
 export const WorkRecordForm = ({ workRecord, onCancel, onSuccess, isEmployee = false }: WorkRecordFormProps) => {
   const dispatch = useAppDispatch();
   const { workTypes, workItems, overtimeConfigs } = useAppSelector((state) => state.work);
-  const { employees } = useAppSelector((state) => state.employees);
+  const { employees, currentEmployee } = useAppSelector((state) => state.employees);
   const { isLoading } = useAppSelector((state) => state.work);
   const { user } = useAppSelector((state) => state.auth);
 
@@ -68,10 +68,13 @@ export const WorkRecordForm = ({ workRecord, onCancel, onSuccess, isEmployee = f
     // Only fetch employees if not employee (employee doesn't need full list)
     if (!isEmployee) {
       dispatch(fetchEmployees({ filters: {}, pagination: { page: 1, pageSize: 1000 }, sort: {} }));
+    } else if (isEmployee && user?.employeeId && !workRecord) {
+      // Fetch current employee info to get position for auto-selecting work type
+      dispatch(fetchCurrentEmployee());
     }
-  }, [dispatch, isEmployee]);
+  }, [dispatch, isEmployee, user, workRecord]);
 
-  // Auto-set employeeId for employee users when creating new record
+  // Auto-set employeeId and workTypeId for employee users when creating new record
   useEffect(() => {
     if (isEmployee && user?.employeeId && !workRecord) {
       // For employee, set employeeId directly without needing employees list
@@ -79,19 +82,43 @@ export const WorkRecordForm = ({ workRecord, onCancel, onSuccess, isEmployee = f
         setFormData((prev) => ({ ...prev, employeeId: user.employeeId! }));
       }
       
-      // Try to find employee in list if available, otherwise create a minimal employee object
-      if (employees.length > 0) {
-        const employee = employees.find((emp) => emp.id === user.employeeId);
-        if (employee) {
-          setSelectedEmployee(employee);
-          setEmployeeSearchQuery(`${employee.firstName} ${employee.lastName} - ${employee.department}`);
+      // Use currentEmployee if available (fetched via fetchCurrentEmployee)
+      const employee = currentEmployee || (employees.length > 0 ? employees.find((emp) => emp.id === user.employeeId) : null);
+      
+      if (employee) {
+        setSelectedEmployee(employee);
+        setEmployeeSearchQuery(`${employee.firstName} ${employee.lastName} - ${employee.department}`);
+        
+        // Auto-select work type based on employee position
+        // Only auto-select if workTypeId is not already set and work types are loaded
+        if (!formData.workTypeId && workTypes.length > 0 && employee.position) {
+          // Find work type that matches employee position (case-insensitive)
+          const matchingWorkType = workTypes.find(
+            (wt) => wt.name.toLowerCase().trim() === employee.position.toLowerCase().trim()
+          );
+          
+          if (matchingWorkType) {
+            setFormData((prev) => ({ ...prev, workTypeId: matchingWorkType.id }));
+          }
         }
-      } else if (user.employeeId && !selectedEmployee) {
-        // If employees list is not available, we'll fetch employee info separately if needed
-        // For now, just set employeeId - the form will work without selectedEmployee
+      } else if (user.employeeId && !selectedEmployee && currentEmployee) {
+        // If currentEmployee was just fetched, set it
+        setSelectedEmployee(currentEmployee);
+        setEmployeeSearchQuery(`${currentEmployee.firstName} ${currentEmployee.lastName} - ${currentEmployee.department}`);
+        
+        // Auto-select work type based on employee position
+        if (!formData.workTypeId && workTypes.length > 0 && currentEmployee.position) {
+          const matchingWorkType = workTypes.find(
+            (wt) => wt.name.toLowerCase().trim() === currentEmployee.position.toLowerCase().trim()
+          );
+          
+          if (matchingWorkType) {
+            setFormData((prev) => ({ ...prev, workTypeId: matchingWorkType.id }));
+          }
+        }
       }
     }
-  }, [isEmployee, user, employees, workRecord, formData.employeeId, selectedEmployee]);
+  }, [isEmployee, user, employees, currentEmployee, workRecord, formData.employeeId, formData.workTypeId, workTypes, selectedEmployee]);
 
   useEffect(() => {
     if (workRecord) {

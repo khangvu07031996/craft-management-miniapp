@@ -40,6 +40,11 @@ export const employeeService = {
     return response.data;
   },
 
+  getCurrentEmployee: async (): Promise<ApiResponse<EmployeeResponse>> => {
+    const response = await api.get<ApiResponse<EmployeeResponse>>('/employees/me');
+    return response.data;
+  },
+
   createEmployee: async (employeeData: CreateEmployeeDto): Promise<ApiResponse<EmployeeResponse>> => {
     const response = await api.post<ApiResponse<EmployeeResponse>>('/employees', employeeData);
     return response.data;
