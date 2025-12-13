@@ -105,7 +105,7 @@ export const Sidebar = ({ isOpen, onClose, isCollapsed }: SidebarProps) => {
               <ChartBarIcon className="w-5 h-5 text-white" />
             </div>
             {!isCollapsed && (
-              <span className="text-lg font-semibold text-gray-900 dark:text-gray-100 whitespace-nowrap">Thủ công mỹ nghệ việt</span>
+              <span className="text-lg font-semibold text-gray-900 dark:text-gray-100 whitespace-nowrap">Mỹ nghệ việt</span>
             )}
           </div>
           {/* Close button for mobile */}
