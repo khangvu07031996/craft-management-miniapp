@@ -27,13 +27,15 @@ interface WorkRecordFormProps {
   workRecord?: WorkRecordResponse | null;
   onCancel: () => void;
   onSuccess: () => void;
+  isEmployee?: boolean;
 }
 
-export const WorkRecordForm = ({ workRecord, onCancel, onSuccess }: WorkRecordFormProps) => {
+export const WorkRecordForm = ({ workRecord, onCancel, onSuccess, isEmployee = false }: WorkRecordFormProps) => {
   const dispatch = useAppDispatch();
   const { workTypes, workItems, overtimeConfigs } = useAppSelector((state) => state.work);
   const { employees } = useAppSelector((state) => state.employees);
   const { isLoading } = useAppSelector((state) => state.work);
+  const { user } = useAppSelector((state) => state.auth);
 
   const isEditMode = !!workRecord;
 
@@ -63,8 +65,33 @@ export const WorkRecordForm = ({ workRecord, onCancel, onSuccess }: WorkRecordFo
 
   useEffect(() => {
     dispatch(fetchWorkTypes());
-    dispatch(fetchEmployees({ filters: {}, pagination: { page: 1, pageSize: 1000 }, sort: {} }));
-  }, [dispatch]);
+    // Only fetch employees if not employee (employee doesn't need full list)
+    if (!isEmployee) {
+      dispatch(fetchEmployees({ filters: {}, pagination: { page: 1, pageSize: 1000 }, sort: {} }));
+    }
+  }, [dispatch, isEmployee]);
+
+  // Auto-set employeeId for employee users when creating new record
+  useEffect(() => {
+    if (isEmployee && user?.employeeId && !workRecord) {
+      // For employee, set employeeId directly without needing employees list
+      if (!formData.employeeId) {
+        setFormData((prev) => ({ ...prev, employeeId: user.employeeId! }));
+      }
+      
+      // Try to find employee in list if available, otherwise create a minimal employee object
+      if (employees.length > 0) {
+        const employee = employees.find((emp) => emp.id === user.employeeId);
+        if (employee) {
+          setSelectedEmployee(employee);
+          setEmployeeSearchQuery(`${employee.firstName} ${employee.lastName} - ${employee.department}`);
+        }
+      } else if (user.employeeId && !selectedEmployee) {
+        // If employees list is not available, we'll fetch employee info separately if needed
+        // For now, just set employeeId - the form will work without selectedEmployee
+      }
+    }
+  }, [isEmployee, user, employees, workRecord, formData.employeeId, selectedEmployee]);
 
   useEffect(() => {
     if (workRecord) {
@@ -104,8 +131,10 @@ export const WorkRecordForm = ({ workRecord, onCancel, onSuccess }: WorkRecordFo
         setWorkItemSearchQuery('');
       }
     } else {
+      // For employee users, set employeeId when creating new record
+      const initialEmployeeId = isEmployee && user?.employeeId ? user.employeeId : '';
       setFormData({
-        employeeId: '',
+        employeeId: initialEmployeeId,
         workDate: new Date().toISOString().split('T')[0],
         workTypeId: '',
         workItemId: '',
@@ -117,12 +146,22 @@ export const WorkRecordForm = ({ workRecord, onCancel, onSuccess }: WorkRecordFo
         notes: '',
       });
       setSelectedWorkType(null);
-      setSelectedEmployee(null);
       setSelectedWorkItem(null);
       setWorkItemSearchQuery('');
       setEmployeeSearchQuery('');
+      
+      // Set selected employee for employee users
+      if (isEmployee && user?.employeeId && employees.length > 0) {
+        const employee = employees.find((emp) => emp.id === user.employeeId);
+        if (employee) {
+          setSelectedEmployee(employee);
+          setEmployeeSearchQuery(`${employee.firstName} ${employee.lastName} - ${employee.department}`);
+        }
+      } else {
+        setSelectedEmployee(null);
+      }
     }
-  }, [workRecord, workTypes, employees]);
+  }, [workRecord, workTypes, employees, isEmployee, user]);
 
   // Effect: When employee is selected, filter and auto-select work type
   useEffect(() => {
@@ -131,7 +170,26 @@ export const WorkRecordForm = ({ workRecord, onCancel, onSuccess }: WorkRecordFo
       return;
     }
 
-    if (formData.employeeId) {
+    // For employee users, employeeId is already set, but we may not have employee info
+    if (isEmployee && user?.employeeId && formData.employeeId === user.employeeId) {
+      // Try to find in employees list if available
+      if (employees.length > 0) {
+        const employee = employees.find((emp) => emp.id === user.employeeId);
+        if (employee) {
+          setSelectedEmployee(employee);
+          setEmployeeSearchQuery(`${employee.firstName} ${employee.lastName} - ${employee.department}`);
+          
+          // If only one work type in department, auto-select it
+          if (!formData.workTypeId) {
+            const departmentWorkTypes = workTypes.filter((wt) => wt.department === employee.department);
+            if (departmentWorkTypes.length === 1) {
+              setFormData((prev) => ({ ...prev, workTypeId: departmentWorkTypes[0].id }));
+            }
+          }
+        }
+      }
+      // If employees list not available, form will still work without selectedEmployee
+    } else if (formData.employeeId && employees.length > 0) {
       const employee = employees.find((emp) => emp.id === formData.employeeId);
       if (employee) {
         setSelectedEmployee(employee);
@@ -145,11 +203,11 @@ export const WorkRecordForm = ({ workRecord, onCancel, onSuccess }: WorkRecordFo
           }
         }
       }
-    } else {
+    } else if (!formData.employeeId) {
       setSelectedEmployee(null);
       setEmployeeSearchQuery('');
     }
-  }, [formData.employeeId, employees, workTypes, isEditMode, workRecord]);
+  }, [formData.employeeId, employees, workTypes, isEditMode, workRecord, isEmployee, user]);
 
   useEffect(() => {
     if (formData.workTypeId) {
@@ -369,7 +427,16 @@ export const WorkRecordForm = ({ workRecord, onCancel, onSuccess }: WorkRecordFo
   const validateForm = (): { isValid: boolean; errors: Record<string, string> } => {
     const newErrors: Record<string, string> = {};
 
-    if (!formData.employeeId) {
+    // For employee users, ensure employeeId is set
+    let finalEmployeeId = formData.employeeId;
+    if (isEmployee && user?.employeeId) {
+      finalEmployeeId = user.employeeId;
+      if (!formData.employeeId) {
+        setFormData((prev) => ({ ...prev, employeeId: user.employeeId! }));
+      }
+    }
+    
+    if (!finalEmployeeId && !isEmployee) {
       newErrors.employeeId = 'Nhân viên là bắt buộc';
     }
 
@@ -563,8 +630,14 @@ export const WorkRecordForm = ({ workRecord, onCancel, onSuccess }: WorkRecordFo
     }
 
     try {
+      // Ensure employeeId is set for employee users
+      let finalEmployeeId = formData.employeeId;
+      if (isEmployee && user?.employeeId && !finalEmployeeId) {
+        finalEmployeeId = user.employeeId;
+      }
+
       const submitData: CreateWorkRecordDto | UpdateWorkRecordDto = {
-        employeeId: formData.employeeId,
+        employeeId: finalEmployeeId,
         workDate: formData.workDate,
         workTypeId: formData.workTypeId,
         workItemId: selectedWorkType === CalculationType.WELD_COUNT ? formData.workItemId : undefined,
@@ -633,7 +706,17 @@ export const WorkRecordForm = ({ workRecord, onCancel, onSuccess }: WorkRecordFo
 
   // Filter work types based on selected employee
   const getFilteredWorkTypes = () => {
+    // For employee users without selectedEmployee, show all work types (they'll filter by department from workRecord if editing)
     if (!selectedEmployee) {
+      // If employee and has workRecord, try to filter by workRecord's work type department
+      if (isEmployee && workRecord?.workTypeId) {
+        const workType = workTypes.find((wt) => wt.id === workRecord.workTypeId);
+        if (workType) {
+          const departmentWorkTypes = workTypes.filter((wt) => wt.department === workType.department);
+          return departmentWorkTypes.sort((a, b) => a.name.localeCompare(b.name));
+        }
+      }
+      
       // Remove duplicates by (name, department) - defensive programming
       const uniqueMap = new Map<string, typeof workTypes[0]>();
       workTypes.forEach((wt) => {
@@ -704,12 +787,13 @@ export const WorkRecordForm = ({ workRecord, onCancel, onSuccess }: WorkRecordFo
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-            Nhân viên
-            <span className="text-red-500 ml-1">*</span>
-          </label>
-          <Combobox
+        {!isEmployee && (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+              Nhân viên
+              <span className="text-red-500 ml-1">*</span>
+            </label>
+            <Combobox
             value={selectedEmployee}
             onChange={(employee: EmployeeResponse | null) => {
               if (employee) {
@@ -813,6 +897,7 @@ export const WorkRecordForm = ({ workRecord, onCancel, onSuccess }: WorkRecordFo
           </Combobox>
           {errors.employeeId && <p className="mt-1 text-xs text-red-600">{errors.employeeId}</p>}
         </div>
+        )}
 
         <div>
           <Input

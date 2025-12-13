@@ -14,9 +14,13 @@ export const LoginPage = () => {
   const hasToken = !!localStorage.getItem('token');
 
   useEffect(() => {
-    // Only redirect if not loading, authenticated, and user has admin role
-    if (!isLoading && isAuthenticated && user?.role === UserRole.ADMIN) {
-      navigate('/employees');
+    // Redirect based on user role
+    if (!isLoading && isAuthenticated && user) {
+      if (user.role === UserRole.ADMIN) {
+        navigate('/employees');
+      } else if (user.role === UserRole.EMPLOYEE) {
+        navigate('/work/records');
+      }
     }
   }, [isAuthenticated, isLoading, user, navigate]);
 
@@ -58,10 +62,10 @@ export const LoginPage = () => {
               </Button>
             </div>
           )}
-          {isAuthenticated && user && user.role !== UserRole.ADMIN && (
+          {isAuthenticated && user && user.role !== UserRole.ADMIN && user.role !== UserRole.EMPLOYEE && (
             <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
               <p className="text-sm text-red-800 dark:text-red-300 mb-2">
-                Bạn đã đăng nhập với tư cách <strong>{user.firstName} {user.lastName}</strong>, nhưng bạn không có quyền admin để truy cập trang này.
+                Bạn đã đăng nhập với tư cách <strong>{user.firstName} {user.lastName}</strong>, nhưng bạn không có quyền truy cập trang này.
               </p>
               <Button
                 variant="outline"
@@ -69,7 +73,7 @@ export const LoginPage = () => {
                 onClick={handleClearSession}
                 className="w-full"
               >
-                Đăng xuất & Đăng nhập với quyền Admin
+                Đăng xuất
               </Button>
             </div>
           )}

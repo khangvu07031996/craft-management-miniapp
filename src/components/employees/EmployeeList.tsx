@@ -14,9 +14,10 @@ import {
 import type { CreateEmployeeDto, UpdateEmployeeDto, EmployeeResponse } from '../../types/employee.types';
 import { EmployeeModal } from './EmployeeModal';
 import { EmployeeDeleteConfirm } from './EmployeeDeleteConfirm';
+import { EmployeeAccountModal } from './EmployeeAccountModal';
 import { Button } from '../common/Button';
 import { calculateWorkingDuration } from '../../utils/date';
-import { PencilIcon, TrashIcon, ArrowsUpDownIcon, MagnifyingGlassIcon, ArrowUpIcon, ArrowDownIcon } from '@heroicons/react/24/outline';
+import { PencilIcon, TrashIcon, ArrowsUpDownIcon, MagnifyingGlassIcon, ArrowUpIcon, ArrowDownIcon, UserPlusIcon } from '@heroicons/react/24/outline';
 
 interface EmployeeListProps {
   hideControls?: boolean;
@@ -29,8 +30,10 @@ export const EmployeeList = ({ hideControls = false }: EmployeeListProps) => {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isAccountModalOpen, setIsAccountModalOpen] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState<EmployeeResponse | null>(null);
   const [employeeToDelete, setEmployeeToDelete] = useState<EmployeeResponse | null>(null);
+  const [employeeForAccount, setEmployeeForAccount] = useState<EmployeeResponse | null>(null);
   const [searchValue, setSearchValue] = useState(filters.name || '');
 
   const handleCreate = () => {
@@ -46,6 +49,21 @@ export const EmployeeList = ({ hideControls = false }: EmployeeListProps) => {
   const handleDelete = (employee: EmployeeResponse) => {
     setEmployeeToDelete(employee);
     setIsDeleteModalOpen(true);
+  };
+
+  const handleCreateAccount = (employee: EmployeeResponse) => {
+    setEmployeeForAccount(employee);
+    setIsAccountModalOpen(true);
+  };
+
+  const handleAccountModalClose = () => {
+    setIsAccountModalOpen(false);
+    setEmployeeForAccount(null);
+  };
+
+  const handleAccountSuccess = () => {
+    // Refresh the list after creating account
+    dispatch(fetchEmployees({ filters, pagination, sort }));
   };
 
   const handleDeleteConfirm = async () => {
@@ -240,6 +258,14 @@ export const EmployeeList = ({ hideControls = false }: EmployeeListProps) => {
                   </div>
                   <div className="flex gap-1.5 flex-shrink-0">
                     <button
+                      onClick={() => handleCreateAccount(employee)}
+                      className="text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-500 transition-colors p-1.5 rounded-md hover:bg-green-50 dark:hover:bg-green-900/30 flex-shrink-0"
+                      aria-label="Create Account"
+                      title="Tạo tài khoản"
+                    >
+                      <UserPlusIcon className="h-5 w-5" />
+                    </button>
+                    <button
                       onClick={() => handleEdit(employee)}
                       className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-500 transition-colors p-1.5 rounded-md hover:bg-blue-50 dark:hover:bg-blue-900/30 flex-shrink-0"
                       aria-label="Edit"
@@ -376,6 +402,13 @@ export const EmployeeList = ({ hideControls = false }: EmployeeListProps) => {
                     <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-right">
                       <div className="flex justify-end gap-3">
                         <button
+                          onClick={() => handleCreateAccount(employee)}
+                          className="text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-500 transition-colors p-1 rounded-md hover:bg-green-50 dark:hover:bg-green-900/30"
+                          title="Tạo tài khoản"
+                        >
+                          <UserPlusIcon className="h-4 w-4" />
+                        </button>
+                        <button
                           onClick={() => handleEdit(employee)}
                           className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-500 transition-colors p-1 rounded-md hover:bg-blue-50 dark:hover:bg-blue-900/30"
                           title="Chỉnh sửa"
@@ -420,6 +453,12 @@ export const EmployeeList = ({ hideControls = false }: EmployeeListProps) => {
             : undefined
         }
         isLoading={isLoading}
+      />
+      <EmployeeAccountModal
+        isOpen={isAccountModalOpen}
+        onClose={handleAccountModalClose}
+        employee={employeeForAccount}
+        onSuccess={handleAccountSuccess}
       />
     </div>
   );

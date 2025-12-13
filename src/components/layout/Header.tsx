@@ -16,9 +16,10 @@ interface HeaderProps {
   onToggleCollapse: () => void;
   isDarkMode: boolean;
   onToggleDarkMode: () => void;
+  hideMenu?: boolean;
 }
 
-export const Header = ({ onMenuClick, isCollapsed, onToggleCollapse, isDarkMode, onToggleDarkMode }: HeaderProps) => {
+export const Header = ({ onMenuClick, isCollapsed, onToggleCollapse, isDarkMode, onToggleDarkMode, hideMenu = false }: HeaderProps) => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { user } = useAppSelector((state) => state.auth);
@@ -38,26 +39,32 @@ export const Header = ({ onMenuClick, isCollapsed, onToggleCollapse, isDarkMode,
   };
 
   return (
-    <header className={`fixed top-0 left-0 right-0 h-14 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 z-20 transition-all duration-300 ${isCollapsed ? 'lg:left-20' : 'lg:left-64'}`}>
+    <header className={`fixed top-0 left-0 right-0 h-14 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 z-20 transition-all duration-300 ${hideMenu ? 'lg:left-0' : isCollapsed ? 'lg:left-20' : 'lg:left-64'}`}>
       <div className="flex items-center justify-between h-full px-4 lg:px-6">
-        {/* Left side - Menu and Toggle */}
-        <div className="flex items-center gap-2 lg:gap-3">
-          <button
-            onClick={onMenuClick}
-            className="lg:hidden p-2 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-            aria-label="Toggle menu"
-          >
-            <Bars3Icon className="w-5 h-5 text-gray-600 dark:text-gray-300" />
-          </button>
-          {/* Toggle sidebar collapse for desktop */}
-          <button
-            onClick={onToggleCollapse}
-            className="hidden lg:flex p-2 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-            aria-label="Toggle sidebar"
-          >
-            <Bars3Icon className="w-5 h-5 text-gray-600 dark:text-gray-300" />
-          </button>
-        </div>
+        {/* Left side - Menu and Toggle or Title for employee */}
+        {hideMenu ? (
+          <div className="flex items-center">
+            <h1 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Bản ghi công việc</h1>
+          </div>
+        ) : (
+          <div className="flex items-center gap-2 lg:gap-3">
+            <button
+              onClick={onMenuClick}
+              className="lg:hidden p-2 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+              aria-label="Toggle menu"
+            >
+              <Bars3Icon className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+            </button>
+            {/* Toggle sidebar collapse for desktop */}
+            <button
+              onClick={onToggleCollapse}
+              className="hidden lg:flex p-2 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+              aria-label="Toggle sidebar"
+            >
+              <Bars3Icon className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+            </button>
+          </div>
+        )}
 
         {/* Right side - Icons and User */}
         <div className="flex items-center gap-1 lg:gap-2">

@@ -15,6 +15,7 @@ import { ErrorMessage } from '../components/common/ErrorMessage';
 import { LoadingOverlay } from '../components/common/LoadingOverlay';
 import { Pagination } from '../components/employees/Pagination';
 import type { WorkRecordResponse } from '../types/work.types';
+import { UserRole } from '../types/auth.types';
 import { FunnelIcon, CalendarDaysIcon, UserGroupIcon, ChevronRightIcon, ArrowUpIcon, ArrowDownIcon } from '@heroicons/react/24/outline';
 import { PlusIcon } from '@heroicons/react/24/solid';
 
@@ -22,6 +23,8 @@ export const WorkRecordPage = () => {
   const dispatch = useAppDispatch();
   const { workRecords, pagination, isLoadingFetch, isLoadingDelete, error } = useAppSelector((state) => state.work);
   const { employees } = useAppSelector((state) => state.employees);
+  const { user } = useAppSelector((state) => state.auth);
+  const isEmployee = user?.role === UserRole.EMPLOYEE;
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState<WorkRecordResponse | null>(null);
@@ -37,10 +40,12 @@ export const WorkRecordPage = () => {
   const [sortBy, setSortBy] = useState<string>('');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
 
-  // Fetch employees on mount
+  // Fetch employees on mount (only for admin)
   useEffect(() => {
-    dispatch(fetchEmployees({ filters: {}, pagination: { page: 1, pageSize: 1000 }, sort: {} }));
-  }, [dispatch]);
+    if (!isEmployee) {
+      dispatch(fetchEmployees({ filters: {}, pagination: { page: 1, pageSize: 1000 }, sort: {} }));
+    }
+  }, [dispatch, isEmployee]);
 
   // Reset to page 1 when filters change (but not when currentPage changes)
   useEffect(() => {
@@ -262,6 +267,7 @@ export const WorkRecordPage = () => {
               workRecord={selectedRecord}
               onCancel={handleFormCancel}
               onSuccess={handleFormSuccess}
+              isEmployee={isEmployee}
             />
           </div>
         )}
@@ -358,31 +364,33 @@ export const WorkRecordPage = () => {
               </div>
             </div>
 
-            <div>
-              <label className="flex items-center gap-2 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-2.5">
-                <UserGroupIcon className="w-3.5 h-3.5" />
-                Nhân viên
-              </label>
-              <div className="relative">
-                <select
-                  value={selectedEmployeeId}
-                  onChange={handleEmployeeChange}
-                  className="w-full pl-4 pr-10 py-2.5 text-sm border border-gray-300/80 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 shadow-sm hover:border-gray-400 dark:hover:border-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 dark:focus:ring-blue-400/50 focus:border-blue-500 dark:focus:border-blue-400 transition-all duration-200 appearance-none cursor-pointer"
-                >
-                  <option value="">Tất cả nhân viên</option>
-                  {employees.map((emp) => (
-                    <option key={emp.id} value={emp.id}>
-                      {emp.firstName} {emp.lastName}
-                    </option>
-                  ))}
-                </select>
-                <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                  <svg className="w-4 h-4 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
+            {!isEmployee && (
+              <div>
+                <label className="flex items-center gap-2 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-2.5">
+                  <UserGroupIcon className="w-3.5 h-3.5" />
+                  Nhân viên
+                </label>
+                <div className="relative">
+                  <select
+                    value={selectedEmployeeId}
+                    onChange={handleEmployeeChange}
+                    className="w-full pl-4 pr-10 py-2.5 text-sm border border-gray-300/80 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 shadow-sm hover:border-gray-400 dark:hover:border-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 dark:focus:ring-blue-400/50 focus:border-blue-500 dark:focus:border-blue-400 transition-all duration-200 appearance-none cursor-pointer"
+                  >
+                    <option value="">Tất cả nhân viên</option>
+                    {employees.map((emp) => (
+                      <option key={emp.id} value={emp.id}>
+                        {emp.firstName} {emp.lastName}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                    <svg className="w-4 h-4 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
 

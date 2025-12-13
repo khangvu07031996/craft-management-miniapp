@@ -61,9 +61,27 @@ export const fetchEmployees = createAsyncThunk(
   'employees/fetchEmployees',
   async (
     { filters, pagination, sort }: { filters?: EmployeeFilters; pagination?: PaginationParams; sort?: SortParams },
-    { rejectWithValue }
+    { rejectWithValue, getState }
   ) => {
     try {
+      // Check if user is employee - if so, skip fetching (they don't need full list)
+      const state = getState() as any;
+      const user = state?.auth?.user;
+      if (user?.role === 'employee') {
+        // Return empty result for employee
+        return {
+          data: [],
+          pagination: {
+            page: 1,
+            pageSize: 10,
+            total: 0,
+            totalPages: 0,
+            hasNextPage: false,
+            hasPreviousPage: false,
+          },
+        };
+      }
+      
       const response = await employeeService.getAllEmployees(
         filters || {},
         pagination || { page: 1, pageSize: 10 },
@@ -71,6 +89,24 @@ export const fetchEmployees = createAsyncThunk(
       );
       return response;
     } catch (error: any) {
+      // If 403 Forbidden and user is employee, silently fail (expected behavior)
+      if (error.response?.status === 403) {
+        const state = getState() as any;
+        const user = state?.auth?.user;
+        if (user?.role === 'employee') {
+          return {
+            data: [],
+            pagination: {
+              page: 1,
+              pageSize: 10,
+              total: 0,
+              totalPages: 0,
+              hasNextPage: false,
+              hasPreviousPage: false,
+            },
+          };
+        }
+      }
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch employees');
     }
   }

@@ -1,13 +1,14 @@
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import { useAppSelector } from '../../store/hooks';
-import { UserRole as UserRoleConst } from '../../types/auth.types';
+import { UserRole } from '../../types/auth.types';
 
-interface AdminRouteProps {
+interface EmployeeRouteProps {
   children: React.ReactNode;
 }
 
-export const AdminRoute = ({ children }: AdminRouteProps) => {
+export const EmployeeRoute = ({ children }: EmployeeRouteProps) => {
   const { isAuthenticated, user, isLoading } = useAppSelector((state) => state.auth);
+  const location = useLocation();
 
   // Show loading state while checking authentication
   if (isLoading) {
@@ -29,13 +30,9 @@ export const AdminRoute = ({ children }: AdminRouteProps) => {
     return <Navigate to="/login" replace />;
   }
 
-  // Redirect to login if user doesn't have admin role
-  if (user.role !== UserRoleConst.ADMIN) {
-    console.warn('User does not have admin role:', user.role);
-    // If employee, redirect to work records
-    if (user.role === UserRoleConst.EMPLOYEE) {
-      return <Navigate to="/work/records" replace />;
-    }
+  // Allow employee or admin
+  if (user.role !== UserRole.EMPLOYEE && user.role !== UserRole.ADMIN) {
+    console.warn('User does not have employee or admin role:', user.role);
     return <Navigate to="/login" replace />;
   }
 

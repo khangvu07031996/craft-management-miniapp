@@ -4,6 +4,8 @@ import { useAppDispatch } from './store/hooks';
 import { checkAuth } from './store/slices/authSlice';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import { AdminRoute } from './components/auth/AdminRoute';
+import { EmployeeRoute } from './components/auth/EmployeeRoute';
+import { RedirectToRolePage } from './components/common/RedirectToRolePage';
 import { LoginPage } from './pages/LoginPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { EmployeeListPage } from './pages/EmployeeListPage';
@@ -94,9 +96,9 @@ function App() {
             path="/work/records"
             element={
               <ProtectedRoute>
-                <AdminRoute>
+                <EmployeeRoute>
                   <WorkRecordPage />
-                </AdminRoute>
+                </EmployeeRoute>
               </ProtectedRoute>
             }
           />
@@ -120,7 +122,14 @@ function App() {
               </ProtectedRoute>
             }
           />
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          <Route
+            path="/"
+            element={
+              <ProtectedRoute>
+                <RedirectToRolePage />
+              </ProtectedRoute>
+            }
+          />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </Router>

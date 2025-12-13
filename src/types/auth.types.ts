@@ -1,6 +1,7 @@
 export const UserRole = {
   ADMIN: 'admin',
   MEMBER: 'member',
+  EMPLOYEE: 'employee',
 } as const;
 
 export type UserRole = typeof UserRole[keyof typeof UserRole];
@@ -13,6 +14,7 @@ export interface User {
   phoneNumber?: string;
   address?: string;
   role: UserRole;
+  employeeId?: string;
   age?: number;
   created_at: Date;
   updated_at: Date;

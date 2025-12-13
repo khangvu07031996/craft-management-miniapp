@@ -1,4 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
+import { useAppSelector } from '../../store/hooks';
+import { UserRole } from '../../types/auth.types';
 import {
   HomeIcon,
   UserGroupIcon,
@@ -69,7 +71,13 @@ interface SidebarProps {
 
 export const Sidebar = ({ isOpen, onClose, isCollapsed }: SidebarProps) => {
   const location = useLocation();
+  const { user } = useAppSelector((state) => state.auth);
   const isActive = (path: string) => location.pathname === path;
+
+  // Filter menu items based on user role
+  const filteredMenuItems = user?.role === UserRole.EMPLOYEE
+    ? menuItems.filter(item => item.path === '/work/records')
+    : menuItems;
 
   // Close sidebar when clicking on a link (mobile only)
   const handleLinkClick = () => {
