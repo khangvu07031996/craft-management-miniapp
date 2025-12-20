@@ -16,7 +16,7 @@ import { LoadingOverlay } from '../components/common/LoadingOverlay';
 import { Pagination } from '../components/employees/Pagination';
 import type { WorkRecordResponse } from '../types/work.types';
 import { UserRole } from '../types/auth.types';
-import { FunnelIcon, CalendarDaysIcon, UserGroupIcon, ChevronRightIcon, ArrowUpIcon, ArrowDownIcon } from '@heroicons/react/24/outline';
+import { FunnelIcon, CalendarDaysIcon, UserGroupIcon, ChevronRightIcon, ArrowUpIcon, ArrowDownIcon, ClockIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
 import { PlusIcon } from '@heroicons/react/24/solid';
 
 export const WorkRecordPage = () => {
@@ -233,6 +233,31 @@ export const WorkRecordPage = () => {
     return sorted;
   }, [workRecords, sortBy, sortOrder]);
 
+  // Calculate total amount, work days, and latest date based on status filter
+  const workStats = useMemo(() => {
+    // Filter records based on current status filter
+    let filteredRecords = sortedWorkRecords;
+    if (statusFilter !== 'all') {
+      filteredRecords = sortedWorkRecords.filter(record => record.status === statusFilter);
+    }
+    
+    const totalAmount = filteredRecords.reduce((sum, record) => sum + (record.totalAmount || 0), 0);
+    
+    // Count distinct work dates
+    const uniqueDates = new Set(filteredRecords.map(record => record.workDate));
+    const workDays = uniqueDates.size;
+    
+    // Find latest work date
+    const dates = Array.from(uniqueDates).sort();
+    const latestDate = dates.length > 0 ? dates[dates.length - 1] : null;
+    
+    return {
+      totalAmount,
+      workDays,
+      latestDate,
+    };
+  }, [sortedWorkRecords, statusFilter]);
+
   return (
     <Layout>
       <div className="pt-8 lg:pt-10">
@@ -393,6 +418,53 @@ export const WorkRecordPage = () => {
             )}
           </div>
         </div>
+
+        {/* Total Amount Card */}
+        {statusFilter !== 'all' && (
+          <div className="mb-4 lg:mb-6 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-xl border border-green-200 dark:border-green-800 shadow-md dark:shadow-gray-900/50 p-4 lg:p-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="flex-1">
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">
+                Tổng số tiền:
+              </p>
+              <p className="text-2xl lg:text-3xl font-bold text-green-700 dark:text-green-400 mb-3">
+                {workStats.totalAmount.toLocaleString('vi-VN')} VNĐ
+              </p>
+              <div className="mt-4">
+                <div className="flex items-center gap-2">
+                  <svg className="w-5 h-5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  <div>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Số ngày đã làm việc</p>
+                    <p className="text-base font-semibold text-gray-900 dark:text-gray-100">
+                      {workStats.workDays} ngày
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="hidden sm:flex sm:flex-col sm:items-end sm:gap-3">
+              <div>
+                {statusFilter === 'Tạo mới' ? (
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300">
+                    <ClockIcon className="w-4 h-4" />
+                    Chưa thanh toán
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300">
+                    <CheckCircleIcon className="w-4 h-4" />
+                    Đã thanh toán
+                  </span>
+                )}
+              </div>
+              <svg className="w-16 h-16 text-green-300 dark:text-green-700 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+          </div>
+        </div>
+        )}
 
         <LoadingOverlay isLoading={isLoadingFetch}>
           <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm dark:shadow-gray-900/50 overflow-hidden">
