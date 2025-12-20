@@ -431,7 +431,7 @@ export const WorkRecordPage = () => {
                 {workStats.totalAmount.toLocaleString('vi-VN')} VNĐ
               </p>
               <div className="mt-4">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 mb-3">
                   <svg className="w-5 h-5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                   </svg>
@@ -441,6 +441,20 @@ export const WorkRecordPage = () => {
                       {workStats.workDays} ngày
                     </p>
                   </div>
+                </div>
+                {/* Status label for mobile */}
+                <div className="sm:hidden">
+                  {statusFilter === 'Tạo mới' ? (
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300">
+                      <ClockIcon className="w-4 h-4" />
+                      Chưa thanh toán
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300">
+                      <CheckCircleIcon className="w-4 h-4" />
+                      Đã thanh toán
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
