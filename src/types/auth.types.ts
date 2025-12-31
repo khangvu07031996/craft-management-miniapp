@@ -45,3 +45,7 @@ export interface AuthResponse {
   message?: string;
 }
 
+export interface ChangePasswordDto {
+  currentPassword: string;
+  newPassword: string;
+}

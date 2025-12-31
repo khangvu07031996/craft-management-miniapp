@@ -15,9 +15,10 @@ import type { CreateEmployeeDto, UpdateEmployeeDto, EmployeeResponse } from '../
 import { EmployeeModal } from './EmployeeModal';
 import { EmployeeDeleteConfirm } from './EmployeeDeleteConfirm';
 import { EmployeeAccountModal } from './EmployeeAccountModal';
+import { ResetPasswordModal } from '../users/ResetPasswordModal';
 import { Button } from '../common/Button';
 import { calculateWorkingDuration } from '../../utils/date';
-import { PencilIcon, TrashIcon, ArrowsUpDownIcon, MagnifyingGlassIcon, ArrowUpIcon, ArrowDownIcon, UserPlusIcon } from '@heroicons/react/24/outline';
+import { PencilIcon, TrashIcon, ArrowsUpDownIcon, MagnifyingGlassIcon, ArrowUpIcon, ArrowDownIcon, UserPlusIcon, KeyIcon } from '@heroicons/react/24/outline';
 
 interface EmployeeListProps {
   hideControls?: boolean;
@@ -31,9 +32,11 @@ export const EmployeeList = ({ hideControls = false }: EmployeeListProps) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isAccountModalOpen, setIsAccountModalOpen] = useState(false);
+  const [isResetPasswordModalOpen, setIsResetPasswordModalOpen] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState<EmployeeResponse | null>(null);
   const [employeeToDelete, setEmployeeToDelete] = useState<EmployeeResponse | null>(null);
   const [employeeForAccount, setEmployeeForAccount] = useState<EmployeeResponse | null>(null);
+  const [employeeForPasswordReset, setEmployeeForPasswordReset] = useState<EmployeeResponse | null>(null);
   const [searchValue, setSearchValue] = useState(filters.name || '');
 
   const handleCreate = () => {
@@ -64,6 +67,16 @@ export const EmployeeList = ({ hideControls = false }: EmployeeListProps) => {
   const handleAccountSuccess = () => {
     // Refresh the list after creating account
     dispatch(fetchEmployees({ filters, pagination, sort }));
+  };
+
+  const handleResetPassword = (employee: EmployeeResponse) => {
+    setEmployeeForPasswordReset(employee);
+    setIsResetPasswordModalOpen(true);
+  };
+
+  const handleResetPasswordClose = () => {
+    setIsResetPasswordModalOpen(false);
+    setEmployeeForPasswordReset(null);
   };
 
   const handleDeleteConfirm = async () => {
@@ -266,6 +279,14 @@ export const EmployeeList = ({ hideControls = false }: EmployeeListProps) => {
                       <UserPlusIcon className="h-5 w-5" />
                     </button>
                     <button
+                      onClick={() => handleResetPassword(employee)}
+                      className="text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-500 transition-colors p-1.5 rounded-md hover:bg-amber-50 dark:hover:bg-amber-900/30 flex-shrink-0"
+                      aria-label="Reset Password"
+                      title="Reset mật khẩu"
+                    >
+                      <KeyIcon className="h-5 w-5" />
+                    </button>
+                    <button
                       onClick={() => handleEdit(employee)}
                       className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-500 transition-colors p-1.5 rounded-md hover:bg-blue-50 dark:hover:bg-blue-900/30 flex-shrink-0"
                       aria-label="Edit"
@@ -409,6 +430,13 @@ export const EmployeeList = ({ hideControls = false }: EmployeeListProps) => {
                           <UserPlusIcon className="h-4 w-4" />
                         </button>
                         <button
+                          onClick={() => handleResetPassword(employee)}
+                          className="text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-500 transition-colors p-1 rounded-md hover:bg-amber-50 dark:hover:bg-amber-900/30"
+                          title="Reset mật khẩu"
+                        >
+                          <KeyIcon className="h-4 w-4" />
+                        </button>
+                        <button
                           onClick={() => handleEdit(employee)}
                           className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-500 transition-colors p-1 rounded-md hover:bg-blue-50 dark:hover:bg-blue-900/30"
                           title="Chỉnh sửa"
@@ -460,6 +488,15 @@ export const EmployeeList = ({ hideControls = false }: EmployeeListProps) => {
         employee={employeeForAccount}
         onSuccess={handleAccountSuccess}
       />
+      {employeeForPasswordReset && (
+        <ResetPasswordModal
+          isOpen={isResetPasswordModalOpen}
+          onClose={handleResetPasswordClose}
+          userId={employeeForPasswordReset.id}
+          userName={`${employeeForPasswordReset.firstName} ${employeeForPasswordReset.lastName}`}
+          userEmail={employeeForPasswordReset.email}
+        />
+      )}
     </div>
   );
 };

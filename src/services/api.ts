@@ -78,12 +78,17 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      // Unauthorized - clear token and redirect to login
-      // Only redirect if not already on login page
-      if (window.location.pathname !== '/login') {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        window.location.href = '/login';
+      // Don't redirect if it's a change-password request (let the component handle the error)
+      const isChangePasswordRequest = error.config?.url?.includes('/auth/change-password');
+      
+      if (!isChangePasswordRequest) {
+        // Unauthorized - clear token and redirect to login
+        // Only redirect if not already on login page
+        if (window.location.pathname !== '/login') {
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          window.location.href = '/login';
+        }
       }
     }
     return Promise.reject(error);

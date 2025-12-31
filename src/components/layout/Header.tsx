@@ -2,12 +2,14 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
 import { logout } from '../../store/slices/authSlice';
+import { ChangePasswordModal } from '../auth/ChangePasswordModal';
 import {
   Bars3Icon,
   BellIcon,
   MoonIcon,
   SunIcon,
   ChevronDownIcon,
+  KeyIcon,
 } from '@heroicons/react/24/outline';
 
 interface HeaderProps {
@@ -24,11 +26,17 @@ export const Header = ({ onMenuClick, isCollapsed, onToggleCollapse, isDarkMode,
   const dispatch = useAppDispatch();
   const { user } = useAppSelector((state) => state.auth);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const [isChangePasswordModalOpen, setIsChangePasswordModalOpen] = useState(false);
 
   const handleLogout = () => {
     dispatch(logout());
     navigate('/login');
     setIsUserMenuOpen(false);
+  };
+
+  const handleChangePassword = () => {
+    setIsUserMenuOpen(false);
+    setIsChangePasswordModalOpen(true);
   };
 
   const getUserInitials = () => {
@@ -118,6 +126,13 @@ export const Header = ({ onMenuClick, isCollapsed, onToggleCollapse, isDarkMode,
                     <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{user?.email}</p>
                   </div>
                   <button
+                    onClick={handleChangePassword}
+                    className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center gap-2"
+                  >
+                    <KeyIcon className="w-4 h-4" />
+                    Đổi mật khẩu
+                  </button>
+                  <button
                     onClick={handleLogout}
                     className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                   >
@@ -129,6 +144,12 @@ export const Header = ({ onMenuClick, isCollapsed, onToggleCollapse, isDarkMode,
           </div>
         </div>
       </div>
+
+      {/* Change Password Modal */}
+      <ChangePasswordModal
+        isOpen={isChangePasswordModalOpen}
+        onClose={() => setIsChangePasswordModalOpen(false)}
+      />
     </header>
   );
 };

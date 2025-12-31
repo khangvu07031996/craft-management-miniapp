@@ -1,5 +1,5 @@
 import api from './api';
-import type { LoginDto, RegisterDto, AuthResponse, User } from '../types/auth.types';
+import type { LoginDto, RegisterDto, AuthResponse, User, ChangePasswordDto } from '../types/auth.types';
 import type { ApiResponse } from '../types/api.types';
 
 export const authService = {
@@ -27,6 +27,11 @@ export const authService = {
 
   getProfile: async (): Promise<ApiResponse<User>> => {
     const response = await api.get<ApiResponse<User>>('/auth/me');
+    return response.data;
+  },
+
+  changePassword: async (data: ChangePasswordDto): Promise<ApiResponse<void>> => {
+    const response = await api.put<ApiResponse<void>>('/auth/change-password', data);
     return response.data;
   },
 
