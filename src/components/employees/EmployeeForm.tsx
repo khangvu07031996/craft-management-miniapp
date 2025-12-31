@@ -134,7 +134,7 @@ export const EmployeeForm = ({ employee, onSubmit, onCancel, isLoading }: Employ
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-4 pb-6 sm:pb-4">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Input
           label="Họ"
@@ -229,7 +229,7 @@ export const EmployeeForm = ({ employee, onSubmit, onCancel, isLoading }: Employ
         </div>
       </div>
 
-      <div className="flex flex-col sm:flex-row justify-end gap-2 pt-4">
+      <div className="flex flex-col sm:flex-row justify-end gap-2 pt-4 mb-4">
         <Button type="button" variant="outline" onClick={onCancel} className="w-full sm:w-auto">
           Hủy
         </Button>
