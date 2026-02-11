@@ -49,11 +49,19 @@ export const WorkItemPage = () => {
   const handleCreate = () => {
     setSelectedItem(null);
     setIsFormOpen(true);
+    // Auto scroll to top to show form
+    setTimeout(() => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, 100);
   };
 
   const handleEdit = (item: WorkItemResponse) => {
     setSelectedItem(item);
     setIsFormOpen(true);
+    // Auto scroll to top to show form
+    setTimeout(() => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, 100);
   };
 
   const handleDelete = (id: string) => {
@@ -329,8 +337,23 @@ export const WorkItemPage = () => {
           </button>
         </div>
 
-        {/* Filter */}
-        <div className="mb-4 lg:mb-6 bg-gradient-to-br from-white dark:from-gray-800 to-gray-50 dark:to-gray-800 rounded-xl border border-gray-200/60 dark:border-gray-700 shadow-md dark:shadow-gray-900/50 shadow-gray-100/50 p-4 lg:p-6">
+        {/* Form - Show above filter when open */}
+        {isFormOpen && (
+          <div className="mb-6 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm dark:shadow-gray-900/50 p-6">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
+              {selectedItem ? 'Chỉnh sửa sản phẩm' : 'Thêm sản phẩm mới'}
+            </h2>
+            <WorkItemForm
+              workItem={selectedItem}
+              onCancel={handleFormCancel}
+              onSuccess={handleFormSuccess}
+            />
+          </div>
+        )}
+
+        {/* Filter - Hide when form is open */}
+        {!isFormOpen && (
+          <div className="mb-4 lg:mb-6 bg-gradient-to-br from-white dark:from-gray-800 to-gray-50 dark:to-gray-800 rounded-xl border border-gray-200/60 dark:border-gray-700 shadow-md dark:shadow-gray-900/50 shadow-gray-100/50 p-4 lg:p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 lg:gap-5">
             <div>
               <label className="flex items-center gap-2 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-2.5">
@@ -484,7 +507,8 @@ export const WorkItemPage = () => {
               />
             </div>
           </div>
-        </div>
+          </div>
+        )}
 
         {error && <ErrorMessage message={error} className="mb-4" />}
 
@@ -535,19 +559,6 @@ export const WorkItemPage = () => {
           </div>
         )}
 
-        {isFormOpen && (
-          <div className="mb-6 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm dark:shadow-gray-900/50 p-6">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
-              {selectedItem ? 'Chỉnh sửa sản phẩm' : 'Thêm sản phẩm mới'}
-            </h2>
-            <WorkItemForm
-              workItem={selectedItem}
-              onCancel={handleFormCancel}
-              onSuccess={handleFormSuccess}
-            />
-          </div>
-        )}
-
         <LoadingOverlay isLoading={isLoadingFetch}>
           <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
             {filteredItems.length === 0 && !isLoadingFetch ? (
@@ -563,11 +574,23 @@ export const WorkItemPage = () => {
                     key={item.id}
                     className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 shadow-sm"
                   >
-                    {/* Header: Name and Actions */}
+                    {/* Header: Name, Product Code and Actions */}
                     <div className="flex items-start justify-between mb-3 pb-3 border-b border-gray-200 dark:border-gray-700">
-                      <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 flex-1 pr-2">
-                        {item.name}
-                      </h3>
+                      <div className="flex-1 pr-2">
+                        <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100">
+                          {item.name}
+                        </h3>
+                        {item.productCode && (
+                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 font-mono">
+                            Mã: {item.productCode}
+                          </p>
+                        )}
+                        {item.size && (
+                          <span className="inline-block mt-1 px-2 py-0.5 text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded">
+                            Cỡ {item.size}
+                          </span>
+                        )}
+                      </div>
                       <div className="flex gap-2 flex-shrink-0">
                         <button
                           onClick={() => handleEdit(item)}
@@ -663,6 +686,12 @@ export const WorkItemPage = () => {
                     >
                       Tên sản phẩm {getSortIcon('name')}
                     </th>
+                    <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      Mã sản phẩm
+                    </th>
+                    <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      Cỡ
+                    </th>
                     <th 
                       className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 select-none"
                       onClick={() => handleSort('difficulty')}
@@ -712,6 +741,16 @@ export const WorkItemPage = () => {
                     <tr key={item.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
                       <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
                         {item.name}
+                      </td>
+                      <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 font-mono">
+                        {item.productCode || '-'}
+                      </td>
+                      <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+                        {item.size ? (
+                          <span className="inline-flex px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300">
+                            {item.size}
+                          </span>
+                        ) : '-'}
                       </td>
                       <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
                         <span

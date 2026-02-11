@@ -60,7 +60,18 @@ export const workItemService = {
     return response.data.data;
   },
 
-  createWorkItem: async (data: CreateWorkItemDto): Promise<WorkItemResponse> => {
+  getSequencesInMonth: async (year: number, month: number): Promise<Array<{
+    sequence: number;
+    sizes: string[];
+    productCodes: string[];
+    description?: string;
+    shape?: string;
+  }>> => {
+    const response = await api.get(`/work/items/sequences/${year}/${month}`);
+    return response.data.data;
+  },
+
+  createWorkItem: async (data: CreateWorkItemDto): Promise<WorkItemResponse[]> => {
     const response = await api.post('/work/items', data);
     return response.data.data;
   },

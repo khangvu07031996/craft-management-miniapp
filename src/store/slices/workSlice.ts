@@ -539,7 +539,13 @@ const workSlice = createSlice({
       })
       .addCase(createWorkItem.fulfilled, (state, action) => {
         state.isLoadingCreate = false;
-        state.workItems.push(action.payload);
+        // Handle array response (multiple items created)
+        if (Array.isArray(action.payload)) {
+          state.workItems.push(...action.payload);
+        } else {
+          // Backward compatibility if single item
+          state.workItems.push(action.payload);
+        }
       })
       .addCase(createWorkItem.rejected, (state, action) => {
         state.isLoadingCreate = false;
