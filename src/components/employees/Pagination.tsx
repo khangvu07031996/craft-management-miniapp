@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 
 interface PaginationProps {
@@ -15,9 +16,28 @@ export const Pagination = ({
   hasPreviousPage,
   onPageChange,
 }: PaginationProps) => {
+  // Responsive delta based on screen size
+  const [delta, setDelta] = useState(2);
+
+  useEffect(() => {
+    const updateDelta = () => {
+      const width = window.innerWidth;
+      if (width < 640) {
+        setDelta(0); // Mobile: show only current page + first + last
+      } else if (width < 1024) {
+        setDelta(1); // Tablet: show current ± 1
+      } else {
+        setDelta(2); // Desktop: show current ± 2
+      }
+    };
+
+    updateDelta();
+    window.addEventListener('resize', updateDelta);
+    return () => window.removeEventListener('resize', updateDelta);
+  }, []);
+
   // Calculate visible page numbers
   const getVisiblePages = () => {
-    const delta = 2; // Number of pages to show on each side of current page
     const pages: (number | string)[] = [];
 
     // Always show first page
@@ -75,7 +95,7 @@ export const Pagination = ({
         onClick={() => onPageChange(currentPage - 1)}
         disabled={!hasPreviousPage}
         className={`
-          flex items-center justify-center px-3 py-2 text-sm font-medium rounded-lg border transition-colors
+          flex items-center justify-center px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm font-medium rounded-lg border transition-colors
           ${
             hasPreviousPage
               ? 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-400 dark:hover:border-gray-500'
@@ -83,7 +103,7 @@ export const Pagination = ({
           }
         `}
       >
-        <ChevronLeftIcon className="w-4 h-4" />
+        <ChevronLeftIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
         <span className="ml-1 hidden sm:inline">Trước</span>
       </button>
 
@@ -94,7 +114,7 @@ export const Pagination = ({
             return (
               <span
                 key={`ellipsis-${index}`}
-                className="px-3 py-2 text-sm font-medium text-gray-500 dark:text-gray-400"
+                className="px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-gray-500 dark:text-gray-400"
               >
                 ...
               </span>
@@ -109,7 +129,7 @@ export const Pagination = ({
               key={pageNumber}
               onClick={() => onPageChange(pageNumber)}
               className={`
-                min-w-[2.5rem] px-3 py-2 text-sm font-medium rounded-lg border transition-colors
+                min-w-[2rem] sm:min-w-[2.5rem] px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm font-medium rounded-lg border transition-colors
                 ${
                   isActive
                     ? 'bg-blue-600 dark:bg-blue-500 border-blue-600 dark:border-blue-500 text-white hover:bg-blue-700 dark:hover:bg-blue-600 hover:border-blue-700 dark:hover:border-blue-600'
@@ -128,16 +148,16 @@ export const Pagination = ({
         onClick={() => onPageChange(currentPage + 1)}
         disabled={!hasNextPage}
         className={`
-          flex items-center justify-center px-3 py-2 text-sm font-medium rounded-lg border transition-colors
+          flex items-center justify-center px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm font-medium rounded-lg border transition-colors
           ${
             hasNextPage
-              ? 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-400'
-              : 'border-gray-200 bg-gray-50 text-gray-400 cursor-not-allowed'
+              ? 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-400 dark:hover:border-gray-500'
+              : 'border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-400 dark:text-gray-500 cursor-not-allowed'
           }
         `}
       >
         <span className="mr-1 hidden sm:inline">Sau</span>
-        <ChevronRightIcon className="w-4 h-4" />
+        <ChevronRightIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
       </button>
     </div>
   );

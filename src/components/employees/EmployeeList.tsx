@@ -253,23 +253,28 @@ export const EmployeeList = ({ hideControls = false }: EmployeeListProps) => {
                 key={employee.id}
                 className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 shadow-sm"
               >
-                {/* Header: Avatar, Name, and Actions */}
-                <div className="flex items-start gap-3 mb-3 pb-3 border-b border-gray-200 dark:border-gray-700">
-                  <div className="flex-shrink-0 h-12 w-12">
-                    <div className="h-12 w-12 rounded-full bg-blue-600 flex items-center justify-center text-white text-sm font-semibold">
-                      {getInitials(employee.firstName, employee.lastName)}
+                {/* Header: Avatar and Name */}
+                <div className="mb-3 pb-3 border-b border-gray-200 dark:border-gray-700">
+                  {/* Row 1: Avatar + Name + Email */}
+                  <div className="flex items-start gap-3 mb-3">
+                    <div className="flex-shrink-0 h-12 w-12">
+                      <div className="h-12 w-12 rounded-full bg-blue-600 flex items-center justify-center text-white text-sm font-semibold">
+                        {getInitials(employee.firstName, employee.lastName)}
+                      </div>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <button
+                        onClick={() => navigate(`/employees/${employee.id}`)}
+                        className="text-base font-semibold text-gray-900 dark:text-gray-100 hover:text-blue-600 dark:hover:text-blue-400 transition-colors text-left block w-full break-words"
+                      >
+                        {employee.firstName} {employee.lastName}
+                      </button>
+                      <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 w-full break-words">{employee.email}</div>
                     </div>
                   </div>
-                  <div className="flex-1 min-w-0 pr-2">
-                    <button
-                      onClick={() => navigate(`/employees/${employee.id}`)}
-                      className="text-base font-semibold text-gray-900 dark:text-gray-100 hover:text-blue-600 dark:hover:text-blue-400 transition-colors text-left block w-full truncate"
-                    >
-                      {employee.firstName} {employee.lastName}
-                    </button>
-                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 w-full truncate">{employee.email}</div>
-                  </div>
-                  <div className="flex gap-1.5 flex-shrink-0">
+                  
+                  {/* Row 2: Action Buttons */}
+                  <div className="flex gap-2 justify-center">
                     <button
                       onClick={() => handleCreateAccount(employee)}
                       className="text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-500 transition-colors p-1.5 rounded-md hover:bg-green-50 dark:hover:bg-green-900/30 flex-shrink-0"
