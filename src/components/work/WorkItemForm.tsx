@@ -13,7 +13,7 @@ import { workItemService } from '../../services/work.service';
 interface WorkItemFormProps {
   workItem?: WorkItemResponse | null;
   onCancel: () => void;
-  onSuccess: () => void;
+  onSuccess: (action: 'create' | 'update') => void;
 }
 
 export const WorkItemForm = ({ workItem, onCancel, onSuccess }: WorkItemFormProps) => {
@@ -148,6 +148,7 @@ export const WorkItemForm = ({ workItem, onCancel, onSuccess }: WorkItemFormProp
           weight: formData.weight !== '' ? parseFloat(formData.weight) : undefined,
         };
         await dispatch(updateWorkItem({ id: workItem.id, data: submitData })).unwrap();
+        onSuccess('update');
       } else {
         // Create mode: create new items with sizes
         const submitData: CreateWorkItemDto = {
@@ -163,9 +164,8 @@ export const WorkItemForm = ({ workItem, onCancel, onSuccess }: WorkItemFormProp
           weight: formData.weight !== '' ? parseFloat(formData.weight) : undefined,
         };
         await dispatch(createWorkItem(submitData)).unwrap();
+        onSuccess('create');
       }
-
-      onSuccess();
     } catch (error: any) {
       setErrors({ submit: error.message || 'Có lỗi xảy ra khi lưu sản phẩm' });
     }

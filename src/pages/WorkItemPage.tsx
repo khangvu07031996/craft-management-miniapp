@@ -6,6 +6,7 @@ import { Layout } from '../components/layout/Layout';
 import { WorkItemForm } from '../components/work/WorkItemForm';
 import { ErrorMessage } from '../components/common/ErrorMessage';
 import { WorkItemDeleteConfirm } from '../components/work/WorkItemDeleteConfirm';
+import { WorkItemSuccessModal } from '../components/work/WorkItemSuccessModal';
 import { LoadingOverlay } from '../components/common/LoadingOverlay';
 import { Pagination } from '../components/employees/Pagination';
 import type { WorkItemResponse, DifficultyLevel } from '../types/work.types';
@@ -32,6 +33,8 @@ export const WorkItemPage = () => {
   const [itemsPerPage] = useState(10);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<WorkItemResponse | null>(null);
+  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
+  const [successModalVariant, setSuccessModalVariant] = useState<'create' | 'update'>('create');
 
   useEffect(() => {
     loadWorkItems();
@@ -85,10 +88,12 @@ export const WorkItemPage = () => {
     }
   };
 
-  const handleFormSuccess = () => {
+  const handleFormSuccess = (action: 'create' | 'update') => {
     setIsFormOpen(false);
     setSelectedItem(null);
     loadWorkItems();
+    setSuccessModalVariant(action);
+    setIsSuccessModalOpen(true);
   };
 
   const handleFormCancel = () => {
@@ -859,6 +864,13 @@ export const WorkItemPage = () => {
           onConfirm={handleDeleteConfirm}
           workItem={itemToDelete}
           isLoading={isLoadingDelete}
+        />
+
+        {/* Success Modal */}
+        <WorkItemSuccessModal
+          isOpen={isSuccessModalOpen}
+          onClose={() => setIsSuccessModalOpen(false)}
+          variant={successModalVariant}
         />
       </div>
     </Layout>
