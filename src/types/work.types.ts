@@ -196,12 +196,20 @@ export interface WorkReportParams {
   employeeId?: string;
 }
 
+// Work Record Statistics
+export interface WorkRecordStatistics {
+  totalAmount: number;
+  workDays: number;
+  recordCount: number;
+}
+
 // Pagination
 export interface PaginationParams {
   page: number;
   pageSize: number;
   total?: number;
   totalPages?: number;
+  statistics?: WorkRecordStatistics;
 }
 
 

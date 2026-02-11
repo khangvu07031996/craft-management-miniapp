@@ -98,12 +98,13 @@ export const workRecordService = {
       params.page = pagination.page;
       params.page_size = pagination.pageSize;
     }
-    console.log('workRecordService.getAllWorkRecords - Sending params:', params);
     const response = await api.get('/work/records', { params });
-    console.log('workRecordService.getAllWorkRecords - Received records:', response.data.data?.length || 0);
     return {
       data: response.data.data,
-      pagination: response.data.pagination,
+      pagination: {
+        ...response.data.pagination,
+        statistics: response.data.statistics,
+      },
     };
   },
 

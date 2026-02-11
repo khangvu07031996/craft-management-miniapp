@@ -233,30 +233,20 @@ export const WorkRecordPage = () => {
     return sorted;
   }, [workRecords, sortBy, sortOrder]);
 
-  // Calculate total amount, work days, and latest date based on status filter
+  // Get statistics from Redux (calculated by backend for all records matching filters)
   const workStats = useMemo(() => {
-    // Filter records based on current status filter
-    let filteredRecords = sortedWorkRecords;
-    if (statusFilter !== 'all') {
-      filteredRecords = sortedWorkRecords.filter(record => record.status === statusFilter);
-    }
+    const statistics = pagination.statistics;
     
-    const totalAmount = filteredRecords.reduce((sum, record) => sum + (record.totalAmount || 0), 0);
-    
-    // Count distinct work dates
-    const uniqueDates = new Set(filteredRecords.map(record => record.workDate));
-    const workDays = uniqueDates.size;
-    
-    // Find latest work date
-    const dates = Array.from(uniqueDates).sort();
+    // Find latest work date from current page records (for display purposes)
+    const dates = sortedWorkRecords.map(record => record.workDate).sort();
     const latestDate = dates.length > 0 ? dates[dates.length - 1] : null;
     
     return {
-      totalAmount,
-      workDays,
+      totalAmount: statistics?.totalAmount || 0,
+      workDays: statistics?.workDays || 0,
       latestDate,
     };
-  }, [sortedWorkRecords, statusFilter]);
+  }, [pagination.statistics, sortedWorkRecords]);
 
   return (
     <Layout>

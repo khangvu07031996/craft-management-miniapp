@@ -56,6 +56,11 @@ const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
+    // Disable caching in development to ensure fresh data
+    ...(import.meta.env.MODE === 'development' ? {
+      'Cache-Control': 'no-cache',
+      'Pragma': 'no-cache',
+    } : {}),
   },
 });
 
