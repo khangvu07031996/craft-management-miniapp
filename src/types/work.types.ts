@@ -154,6 +154,16 @@ export interface UpdateWorkRecordDto {
   notes?: string;
 }
 
+export interface EmployeeProductAggregation {
+  employeeId: string;
+  employeeName: string;
+  workItemId: string;
+  workItemName: string;
+  calculationType: 'hourly' | 'daily' | 'weld_count';
+  totalQuantity: number;
+  lastWorkDate?: string;
+}
+
 // Monthly Salary
 export interface MonthlySalaryResponse {
   id: string;

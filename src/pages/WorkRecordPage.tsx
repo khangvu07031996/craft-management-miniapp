@@ -10,6 +10,7 @@ import { fetchEmployees } from '../store/slices/employeeSlice';
 import { Layout } from '../components/layout/Layout';
 import { WorkRecordForm } from '../components/work/WorkRecordForm';
 import { WorkRecordList } from '../components/work/WorkRecordList';
+import { WorkRecordSummaryPanel } from '../components/work/WorkRecordSummaryPanel';
 import { WorkRecordDeleteConfirm } from '../components/work/WorkRecordDeleteConfirm';
 import { ErrorMessage } from '../components/common/ErrorMessage';
 import { LoadingOverlay } from '../components/common/LoadingOverlay';
@@ -21,7 +22,7 @@ import { PlusIcon } from '@heroicons/react/24/solid';
 
 export const WorkRecordPage = () => {
   const dispatch = useAppDispatch();
-  const { workRecords, pagination, isLoadingFetch, isLoadingDelete, error } = useAppSelector((state) => state.work);
+  const { workRecords, workRecordAggregations, pagination, isLoadingFetch, isLoadingDelete, error } = useAppSelector((state) => state.work);
   const { employees } = useAppSelector((state) => state.employees);
   const { user } = useAppSelector((state) => state.auth);
   const isEmployee = user?.role === UserRole.EMPLOYEE;
@@ -468,6 +469,10 @@ export const WorkRecordPage = () => {
             </div>
           </div>
         </div>
+        )}
+
+        {!isEmployee && (
+          <WorkRecordSummaryPanel aggregations={workRecordAggregations} />
         )}
 
         <LoadingOverlay isLoading={isLoadingFetch}>

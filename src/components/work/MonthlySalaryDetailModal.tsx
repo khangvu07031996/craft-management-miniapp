@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { XMarkIcon, DocumentArrowDownIcon, PrinterIcon } from '@heroicons/react/24/outline';
 import type { MonthlySalaryResponse, WorkRecordResponse } from '../../types/work.types';
 import { workRecordService, monthlySalaryService } from '../../services/work.service';
@@ -66,6 +66,39 @@ export const MonthlySalaryDetailModal = ({
       currency: 'VND',
     }).format(amount);
   };
+
+  const formatQuantity = (quantity: number, calculationType: string): string => {
+    if (calculationType === 'weld_count') {
+      return `${Math.round(quantity)} SP`;
+    }
+    if (calculationType === 'hourly') {
+      return `${quantity.toFixed(1)} giờ`;
+    }
+    return `${Math.round(quantity)}`;
+  };
+
+  const aggregationsByProduct = useMemo(() => {
+    const map = new Map<string, { productName: string; totalQuantity: number; calculationType: string }>();
+    for (const record of workRecords) {
+      const key = record.workItemId ?? 'no-product';
+      const productName = record.workItem?.name ?? 'Không có sản phẩm';
+      const calcType = record.workType?.calculationType ?? 'weld_count';
+      const effectiveQty =
+        calcType === 'weld_count'
+          ? record.quantity + (record.overtimeQuantity ?? 0)
+          : calcType === 'hourly'
+            ? record.quantity + (record.overtimeHours ?? 0)
+            : record.quantity;
+
+      const existing = map.get(key);
+      if (existing) {
+        existing.totalQuantity += effectiveQty;
+      } else {
+        map.set(key, { productName, totalQuantity: effectiveQty, calculationType: calcType });
+      }
+    }
+    return Array.from(map.values());
+  }, [workRecords]);
 
   // Always use fetched salary data, only use prop as initial fallback while loading
   const displaySalary = salaryData || (isLoading ? null : monthlySalary);
@@ -181,6 +214,27 @@ export const MonthlySalaryDetailModal = ({
                       </tr>
                     ))}
                   </tbody>
+                  {aggregationsByProduct.length > 0 && (
+                    <tbody className="bg-amber-50 dark:bg-amber-900/10 border-t-2 border-amber-200 dark:border-amber-800">
+                      <tr>
+                        <td colSpan={9} className="px-4 py-3">
+                          <div className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">
+                            Tổng theo sản phẩm:
+                          </div>
+                          <div className="flex flex-col gap-y-0.5 max-w-sm">
+                            {aggregationsByProduct.map(({ productName, totalQuantity, calculationType }, idx) => (
+                              <div key={`${productName}-${idx}`} className="flex justify-between items-center gap-2 text-sm">
+                                <span className="text-gray-700 dark:text-gray-300 truncate">{productName}</span>
+                                <span className="text-gray-900 dark:text-gray-100 font-medium whitespace-nowrap shrink-0">
+                                  {formatQuantity(totalQuantity, calculationType)}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        </td>
+                      </tr>
+                    </tbody>
+                  )}
                   <tfoot className="bg-gray-50 dark:bg-gray-800">
                     <tr>
                       <td colSpan={8} className="px-4 py-2 text-right text-sm font-medium text-gray-900 dark:text-gray-100">

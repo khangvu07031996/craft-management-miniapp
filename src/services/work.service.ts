@@ -17,6 +17,7 @@ import type {
   OvertimeConfigResponse,
   CreateOvertimeConfigDto,
   UpdateOvertimeConfigDto,
+  EmployeeProductAggregation,
 } from '../types/work.types';
 
 // Work Types
@@ -97,7 +98,7 @@ export const workRecordService = {
       status?: string;
     },
     pagination?: PaginationParams
-  ): Promise<{ data: WorkRecordResponse[]; pagination: PaginationParams }> => {
+  ): Promise<{ data: WorkRecordResponse[]; pagination: PaginationParams; aggregations?: { byEmployeeProduct: EmployeeProductAggregation[] } }> => {
     const params: any = {};
     // Convert camelCase to snake_case for backend
     if (filters.employeeId) params.employee_id = filters.employeeId;
@@ -116,6 +117,7 @@ export const workRecordService = {
         ...response.data.pagination,
         statistics: response.data.statistics,
       },
+      aggregations: response.data.aggregations,
     };
   },
 

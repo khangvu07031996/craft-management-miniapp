@@ -26,12 +26,14 @@ import type {
   OvertimeConfigResponse,
   CreateOvertimeConfigDto,
   UpdateOvertimeConfigDto,
+  EmployeeProductAggregation,
 } from '../../types/work.types';
 
 interface WorkState {
   workTypes: WorkTypeResponse[];
   workItems: WorkItemResponse[];
   workRecords: WorkRecordResponse[];
+  workRecordAggregations: EmployeeProductAggregation[];
   monthlySalaries: MonthlySalaryResponse[];
   weeklyReport: WorkReport | null;
   monthlyReport: WorkReport | null;
@@ -49,6 +51,7 @@ const initialState: WorkState = {
   workTypes: [],
   workItems: [],
   workRecords: [],
+  workRecordAggregations: [],
   monthlySalaries: [],
   weeklyReport: null,
   monthlyReport: null,
@@ -603,6 +606,7 @@ const workSlice = createSlice({
         state.isLoadingFetch = false;
         state.workRecords = action.payload.data;
         state.pagination = action.payload.pagination;
+        state.workRecordAggregations = action.payload.aggregations?.byEmployeeProduct ?? [];
         state.error = null;
       })
       .addCase(fetchWorkRecords.rejected, (state, action) => {
