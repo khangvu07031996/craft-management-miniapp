@@ -7,6 +7,7 @@ import { WorkItemForm } from '../components/work/WorkItemForm';
 import { ErrorMessage } from '../components/common/ErrorMessage';
 import { WorkItemDeleteConfirm } from '../components/work/WorkItemDeleteConfirm';
 import { WorkItemSuccessModal } from '../components/work/WorkItemSuccessModal';
+import { WorkItemRecordsModal } from '../components/work/WorkItemRecordsModal';
 import { LoadingOverlay } from '../components/common/LoadingOverlay';
 import { Pagination } from '../components/employees/Pagination';
 import type { WorkItemResponse, DifficultyLevel } from '../types/work.types';
@@ -35,6 +36,8 @@ export const WorkItemPage = () => {
   const [itemToDelete, setItemToDelete] = useState<WorkItemResponse | null>(null);
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
   const [successModalVariant, setSuccessModalVariant] = useState<'create' | 'update'>('create');
+  const [selectedWorkItemForRecords, setSelectedWorkItemForRecords] = useState<WorkItemResponse | null>(null);
+  const [isRecordsModalOpen, setIsRecordsModalOpen] = useState(false);
 
   useEffect(() => {
     loadWorkItems();
@@ -94,6 +97,11 @@ export const WorkItemPage = () => {
     loadWorkItems();
     setSuccessModalVariant(action);
     setIsSuccessModalOpen(true);
+  };
+
+  const handleRowClick = (item: WorkItemResponse) => {
+    setSelectedWorkItemForRecords(item);
+    setIsRecordsModalOpen(true);
   };
 
   const handleFormCancel = () => {
@@ -160,7 +168,7 @@ export const WorkItemPage = () => {
       });
     }
 
-    // Apply sorting
+    // Apply sorting (default: productCode/createdAt - sản phẩm tạo trước lên đầu)
     if (sortBy) {
       filtered.sort((a, b) => {
         let aValue: any;
@@ -200,6 +208,13 @@ export const WorkItemPage = () => {
         if (aValue < bValue) return sortOrder === 'asc' ? -1 : 1;
         if (aValue > bValue) return sortOrder === 'asc' ? 1 : -1;
         return 0;
+      });
+    } else {
+      // Default: sản phẩm tạo mới nhất lên đầu - sort by createdAt DESC
+      filtered.sort((a, b) => {
+        const aTime = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const bTime = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        return bTime - aTime;
       });
     }
 
@@ -577,7 +592,8 @@ export const WorkItemPage = () => {
                 {paginatedItems.map((item) => (
                   <div
                     key={item.id}
-                    className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 shadow-sm"
+                    onClick={() => handleRowClick(item)}
+                    className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 shadow-sm cursor-pointer hover:border-blue-300 dark:hover:border-blue-700 transition-colors"
                   >
                     {/* Header: Name, Product Code and Actions */}
                     <div className="flex items-start justify-between mb-3 pb-3 border-b border-gray-200 dark:border-gray-700">
@@ -596,7 +612,7 @@ export const WorkItemPage = () => {
                           </span>
                         )}
                       </div>
-                      <div className="flex gap-2 flex-shrink-0">
+                      <div className="flex gap-2 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
                         <button
                           onClick={() => handleEdit(item)}
                           className="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-500 p-1"
@@ -743,7 +759,11 @@ export const WorkItemPage = () => {
                 </thead>
                 <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                   {paginatedItems.map((item) => (
-                    <tr key={item.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                    <tr
+                      key={item.id}
+                      onClick={() => handleRowClick(item)}
+                      className="hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
+                    >
                       <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
                         {item.name}
                       </td>
@@ -806,7 +826,7 @@ export const WorkItemPage = () => {
                           '-'
                         )}
                       </td>
-                      <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-right text-sm font-medium" onClick={(e) => e.stopPropagation()}>
                         <div className="flex justify-end gap-2">
                           <button
                             onClick={() => handleEdit(item)}
@@ -871,6 +891,16 @@ export const WorkItemPage = () => {
           isOpen={isSuccessModalOpen}
           onClose={() => setIsSuccessModalOpen(false)}
           variant={successModalVariant}
+        />
+
+        {/* Work Item Records Modal */}
+        <WorkItemRecordsModal
+          isOpen={isRecordsModalOpen}
+          onClose={() => {
+            setIsRecordsModalOpen(false);
+            setSelectedWorkItemForRecords(null);
+          }}
+          workItem={selectedWorkItemForRecords}
         />
       </div>
     </Layout>

@@ -272,7 +272,8 @@ export const WorkItemForm = ({ workItem, onCancel, onSuccess }: WorkItemFormProp
                       className="w-full px-4 py-3 text-base border-2 border-gray-300/80 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
                       displayValue={(seq: typeof selectedSequence) => {
                         if (!seq) return '';
-                        return `STT ${seq.sequence} (Đã có: ${seq.sizes.join(', ')})`;
+                        const baseCode = seq.productCodes[0]?.slice(0, -1) ?? `STT ${seq.sequence}`;
+                        return `${baseCode} (Đã có: ${seq.sizes.join(', ')})`;
                       }}
                       onChange={(e) => setSttSearchQuery(e.target.value)}
                       placeholder="Tìm hoặc chọn STT..."
@@ -301,13 +302,13 @@ export const WorkItemForm = ({ workItem, onCancel, onSuccess }: WorkItemFormProp
                             {({ selected, active }) => (
                               <div>
                                 <div className="flex items-center justify-between">
-                                  <span className="font-semibold">STT {seq.sequence}</span>
+                                  <span className="font-semibold">{seq.productCodes[0]?.slice(0, -1) ?? `STT ${seq.sequence}`}</span>
                                   {selected && (
                                     <CheckIcon className={`w-5 h-5 ${active ? 'text-white' : 'text-blue-600'}`} />
                                   )}
                                 </div>
                                 <div className={`text-xs mt-0.5 ${active ? 'text-white/90' : 'text-gray-500 dark:text-gray-400'}`}>
-                                  Đã có: {seq.sizes.join(', ')} | {seq.productCodes[0]}
+                                  Đã có: {seq.sizes.join(', ')}
                                 </div>
                                 {(seq.description || seq.shape) && (
                                   <div className={`text-xs mt-0.5 ${active ? 'text-white/75' : 'text-gray-400 dark:text-gray-500'}`}>
