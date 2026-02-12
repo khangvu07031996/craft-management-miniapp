@@ -272,11 +272,13 @@ export const fetchMonthlySalaries = createAsyncThunk(
     {
       filters,
       pagination,
-    }: {
+    }:     {
       filters: {
         employeeId?: string;
         year?: number;
         month?: number;
+        dateFrom?: string;
+        dateTo?: string;
       };
       pagination?: PaginationParams;
     },
@@ -307,7 +309,7 @@ export const calculateMonthlySalary = createAsyncThunk(
 
 export const calculateMonthlySalaryForAll = createAsyncThunk(
   'work/calculateMonthlySalaryForAll',
-  async (data: { year: number; month: number }, { rejectWithValue }) => {
+  async (data: { dateFrom: string; dateTo: string }, { rejectWithValue }) => {
     try {
       const result = await monthlySalaryService.calculateMonthlySalaryForAll(data);
       return result;
@@ -325,6 +327,18 @@ export const updateMonthlySalaryAllowances = createAsyncThunk(
       return result;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Failed to update monthly salary allowances');
+    }
+  }
+);
+
+export const updateMonthlySalaryAdvancePayment = createAsyncThunk(
+  'work/updateMonthlySalaryAdvancePayment',
+  async ({ id, advancePayment }: { id: string; advancePayment: number }, { rejectWithValue }) => {
+    try {
+      const result = await monthlySalaryService.updateAdvancePayment(id, advancePayment);
+      return result;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to update advance payment');
     }
   }
 );
@@ -702,6 +716,23 @@ const workSlice = createSlice({
         }
       })
       .addCase(updateMonthlySalaryAllowances.rejected, (state, action) => {
+        state.isLoadingUpdate = false;
+        state.error = action.payload as string;
+      })
+      .addCase(updateMonthlySalaryAdvancePayment.pending, (state) => {
+        state.isLoadingUpdate = true;
+        state.error = null;
+      })
+      .addCase(updateMonthlySalaryAdvancePayment.fulfilled, (state, action) => {
+        state.isLoadingUpdate = false;
+        const index = state.monthlySalaries.findIndex(
+          (salary) => salary.id === action.payload.id
+        );
+        if (index !== -1) {
+          state.monthlySalaries[index] = action.payload;
+        }
+      })
+      .addCase(updateMonthlySalaryAdvancePayment.rejected, (state, action) => {
         state.isLoadingUpdate = false;
         state.error = action.payload as string;
       })

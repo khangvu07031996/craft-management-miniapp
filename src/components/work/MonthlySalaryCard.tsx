@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
 import type { MonthlySalaryResponse, MonthlySalaryStatus } from '../../types/work.types';
-import { formatDateTimeVN } from '../../utils/date';
+import { formatDateTimeVN, formatDate } from '../../utils/date';
 
 interface MonthlySalaryCardProps {
   monthlySalary: MonthlySalaryResponse;
   onViewDetails?: (id: string) => void;
   onUpdateAllowances?: (id: string, allowances: number) => void;
+  onUpdateAdvancePayment?: (id: string, advancePayment: number) => void;
   onPay?: (id: string) => void;
   onDelete?: (id: string) => void;
 }
@@ -14,17 +15,26 @@ export const MonthlySalaryCard = ({
   monthlySalary,
   onViewDetails,
   onUpdateAllowances,
+  onUpdateAdvancePayment,
   onPay,
   onDelete,
 }: MonthlySalaryCardProps) => {
   const [allowancesInput, setAllowancesInput] = useState(
     ((monthlySalary.allowances || 0) / 1000).toFixed(0)
   );
+  const [advancePaymentInput, setAdvancePaymentInput] = useState(
+    ((monthlySalary.advancePayment || 0) / 1000).toFixed(0)
+  );
 
   // Sync input value when monthlySalary.allowances changes
   useEffect(() => {
     setAllowancesInput(((monthlySalary.allowances || 0) / 1000).toFixed(0));
   }, [monthlySalary.allowances]);
+
+  // Sync input value when monthlySalary.advancePayment changes
+  useEffect(() => {
+    setAdvancePaymentInput(((monthlySalary.advancePayment || 0) / 1000).toFixed(0));
+  }, [monthlySalary.advancePayment]);
   const formatCurrency = (amount: number): string => {
     return new Intl.NumberFormat('vi-VN', {
       style: 'currency',
@@ -64,7 +74,9 @@ export const MonthlySalaryCard = ({
               : 'Nhân viên'}
           </h3>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            Tháng {monthlySalary.month}/{monthlySalary.year}
+            {monthlySalary.dateFrom && monthlySalary.dateTo
+              ? `${formatDate(monthlySalary.dateFrom)} - ${formatDate(monthlySalary.dateTo)}`
+              : `Tháng ${monthlySalary.month}/${monthlySalary.year}`}
           </p>
         </div>
         <div className="flex flex-col items-end gap-1">
@@ -125,6 +137,40 @@ export const MonthlySalaryCard = ({
           ) : (
             <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
               {(((monthlySalary.allowances || 0) / 1000) || 0).toLocaleString('vi-VN')}.000đ
+            </span>
+          )}
+        </div>
+        <div className="flex items-center justify-between gap-2">
+          <span className="text-sm text-gray-600 dark:text-gray-400">Tạm ứng:</span>
+          {monthlySalary.status === 'Tạm tính' ? (
+            <div className="flex items-center gap-1.5">
+              <input
+                type="number"
+                min={0}
+                step={1}
+                inputMode="numeric"
+                value={advancePaymentInput}
+                onChange={(e) => setAdvancePaymentInput(e.target.value)}
+                onBlur={(e) => {
+                  const thousands = Math.max(0, Number(e.target.value || 0));
+                  const vndValue = thousands * 1000;
+                  if (onUpdateAdvancePayment && vndValue !== (monthlySalary.advancePayment || 0)) {
+                    onUpdateAdvancePayment(monthlySalary.id, vndValue);
+                  }
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.currentTarget.blur();
+                  }
+                }}
+                className="w-16 text-right px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                aria-label="Tạm ứng (nghìn đồng)"
+              />
+              <span className="text-xs text-gray-600 dark:text-gray-400 whitespace-nowrap">.000đ</span>
+            </div>
+          ) : (
+            <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+              {(((monthlySalary.advancePayment || 0) / 1000) || 0).toLocaleString('vi-VN')}.000đ
             </span>
           )}
         </div>

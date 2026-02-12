@@ -18,6 +18,13 @@ const formatDate = (dateString: string): string => {
   return date.toLocaleDateString('vi-VN');
 };
 
+const getPeriodLabel = (salary: MonthlySalaryResponse): string => {
+  if (salary.dateFrom && salary.dateTo) {
+    return `${formatDate(salary.dateFrom)} - ${formatDate(salary.dateTo)}`;
+  }
+  return `Tháng ${salary.month}/${salary.year}`;
+};
+
 /**
  * Format datetime to Vietnamese format
  */
@@ -45,7 +52,8 @@ export const printSalary = (
 
     const totalAmount = workRecords.reduce((sum, record) => sum + record.totalAmount, 0);
     const allowances = salary.allowances || 0;
-    const grandTotal = totalAmount + allowances;
+    const advancePayment = salary.advancePayment || 0;
+    const grandTotal = totalAmount + allowances - advancePayment;
 
     // Create print HTML
     const printContent = `
@@ -53,7 +61,7 @@ export const printSalary = (
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Phiếu lương tháng ${salary.month}/${salary.year}</title>
+  <title>Phiếu lương ${getPeriodLabel(salary)}</title>
   <style>
     @media print {
       @page {
@@ -146,16 +154,30 @@ export const printSalary = (
       border-top: 2px solid #333;
     }
     .footer {
-      margin-top: 20px;
+      margin-top: 50px;
       font-size: 9px;
       color: #666;
+    }
+    .signature {
+      margin-top: 40px;
+      float: left;
+      text-align: center;
+      width: 200px;
+    }
+    .signature-line {
+      border-bottom: 1px solid #000;
+      margin-top: 40px;
+      width: 150px;
+      margin-left: auto;
+      margin-right: auto;
     }
   </style>
 </head>
 <body>
   <div class="header">
     <h1>PHIẾU LƯƠNG THÁNG</h1>
-    <h2>Tháng ${salary.month}/${salary.year}</h2>
+    <h2>${getPeriodLabel(salary)}</h2>
+    ${salary.calculatedAt ? `<p style="font-size: 9px; color: #666; margin-top: 8px;">Ngày tạo: ${formatDateTime(salary.calculatedAt)}</p>` : ''}
   </div>
 
   <div class="info-section">
@@ -172,6 +194,7 @@ export const printSalary = (
           <th>Ngày</th>
           <th>Loại công việc</th>
           <th>Sản phẩm</th>
+          <th class="text-right">Mối hàn/SP</th>
           <th class="text-center">Tăng ca</th>
           <th class="text-right">SL/giờ TC</th>
           <th class="text-right">Số lượng</th>
@@ -189,6 +212,7 @@ export const printSalary = (
             <td>${formatDate(record.workDate)}</td>
             <td>${record.workType?.name || '-'}</td>
             <td>${record.workItem?.name || '-'}</td>
+            <td class="text-right">${record.workItem?.weldsPerItem ?? '-'}</td>
             <td class="text-center">${record.isOvertime ? 'Có' : 'Không'}</td>
             <td class="text-right">${
               record.isOvertime
@@ -204,7 +228,7 @@ export const printSalary = (
                 .join('')
             : `
           <tr>
-            <td colspan="8" style="text-align: center; font-style: italic; padding: 20px;">
+            <td colspan="9" style="text-align: center; font-style: italic; padding: 20px;">
               Không có bản ghi công việc
             </td>
           </tr>
@@ -221,12 +245,17 @@ export const printSalary = (
     <div class="summary-row">
       <strong>Phụ cấp:</strong> ${formatCurrency(allowances)}
     </div>
+    ${advancePayment > 0 ? `<div class="summary-row"><strong>Tạm ứng:</strong> -${formatCurrency(advancePayment)}</div>` : ''}
     <div class="summary-total">
       <strong>Tổng lương cần thanh toán:</strong> ${formatCurrency(grandTotal)}
     </div>
   </div>
 
-  ${salary.calculatedAt ? `<div class="footer">Ngày tạo: ${formatDateTime(salary.calculatedAt)}</div>` : ''}
+  <div class="signature">
+    <div>Người nhận lương</div>
+    <div class="signature-line"></div>
+    <div style="font-size: 9px; margin-top: 4px;">(Ký và ghi rõ họ tên)</div>
+  </div>
 </body>
 </html>
     `;

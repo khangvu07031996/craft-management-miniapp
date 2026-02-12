@@ -4,6 +4,7 @@ import type { MonthlySalaryResponse, WorkRecordResponse } from '../../types/work
 import { workRecordService, monthlySalaryService } from '../../services/work.service';
 import { exportSalaryToPDF } from '../../utils/pdfExport';
 import { printSalary } from '../../utils/printSalary';
+import { formatDate } from '../../utils/date';
 
 interface MonthlySalaryDetailModalProps {
   isOpen: boolean;
@@ -93,12 +94,9 @@ export const MonthlySalaryDetailModal = ({
   if (!displaySalary) return null;
 
   const totalAmount = workRecords.reduce((sum, record) => sum + record.totalAmount, 0);
-  // const overtimeTotal = workRecords
-  //   .filter((r) => r.isOvertime)
-  //   .reduce((sum, r) => sum + r.totalAmount, 0);
-  // const baseTotal = totalAmount - overtimeTotal; // Not used but kept for clarity
   const allowances = displaySalary.allowances || 0;
-  const grandTotal = totalAmount + allowances;
+  const advancePayment = displaySalary.advancePayment || 0;
+  const grandTotal = totalAmount + allowances - advancePayment;
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
@@ -111,7 +109,10 @@ export const MonthlySalaryDetailModal = ({
           <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
             <div>
               <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-                Chi tiết tính lương tháng {displaySalary.month}/{displaySalary.year}
+                Chi tiết tính lương{' '}
+                {displaySalary.dateFrom && displaySalary.dateTo
+                  ? `${formatDate(displaySalary.dateFrom)} - ${formatDate(displaySalary.dateTo)}`
+                  : `tháng ${displaySalary.month}/${displaySalary.year}`}
               </h2>
               <p className="text-base font-semibold text-gray-900 dark:text-gray-100 mt-1">
                 {displaySalary.employee
@@ -147,6 +148,7 @@ export const MonthlySalaryDetailModal = ({
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Ngày</th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Loại công việc</th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Sản phẩm</th>
+                      <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Mối hàn/SP</th>
                       <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Tăng ca</th>
                       <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">SL/giờ TC</th>
                       <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Số lượng</th>
@@ -162,6 +164,9 @@ export const MonthlySalaryDetailModal = ({
                         </td>
                         <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">{record.workType?.name || '-'}</td>
                         <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">{record.workItem?.name || '-'}</td>
+                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 text-right">
+                          {record.workItem?.weldsPerItem ?? '-'}
+                        </td>
                         <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 text-center">
                           {record.isOvertime ? 'Có' : 'Không'}
                         </td>
@@ -178,7 +183,7 @@ export const MonthlySalaryDetailModal = ({
                   </tbody>
                   <tfoot className="bg-gray-50 dark:bg-gray-800">
                     <tr>
-                      <td colSpan={7} className="px-4 py-2 text-right text-sm font-medium text-gray-900 dark:text-gray-100">
+                      <td colSpan={8} className="px-4 py-2 text-right text-sm font-medium text-gray-900 dark:text-gray-100">
                         Tổng lương (chưa phụ cấp):
                       </td>
                       <td className="px-4 py-2 text-right text-sm font-semibold text-gray-900 dark:text-gray-100">
@@ -186,7 +191,7 @@ export const MonthlySalaryDetailModal = ({
                       </td>
                     </tr>
                     <tr>
-                      <td colSpan={7} className="px-4 py-2 text-right text-sm font-medium text-gray-900 dark:text-gray-100">
+                      <td colSpan={8} className="px-4 py-2 text-right text-sm font-medium text-gray-900 dark:text-gray-100">
                         Phụ cấp:
                       </td>
                       <td className="px-4 py-2 text-right text-sm font-semibold text-gray-900 dark:text-gray-100">
@@ -194,7 +199,17 @@ export const MonthlySalaryDetailModal = ({
                       </td>
                     </tr>
                     <tr>
-                      <td colSpan={7} className="px-4 py-3 text-right text-sm font-medium text-gray-900 dark:text-gray-100">
+                      <td colSpan={8} className="px-4 py-2 text-right text-sm font-medium text-gray-900 dark:text-gray-100">
+                        Tạm ứng:
+                      </td>
+                      <td className="px-4 py-2 text-right text-sm font-semibold text-gray-900 dark:text-gray-100">
+                        <span className={advancePayment > 0 ? 'text-red-600 dark:text-red-400' : ''}>
+                          {advancePayment > 0 ? '-' : ''}{formatCurrency(advancePayment)}
+                        </span>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td colSpan={8} className="px-4 py-3 text-right text-sm font-medium text-gray-900 dark:text-gray-100">
                         Tổng lương cần thanh toán:
                       </td>
                       <td className="px-4 py-3 text-right text-sm font-bold text-green-600 dark:text-green-400">

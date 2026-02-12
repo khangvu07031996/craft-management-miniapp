@@ -5,6 +5,7 @@ import {
   fetchMonthlySalaries,
   calculateMonthlySalary,
   updateMonthlySalaryAllowances,
+  updateMonthlySalaryAdvancePayment,
   payMonthlySalary,
   deleteMonthlySalary,
   setPagination,
@@ -27,8 +28,18 @@ export const MonthlySalaryPage = () => {
   const { monthlySalaries, pagination, isLoading } = useAppSelector((state) => state.work);
   const { employees } = useAppSelector((state) => state.employees);
 
-  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
-  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
+  // Default: first day to last day of current month
+  const getDefaultDateFrom = () => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-01`;
+  };
+  const getDefaultDateTo = () => {
+    const d = new Date();
+    const lastDay = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
+  };
+  const [dateFrom, setDateFrom] = useState(() => getDefaultDateFrom());
+  const [dateTo, setDateTo] = useState(() => getDefaultDateTo());
   const [selectedEmployeeId, setSelectedEmployeeId] = useState<string>('');
   const [currentPage, setCurrentPage] = useState(1);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
@@ -45,16 +56,16 @@ export const MonthlySalaryPage = () => {
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [selectedYear, selectedMonth, selectedEmployeeId]);
+  }, [dateFrom, dateTo, selectedEmployeeId]);
 
   useEffect(() => {
     const filters: {
-      year: number;
-      month: number;
+      dateFrom: string;
+      dateTo: string;
       employeeId?: string;
     } = {
-      year: selectedYear,
-      month: selectedMonth,
+      dateFrom,
+      dateTo,
     };
 
     if (selectedEmployeeId && selectedEmployeeId.trim() !== '') {
@@ -70,7 +81,7 @@ export const MonthlySalaryPage = () => {
         },
       })
     );
-  }, [selectedYear, selectedMonth, selectedEmployeeId, currentPage, pagination.pageSize, dispatch]);
+  }, [dateFrom, dateTo, selectedEmployeeId, currentPage, pagination.pageSize, dispatch]);
 
   useEffect(() => {
     if (pagination.page !== currentPage && pagination.page > 0) {
@@ -86,12 +97,13 @@ export const MonthlySalaryPage = () => {
       return;
     }
 
-    // Calculate for single employee - year/month are optional, will be auto-detected
+    // Calculate for single employee using selected date range
     try {
       await dispatch(
         calculateMonthlySalary({
           employeeId: selectedEmployeeId,
-          // year and month are optional - will be auto-detected from work records
+          dateFrom,
+          dateTo,
         })
       ).unwrap();
       refreshList();
@@ -123,9 +135,9 @@ export const MonthlySalaryPage = () => {
   };
 
   const refreshList = async () => {
-    const filters: { year?: number; month?: number; employeeId?: string } = {
-      year: selectedYear,
-      month: selectedMonth,
+    const filters: { dateFrom: string; dateTo: string; employeeId?: string } = {
+      dateFrom,
+      dateTo,
     };
     if (selectedEmployeeId && selectedEmployeeId.trim() !== '') {
       filters.employeeId = selectedEmployeeId;
@@ -145,6 +157,15 @@ export const MonthlySalaryPage = () => {
       await refreshList();
     } catch (error) {
       console.error('Error updating allowances:', error);
+    }
+  };
+
+  const handleUpdateAdvancePayment = async (id: string, advancePayment: number) => {
+    try {
+      await dispatch(updateMonthlySalaryAdvancePayment({ id, advancePayment })).unwrap();
+      await refreshList();
+    } catch (error) {
+      console.error('Error updating advance payment:', error);
     }
   };
 
@@ -233,15 +254,12 @@ export const MonthlySalaryPage = () => {
             <div>
               <label className="flex items-center gap-2 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-2.5">
                 <CalendarDaysIcon className="w-3.5 h-3.5" />
-                Năm (Lọc)
+                Từ ngày
               </label>
               <input
-                type="number"
-                value={selectedYear}
-                onChange={(e) => {
-                  const year = parseInt(e.target.value) || new Date().getFullYear();
-                  setSelectedYear(year);
-                }}
+                type="date"
+                value={dateFrom}
+                onChange={(e) => setDateFrom(e.target.value)}
                 className="w-full px-4 py-2.5 text-sm border border-gray-300/80 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 shadow-sm hover:border-gray-400 dark:hover:border-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 dark:focus:ring-blue-400/50 focus:border-blue-500 dark:focus:border-blue-400 transition-all duration-200"
               />
             </div>
@@ -249,28 +267,14 @@ export const MonthlySalaryPage = () => {
             <div>
               <label className="flex items-center gap-2 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-2.5">
                 <CalendarDaysIcon className="w-3.5 h-3.5" />
-                Tháng (Lọc)
+                Đến ngày
               </label>
-              <div className="relative">
-                <select
-                  value={selectedMonth}
-                  onChange={(e) => {
-                    setSelectedMonth(parseInt(e.target.value));
-                  }}
-                  className="w-full pl-4 pr-10 py-2.5 text-sm border border-gray-300/80 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 shadow-sm hover:border-gray-400 dark:hover:border-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 dark:focus:ring-blue-400/50 focus:border-blue-500 dark:focus:border-blue-400 transition-all duration-200 appearance-none cursor-pointer"
-                >
-                  {Array.from({ length: 12 }, (_, i) => i + 1).map((month) => (
-                    <option key={month} value={month}>
-                      Tháng {month}
-                    </option>
-                  ))}
-                </select>
-                <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                  <svg className="w-4 h-4 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </div>
-              </div>
+              <input
+                type="date"
+                value={dateTo}
+                onChange={(e) => setDateTo(e.target.value)}
+                className="w-full px-4 py-2.5 text-sm border border-gray-300/80 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 shadow-sm hover:border-gray-400 dark:hover:border-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 dark:focus:ring-blue-400/50 focus:border-blue-500 dark:focus:border-blue-400 transition-all duration-200"
+              />
             </div>
 
             <div>
@@ -299,9 +303,6 @@ export const MonthlySalaryPage = () => {
                   </svg>
                 </div>
               </div>
-              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                Tháng/năm sẽ tự động xác định từ bản ghi công việc
-              </p>
             </div>
 
             <div>
@@ -338,6 +339,7 @@ export const MonthlySalaryPage = () => {
                   monthlySalary={salary}
                   onViewDetails={handleViewDetails}
                   onUpdateAllowances={handleUpdateAllowances}
+                  onUpdateAdvancePayment={handleUpdateAdvancePayment}
                   onDelete={handleDelete}
                 />
               ))}

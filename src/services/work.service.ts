@@ -176,6 +176,8 @@ export const monthlySalaryService = {
       employeeId?: string;
       year?: number;
       month?: number;
+      dateFrom?: string;
+      dateTo?: string;
     },
     pagination?: PaginationParams
   ): Promise<{ data: MonthlySalaryResponse[]; pagination: PaginationParams }> => {
@@ -189,6 +191,12 @@ export const monthlySalaryService = {
     }
     if (filters.month) {
       params.month = filters.month;
+    }
+    if (filters.dateFrom) {
+      params.date_from = filters.dateFrom;
+    }
+    if (filters.dateTo) {
+      params.date_to = filters.dateTo;
     }
     
     if (pagination) {
@@ -213,7 +221,7 @@ export const monthlySalaryService = {
     return response.data.data;
   },
 
-  calculateMonthlySalaryForAll: async (data: { year: number; month: number }): Promise<{
+  calculateMonthlySalaryForAll: async (data: { dateFrom: string; dateTo: string }): Promise<{
     total: number;
     success: number;
     failed: number;
@@ -225,6 +233,11 @@ export const monthlySalaryService = {
 
   updateAllowances: async (id: string, allowances: number): Promise<MonthlySalaryResponse> => {
     const response = await api.put(`/work/monthly-salaries/${id}/allowances`, { allowances });
+    return response.data.data;
+  },
+
+  updateAdvancePayment: async (id: string, advancePayment: number): Promise<MonthlySalaryResponse> => {
+    const response = await api.put(`/work/monthly-salaries/${id}/advance-payment`, { advancePayment });
     return response.data.data;
   },
 
