@@ -16,12 +16,19 @@ import { Layout } from '../components/layout/Layout';
 import { MonthlySalaryCard } from '../components/work/MonthlySalaryCard';
 import { MonthlySalaryDetailModal } from '../components/work/MonthlySalaryDetailModal';
 import { Pagination } from '../components/employees/Pagination';
-import { CalendarDaysIcon, UserGroupIcon, CalculatorIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
+import {
+  CalendarDaysIcon,
+  UserGroupIcon,
+  CalculatorIcon,
+  ChevronRightIcon,
+  InformationCircleIcon,
+} from '@heroicons/react/24/outline';
 import type { MonthlySalaryResponse } from '../types/work.types';
 import { SalaryPayConfirm } from '../components/work/SalaryPayConfirm';
 import { SalaryDeleteConfirm } from '../components/work/SalaryDeleteConfirm';
 import { SalaryNoEmployeeModal } from '../components/work/SalaryNoEmployeeModal';
 import { SalaryNoDataModal } from '../components/work/SalaryNoDataModal';
+import { SalaryPaymentHistory } from '../components/work/SalaryPaymentHistory';
 
 export const MonthlySalaryPage = () => {
   const dispatch = useAppDispatch();
@@ -49,6 +56,7 @@ export const MonthlySalaryPage = () => {
   const [isNoEmployeeModalOpen, setIsNoEmployeeModalOpen] = useState(false);
   const [isNoDataModalOpen, setIsNoDataModalOpen] = useState(false);
   const [noDataEmployeeName, setNoDataEmployeeName] = useState('');
+  const [historyRefreshKey, setHistoryRefreshKey] = useState(0);
 
   useEffect(() => {
     dispatch(fetchEmployees({ filters: {}, pagination: { page: 1, pageSize: 1000 }, sort: {} }));
@@ -106,7 +114,8 @@ export const MonthlySalaryPage = () => {
           dateTo,
         })
       ).unwrap();
-      refreshList();
+      await refreshList();
+      setHistoryRefreshKey((prev) => prev + 1);
     } catch (error: any) {
       console.error('Error calculating monthly salary:', error);
       // Check if error is about no salary data
@@ -155,6 +164,7 @@ export const MonthlySalaryPage = () => {
       await dispatch(updateMonthlySalaryAllowances({ id, allowances })).unwrap();
       // Wait for refresh to complete before allowing modal to open
       await refreshList();
+      setHistoryRefreshKey((prev) => prev + 1);
     } catch (error) {
       console.error('Error updating allowances:', error);
     }
@@ -164,6 +174,7 @@ export const MonthlySalaryPage = () => {
     try {
       await dispatch(updateMonthlySalaryAdvancePayment({ id, advancePayment })).unwrap();
       await refreshList();
+      setHistoryRefreshKey((prev) => prev + 1);
     } catch (error) {
       console.error('Error updating advance payment:', error);
     }
@@ -181,7 +192,8 @@ export const MonthlySalaryPage = () => {
       await dispatch(payMonthlySalary(selectedSalary.id)).unwrap();
       setIsPayModalOpen(false);
       setSelectedSalary(null);
-      refreshList();
+      await refreshList();
+      setHistoryRefreshKey((prev) => prev + 1);
     } catch (error) {
       console.error('Error paying monthly salary:', error);
     }
@@ -199,7 +211,8 @@ export const MonthlySalaryPage = () => {
       await dispatch(deleteMonthlySalary(selectedSalary.id)).unwrap();
       setIsDeleteModalOpen(false);
       setSelectedSalary(null);
-      refreshList();
+      await refreshList();
+      setHistoryRefreshKey((prev) => prev + 1);
     } catch (error) {
       console.error('Error deleting monthly salary:', error);
     }
@@ -250,6 +263,32 @@ export const MonthlySalaryPage = () => {
 
         {/* Filter Section */}
         <div className="mb-4 lg:mb-6 bg-gradient-to-br from-white dark:from-gray-800 to-gray-50 dark:to-gray-800 rounded-xl border border-gray-200/60 dark:border-gray-700 shadow-md dark:shadow-gray-900/50 shadow-gray-100/50 p-4 lg:p-6">
+          <div className="mb-2 flex justify-end">
+            <div className="group relative inline-flex">
+              <button
+                type="button"
+                className="rounded-full p-1 text-gray-400 outline-none ring-offset-2 transition-colors hover:bg-gray-100 hover:text-gray-600 focus-visible:ring-2 focus-visible:ring-blue-500 dark:hover:bg-gray-700 dark:hover:text-gray-300 dark:focus-visible:ring-blue-400"
+                aria-label="Giải thích cách lọc theo ngày và bảng lịch sử"
+              >
+                <InformationCircleIcon className="h-5 w-5" aria-hidden />
+              </button>
+              <div
+                className="invisible absolute right-0 top-full z-30 mt-0 w-[min(22rem,calc(100vw-2rem))] pt-1 opacity-0 transition-opacity duration-150 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100"
+                role="tooltip"
+              >
+                <div className="rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-left text-xs leading-relaxed text-gray-700 shadow-lg dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200">
+                  <span className="font-semibold text-gray-900 dark:text-gray-100">Lọc theo ngày:</span> hai ô ngày
+                  tìm các bảng lương có kỳ tính <span className="font-medium">giao nhau</span> với khoảng đã chọn
+                  (ví dụ 29/04–02/05 vẫn hiện khi lọc 01/05–31/05). Trên thẻ là{' '}
+                  <span className="font-medium">kỳ lương đã lưu</span>, không bị cắt theo filter.
+                  <span className="mt-2 block border-t border-gray-100 pt-2 dark:border-gray-600">
+                    <span className="font-semibold text-gray-900 dark:text-gray-100">Lịch sử thanh toán:</span> chỉ
+                    theo nhân viên, không dùng hai ô ngày này.
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-5">
             <div>
               <label className="flex items-center gap-2 text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-2.5">
@@ -358,6 +397,12 @@ export const MonthlySalaryPage = () => {
             )}
           </>
         )}
+
+        <SalaryPaymentHistory
+          selectedEmployeeId={selectedEmployeeId}
+          onViewDetails={handleViewDetails}
+          refreshKey={historyRefreshKey}
+        />
 
         <MonthlySalaryDetailModal
           isOpen={isDetailModalOpen}
