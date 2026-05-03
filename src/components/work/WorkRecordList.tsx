@@ -153,14 +153,15 @@ export const WorkRecordList = ({
                       <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-300">
                         Có tăng ca
                       </span>
-                      {record.workType?.calculationType === 'weld_count' && record.overtimeQuantity && (
+                      {record.overtimeQuantity != null && Number(record.overtimeQuantity) > 0 && (
                         <span className="text-xs text-gray-600 dark:text-gray-400">
-                          {record.overtimeQuantity} SP
+                          Lượng TC: {record.overtimeQuantity}
+                          {record.workType?.calculationType === 'weld_count' ? ' SP' : ''}
                         </span>
                       )}
-                      {record.workType?.calculationType === 'hourly' && record.overtimeHours && (
+                      {record.overtimeHours != null && Number(record.overtimeHours) > 0 && (
                         <span className="text-xs text-gray-600 dark:text-gray-400">
-                          {record.overtimeHours} giờ
+                          Giờ TC: {record.overtimeHours} giờ
                         </span>
                       )}
                     </div>
@@ -307,14 +308,15 @@ export const WorkRecordList = ({
                         <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-300">
                           Có tăng ca
                         </span>
-                        {record.workType?.calculationType === 'weld_count' && record.overtimeQuantity && (
+                        {record.overtimeQuantity != null && Number(record.overtimeQuantity) > 0 && (
                           <span className="text-xs text-gray-600 dark:text-gray-400">
-                            {record.overtimeQuantity} SP
+                            Lượng TC: {record.overtimeQuantity}
+                            {record.workType?.calculationType === 'weld_count' ? ' SP' : ''}
                           </span>
                         )}
-                        {record.workType?.calculationType === 'hourly' && record.overtimeHours && (
+                        {record.overtimeHours != null && Number(record.overtimeHours) > 0 && (
                           <span className="text-xs text-gray-600 dark:text-gray-400">
-                            {record.overtimeHours} giờ
+                            Giờ TC: {record.overtimeHours} giờ
                           </span>
                         )}
                       </div>

@@ -15,6 +15,7 @@ import { WorkItemPage } from './pages/WorkItemPage';
 import { WorkRecordPage } from './pages/WorkRecordPage';
 import { MonthlySalaryPage } from './pages/MonthlySalaryPage';
 import { WorkReportPage } from './pages/WorkReportPage';
+import { TopPerformersPage } from './pages/TopPerformersPage';
 import { OvertimeConfigPage } from './pages/OvertimeConfigPage';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
@@ -118,6 +119,16 @@ function App() {
               <ProtectedRoute>
                 <AdminRoute>
                   <WorkReportPage />
+                </AdminRoute>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/work/top-performers"
+            element={
+              <ProtectedRoute>
+                <AdminRoute>
+                  <TopPerformersPage />
                 </AdminRoute>
               </ProtectedRoute>
             }

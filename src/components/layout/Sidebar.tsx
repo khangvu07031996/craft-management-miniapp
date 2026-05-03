@@ -12,6 +12,7 @@ import {
   ChartBarSquareIcon,
   ClockIcon,
   XMarkIcon,
+  TrophyIcon,
 } from '@heroicons/react/24/outline';
 
 interface MenuItem {
@@ -60,6 +61,11 @@ const menuItems: MenuItem[] = [
     name: 'Báo cáo',
     path: '/work/reports',
     icon: ChartBarSquareIcon,
+  },
+  {
+    name: 'Top nhân viên',
+    path: '/work/top-performers',
+    icon: TrophyIcon,
   },
 ];
 

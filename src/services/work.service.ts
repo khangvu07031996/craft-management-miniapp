@@ -13,6 +13,10 @@ import type {
   CalculateMonthlySalaryDto,
   WorkReport,
   WorkReportParams,
+  PayrollPeriodReport,
+  PayrollPeriodReportParams,
+  TopPerformersReport,
+  TopPerformersReportParams,
   PaginationParams,
   OvertimeConfigResponse,
   CreateOvertimeConfigDto,
@@ -264,6 +268,34 @@ export const workReportService = {
 
   getMonthlyReport: async (params: WorkReportParams): Promise<WorkReport> => {
     const response = await api.get('/work/reports/monthly', { params });
+    return response.data.data;
+  },
+
+  getPayrollPeriodReport: async (params: PayrollPeriodReportParams): Promise<PayrollPeriodReport> => {
+    const query: Record<string, string | number> = {
+      granularity: params.granularity,
+      year: params.year,
+    };
+    if (params.month !== undefined) query.month = params.month;
+    if (params.quarter !== undefined) query.quarter = params.quarter;
+    if (params.department) query.department = params.department;
+    if (params.employeeId) query.employee_id = params.employeeId;
+    const response = await api.get('/work/reports/payroll-period', { params: query });
+    return response.data.data;
+  },
+
+  getTopPerformersReport: async (params: TopPerformersReportParams): Promise<TopPerformersReport> => {
+    const query: Record<string, string | number> = {
+      granularity: params.granularity,
+      year: params.year,
+    };
+    if (params.month !== undefined) query.month = params.month;
+    if (params.quarter !== undefined) query.quarter = params.quarter;
+    if (params.department) query.department = params.department;
+    if (params.top !== undefined) query.top = params.top;
+    if (params.metrics?.length) query.metrics = params.metrics.join(',');
+    if (params.onlyPaidEmployees) query.only_paid_employees = 'true';
+    const response = await api.get('/work/reports/top-performers', { params: query });
     return response.data.data;
   },
 };

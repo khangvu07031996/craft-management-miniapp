@@ -221,6 +221,110 @@ export interface WorkReportParams {
   employeeId?: string;
 }
 
+export type PayrollPeriodGranularity = 'month' | 'quarter' | 'year';
+
+export interface PayrollPeriodReportParams {
+  granularity: PayrollPeriodGranularity;
+  year: number;
+  month?: number;
+  quarter?: number;
+  department?: string;
+  employeeId?: string;
+}
+
+export interface PayrollPeriodReportSummary {
+  paidSlipCount: number;
+  totalAmountSum: number;
+  totalAllowancesSum: number;
+  totalAdvanceSum: number;
+  totalNetPaid: number;
+}
+
+export interface PayrollPeriodPaidSalaryRow {
+  id: string;
+  employeeId: string;
+  employee?: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    employeeId: string;
+  };
+  year: number;
+  month: number;
+  dateFrom?: string;
+  dateTo?: string;
+  totalWorkDays: number;
+  totalAmount: number;
+  allowances: number;
+  advancePayment: number;
+  status: MonthlySalaryStatus;
+  paidAt: string;
+  netPaid: number;
+}
+
+export interface PayrollPeriodEmployeeActivityRow {
+  employeeId: string;
+  firstName: string;
+  lastName: string;
+  employeeCode: string;
+  department: string | null;
+  workDays: number;
+  overtimeHours: number;
+  overtimeQuantity: number;
+  /** Số loại sản phẩm (số sản phẩm khác nhau có trên bản ghi trong kỳ) */
+  productTypeCount: number;
+  totalQuantity: number;
+}
+
+export interface PayrollPeriodReport {
+  periodLabel: string;
+  dateFrom: string;
+  dateTo: string;
+  summary: PayrollPeriodReportSummary;
+  paidSalaries: PayrollPeriodPaidSalaryRow[];
+  byEmployee: PayrollPeriodEmployeeActivityRow[];
+}
+
+export type TopPerformerMetricKey =
+  | 'totalQuantity'
+  | 'totalAmount'
+  | 'productTypeCount'
+  | 'workDays'
+  | 'overtimeHours'
+  | 'overtimeQuantity'
+  | 'weekAttendanceRatio';
+
+export interface TopPerformerRankRow {
+  rank: number;
+  employeeId: string;
+  firstName: string;
+  lastName: string;
+  employeeCode: string;
+  department: string | null;
+  value: number;
+}
+
+export interface TopPerformersReport {
+  periodLabel: string;
+  dateFrom: string;
+  dateTo: string;
+  top: number;
+  weeksInPeriod: number;
+  onlyPaidEmployees: boolean;
+  rankings: Partial<Record<TopPerformerMetricKey, TopPerformerRankRow[]>>;
+}
+
+export interface TopPerformersReportParams {
+  granularity: PayrollPeriodGranularity;
+  year: number;
+  month?: number;
+  quarter?: number;
+  department?: string;
+  top?: number;
+  metrics?: TopPerformerMetricKey[];
+  onlyPaidEmployees?: boolean;
+}
+
 // Work Record Statistics
 export interface WorkRecordStatistics {
   totalAmount: number;
