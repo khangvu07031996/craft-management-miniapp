@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import type { FormEvent } from 'react';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
 import { createWorkItem, updateWorkItem } from '../../store/slices/workSlice';
@@ -18,9 +18,11 @@ interface WorkItemFormProps {
 
 export const WorkItemForm = ({ workItem, onCancel, onSuccess }: WorkItemFormProps) => {
   const dispatch = useAppDispatch();
-  const { isLoading } = useAppSelector((state) => state.work);
+  const { isLoadingCreate, isLoadingUpdate } = useAppSelector((state) => state.work);
 
   const isEditMode = !!workItem;
+  const isSubmitting = isEditMode ? isLoadingUpdate : isLoadingCreate;
+  const submitLockRef = useRef(false);
 
   const [formData, setFormData] = useState({
     description: '',
@@ -134,6 +136,11 @@ export const WorkItemForm = ({ workItem, onCancel, onSuccess }: WorkItemFormProp
       return;
     }
 
+    if (submitLockRef.current) {
+      return;
+    }
+    submitLockRef.current = true;
+
     try {
       if (isEditMode && workItem) {
         // Edit mode: update existing item (no sizes field)
@@ -168,6 +175,8 @@ export const WorkItemForm = ({ workItem, onCancel, onSuccess }: WorkItemFormProp
       }
     } catch (error: any) {
       setErrors({ submit: error.message || 'Có lỗi xảy ra khi lưu sản phẩm' });
+    } finally {
+      submitLockRef.current = false;
     }
   };
 
@@ -545,8 +554,8 @@ export const WorkItemForm = ({ workItem, onCancel, onSuccess }: WorkItemFormProp
         </Button>
         <Button 
           type="submit" 
-          isLoading={isLoading}
-          disabled={isLoading || (!isEditMode && formData.sizes.length === 0)}
+          isLoading={isSubmitting}
+          disabled={isSubmitting || (!isEditMode && formData.sizes.length === 0)}
           className="w-full sm:w-auto py-3 text-base font-semibold"
         >
           {isEditMode 

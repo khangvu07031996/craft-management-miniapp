@@ -1,4 +1,4 @@
-import { useState, useEffect, Fragment, useMemo } from 'react';
+import { useState, useEffect, Fragment, useMemo, useRef } from 'react';
 import type { FormEvent } from 'react';
 import { Dialog, Transition, Combobox } from '@headlessui/react';
 import { ExclamationTriangleIcon, ChevronUpDownIcon, CheckIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
@@ -32,12 +32,15 @@ interface WorkRecordFormProps {
 
 export const WorkRecordForm = ({ workRecord, onCancel, onSuccess, isEmployee = false }: WorkRecordFormProps) => {
   const dispatch = useAppDispatch();
-  const { workTypes, workItems, overtimeConfigs } = useAppSelector((state) => state.work);
+  const { workTypes, workItems, overtimeConfigs, isLoadingCreate, isLoadingUpdate } = useAppSelector(
+    (state) => state.work
+  );
   const { employees, currentEmployee } = useAppSelector((state) => state.employees);
-  const { isLoading } = useAppSelector((state) => state.work);
   const { user } = useAppSelector((state) => state.auth);
 
   const isEditMode = !!workRecord;
+  const isSubmitting = isEditMode ? isLoadingUpdate : isLoadingCreate;
+  const submitLockRef = useRef(false);
 
   const [formData, setFormData] = useState({
     employeeId: '',
@@ -656,6 +659,11 @@ export const WorkRecordForm = ({ workRecord, onCancel, onSuccess, isEmployee = f
       }
     }
 
+    if (submitLockRef.current) {
+      return;
+    }
+    submitLockRef.current = true;
+
     try {
       // Ensure employeeId is set for employee users
       let finalEmployeeId = formData.employeeId;
@@ -691,6 +699,8 @@ export const WorkRecordForm = ({ workRecord, onCancel, onSuccess, isEmployee = f
       onSuccess();
     } catch (error: any) {
       setErrors({ submit: error.message || 'Có lỗi xảy ra khi lưu công việc' });
+    } finally {
+      submitLockRef.current = false;
     }
   };
 
@@ -1328,8 +1338,8 @@ export const WorkRecordForm = ({ workRecord, onCancel, onSuccess, isEmployee = f
         </Button>
         <Button 
           type="submit" 
-          isLoading={isLoading}
-          disabled={hasCriticalErrors || isLoading}
+          isLoading={isSubmitting}
+          disabled={hasCriticalErrors || isSubmitting}
           title={hasCriticalErrors ? 'Vui lòng sửa các lỗi validation trước khi tạo mới' : ''}
           className="w-full sm:w-auto"
         >
