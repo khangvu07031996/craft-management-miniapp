@@ -5,6 +5,7 @@ import { ErrorMessage } from '../components/common/ErrorMessage';
 import { Pagination } from '../components/employees/Pagination';
 import { workReportService } from '../services/work.service';
 import { formatDate } from '../utils/date';
+import { formatEmployeeDisplayName } from '../utils/employeeDisplayName';
 import {
   ChevronRightIcon,
   ChevronUpIcon,
@@ -19,7 +20,7 @@ import {
   BoltIcon,
   RectangleStackIcon,
 } from '@heroicons/react/24/outline';
-import type { PayrollPeriodGranularity, PayrollPeriodReport, PayrollPeriodEmployeeActivityRow } from '../types/work.types';
+import type { PayrollPeriodGranularity, PayrollPeriodReport } from '../types/work.types';
 
 type ActivitySortKey =
   | 'employee'
@@ -39,10 +40,6 @@ const formatCurrency = (amount: number): string =>
 function formatMetricQty(n: number): string {
   if (Number.isInteger(n)) return String(n);
   return n.toFixed(1);
-}
-
-function employeeDisplayName(row: PayrollPeriodEmployeeActivityRow): string {
-  return `${row.lastName} ${row.firstName}`;
 }
 
 function ActivitySortButton({
@@ -142,7 +139,7 @@ export const WorkReportPage = () => {
     rows.sort((a, b) => {
       switch (activitySortKey) {
         case 'employee': {
-          const c = cmpStr(`${a.lastName} ${a.firstName}`, `${b.lastName} ${b.firstName}`);
+          const c = cmpStr(formatEmployeeDisplayName(a), formatEmployeeDisplayName(b));
           if (c !== 0) return c;
           return cmpStr(a.employeeCode, b.employeeCode);
         }
@@ -479,7 +476,7 @@ export const WorkReportPage = () => {
                         {activityPagedRows.map((row) => (
                           <tr key={row.employeeId} className="hover:bg-gray-50/80 dark:hover:bg-gray-800/50">
                             <td className="px-3 py-2.5 text-gray-900 dark:text-gray-100 whitespace-nowrap">
-                              {employeeDisplayName(row)}
+                              {formatEmployeeDisplayName(row)}
                               <span className="block text-xs text-gray-500 dark:text-gray-400">{row.employeeCode}</span>
                             </td>
                             <td className="px-3 py-2.5 text-gray-700 dark:text-gray-300">{row.department || '—'}</td>

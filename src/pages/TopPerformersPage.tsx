@@ -6,6 +6,7 @@ import { Layout } from '../components/layout/Layout';
 import { ErrorMessage } from '../components/common/ErrorMessage';
 import { workReportService } from '../services/work.service';
 import { formatDate } from '../utils/date';
+import { formatEmployeeDisplayName } from '../utils/employeeDisplayName';
 import type {
   TopPerformersReport,
   TopPerformerMetricKey,
@@ -227,7 +228,7 @@ export const TopPerformersPage = () => {
       lines.push('Hạng,Nhân viên,Mã NV,Phòng ban,Giá trị');
       for (const r of rows) {
         const val = formatMetricValue(key, r.value, report.weeksInPeriod);
-        const name = `"${r.lastName} ${r.firstName}"`;
+        const name = `"${formatEmployeeDisplayName(r)}"`;
         const dept = `"${(r.department ?? '').replace(/"/g, '""')}"`;
         lines.push(`${r.rank},${name},"${r.employeeCode}",${dept},"${String(val).replace(/"/g, '""')}"`);
       }
@@ -289,8 +290,8 @@ export const TopPerformersPage = () => {
 
     const ranked = Array.from(scoreMap.values()).sort((a, b) => {
       if (b.score !== a.score) return b.score - a.score;
-      const an = `${a.lastName} ${a.firstName}`;
-      const bn = `${b.lastName} ${b.firstName}`;
+      const an = formatEmployeeDisplayName(a);
+      const bn = formatEmployeeDisplayName(b);
       return an.localeCompare(bn, 'vi', { sensitivity: 'base' });
     });
     if (ranked.length === 0) return null;
@@ -578,7 +579,7 @@ export const TopPerformersPage = () => {
                 </p>
                 <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1">
                   <p className="text-base font-semibold text-emerald-900 dark:text-emerald-100">
-                    {bestPerformerSuggestion.lastName} {bestPerformerSuggestion.firstName}
+                    {formatEmployeeDisplayName(bestPerformerSuggestion)}
                   </p>
                   <span className="text-sm text-emerald-800/90 dark:text-emerald-200/90">
                     {bestPerformerSuggestion.employeeCode}
@@ -664,7 +665,7 @@ export const TopPerformersPage = () => {
                             <td className="px-4 py-2 tabular-nums font-medium align-top">{row.rank}</td>
                             <td className="px-4 py-2 align-top min-w-0">
                               <span className="text-gray-900 dark:text-gray-100 break-words">
-                                {row.lastName} {row.firstName}
+                                {formatEmployeeDisplayName(row)}
                               </span>
                               <span className="block text-xs text-gray-500 break-all">{row.employeeCode}</span>
                             </td>
