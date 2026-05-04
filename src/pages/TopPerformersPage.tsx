@@ -82,6 +82,23 @@ function suggestionBadgeReasons(
   return [...dedup.values()].sort((a, b) => a.rank - b.rank).slice(0, limit);
 }
 
+/** Chỉ tiêu có chênh lệch thật trong kỳ (backend gửi scoringEligibleByMetric; thiếu thì suy từ bảng top). */
+function isMetricScoringEligible(report: TopPerformersReport, metric: TopPerformerMetricKey): boolean {
+  const flag = report.scoringEligibleByMetric?.[metric];
+  if (flag === false) return false;
+  if (flag === true) return true;
+  const rows = report.rankings[metric] ?? [];
+  if (rows.length < 2) return false;
+  let minV = Infinity;
+  let maxV = -Infinity;
+  for (const r of rows) {
+    const v = r.value;
+    if (v < minV) minV = v;
+    if (v > maxV) maxV = v;
+  }
+  return maxV - minV > 1e-6;
+}
+
 export const TopPerformersPage = () => {
   const dispatch = useAppDispatch();
   const { employees } = useAppSelector((s) => s.employees);
@@ -232,6 +249,9 @@ export const TopPerformersPage = () => {
     const activeProductivityMetrics = METRICS_PRODUCTIVITY.filter((m) => selectedMetrics.has(m));
     if (activeProductivityMetrics.length === 0) return null;
 
+    const eligibleMetrics = activeProductivityMetrics.filter((m) => isMetricScoringEligible(report, m));
+    if (eligibleMetrics.length === 0) return null;
+
     const scoreMap = new Map<
       string,
       {
@@ -245,7 +265,7 @@ export const TopPerformersPage = () => {
       }
     >();
 
-    for (const metric of activeProductivityMetrics) {
+    for (const metric of eligibleMetrics) {
       const rows = report.rankings[metric] ?? [];
       for (const row of rows) {
         const points = Math.max(0, topN + 1 - row.rank);
@@ -280,10 +300,18 @@ export const TopPerformersPage = () => {
 
     return {
       ...best,
-      metricsUsed: activeProductivityMetrics,
-      maxScore: activeProductivityMetrics.length * topN,
+      metricsUsedInScore: eligibleMetrics,
+      metricsSelectedProductivity: activeProductivityMetrics,
+      maxScore: eligibleMetrics.length * topN,
     };
   }, [report, selectedMetrics, topN]);
+
+  const suggestionNoDiscrimination = useMemo(() => {
+    if (!report) return false;
+    const active = METRICS_PRODUCTIVITY.filter((m) => selectedMetrics.has(m));
+    const eligible = active.filter((m) => isMetricScoringEligible(report, m));
+    return active.length > 0 && eligible.length === 0;
+  }, [report, selectedMetrics]);
 
   const suggestionBadges =
     report && bestPerformerSuggestion
@@ -532,6 +560,17 @@ export const TopPerformersPage = () => {
               </p>
             </div>
 
+            {suggestionNoDiscrimination && (
+              <div className="rounded-xl border border-gray-200 bg-gray-50/90 dark:border-gray-700 dark:bg-gray-800/60 px-4 py-3 text-sm text-gray-700 dark:text-gray-300">
+                <p className="font-medium text-gray-900 dark:text-gray-100">Chưa thể đề xuất theo điểm tổng hợp</p>
+                <p className="mt-1 text-xs leading-relaxed">
+                  Các chỉ tiêu năng suất đang chọn không có chênh lệch giữa nhân viên trong kỳ (ví dụ mọi người cùng{' '}
+                  <strong>0</strong> giờ tăng ca) — không có cơ sở xếp hạng, nên hệ thống không cộng điểm để tránh chọn
+                  nhầm theo thứ tự tên.
+                </p>
+              </div>
+            )}
+
             {bestPerformerSuggestion && (
               <div className="rounded-xl border border-emerald-200 bg-emerald-50/80 dark:border-emerald-900/40 dark:bg-emerald-950/25 px-4 py-4">
                 <p className="text-xs font-semibold uppercase tracking-wider text-emerald-700 dark:text-emerald-300">
@@ -549,12 +588,21 @@ export const TopPerformersPage = () => {
                   </span>
                 </div>
                 <p className="mt-1 text-sm text-emerald-900 dark:text-emerald-100">
-                  Điểm tổng hợp: <strong>{bestPerformerSuggestion.score}</strong> / {bestPerformerSuggestion.maxScore}{' '}
-                  (từ {bestPerformerSuggestion.metricsUsed.length} chỉ tiêu năng suất đang bật).
+                  Điểm tổng hợp: <strong>{bestPerformerSuggestion.score}</strong> / {bestPerformerSuggestion.maxScore}.{' '}
+                  Tính trên {bestPerformerSuggestion.metricsUsedInScore.length} chỉ tiêu có chênh lệch trong kỳ
+                  {bestPerformerSuggestion.metricsSelectedProductivity.length >
+                    bestPerformerSuggestion.metricsUsedInScore.length && (
+                    <>
+                      {' '}
+                      (đang chọn {bestPerformerSuggestion.metricsSelectedProductivity.length} chỉ tiêu năng suất; phần
+                      không phân hạng được đã bỏ qua khi chấm điểm)
+                    </>
+                  )}
+                  .
                 </p>
                 <p className="mt-1 text-xs text-emerald-800/90 dark:text-emerald-200/90">
-                  Cách tính điểm: với mỗi KPI năng suất, hạng 1 nhận {topN} điểm, hạng 2 nhận {Math.max(0, topN - 1)} điểm,
-                  ... đến hạng {topN} nhận 1 điểm.
+                  Cách tính điểm: với mỗi KPI được tính, hạng 1 nhận {topN} điểm, hạng 2 nhận {Math.max(0, topN - 1)} điểm,
+                  … đến hạng {topN} nhận 1 điểm; hạng hòa (cùng giá trị) dùng chung số hạng theo bảng xếp hạng.
                 </p>
                 <div className="mt-2 flex flex-wrap gap-2">
                   {suggestionBadges.map((reason) => (

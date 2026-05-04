@@ -312,6 +312,8 @@ export interface TopPerformersReport {
   weeksInPeriod: number;
   onlyPaidEmployees: boolean;
   rankings: Partial<Record<TopPerformerMetricKey, TopPerformerRankRow[]>>;
+  /** Chỉ tiêu có phân hạng thật (max > min trên toàn NV trong kỳ). API cũ có thể thiếu — frontend tự suy từ bảng xếp hạng. */
+  scoringEligibleByMetric?: Partial<Record<TopPerformerMetricKey, boolean>>;
 }
 
 export interface TopPerformersReportParams {
