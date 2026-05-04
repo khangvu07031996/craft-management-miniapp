@@ -4,7 +4,7 @@ import { Layout } from '../components/layout/Layout';
 import { ErrorMessage } from '../components/common/ErrorMessage';
 import { Pagination } from '../components/employees/Pagination';
 import { workReportService } from '../services/work.service';
-import { formatDate } from '../utils/date';
+import { formatDate, getDefaultReportMonthYear } from '../utils/date';
 import { formatEmployeeDisplayName } from '../utils/employeeDisplayName';
 import {
   ChevronRightIcon,
@@ -78,9 +78,10 @@ function ActivitySortButton({
 }
 
 export const WorkReportPage = () => {
+  const defaultReportMonth = useMemo(() => getDefaultReportMonthYear(), []);
   const [granularity, setGranularity] = useState<PayrollPeriodGranularity>('month');
-  const [year, setYear] = useState(() => new Date().getFullYear());
-  const [month, setMonth] = useState(() => new Date().getMonth() + 1);
+  const [year, setYear] = useState(defaultReportMonth.year);
+  const [month, setMonth] = useState(defaultReportMonth.month);
   const [quarter, setQuarter] = useState(1);
 
   const [report, setReport] = useState<PayrollPeriodReport | null>(null);

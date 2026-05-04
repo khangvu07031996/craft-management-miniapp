@@ -5,7 +5,7 @@ import { fetchEmployees } from '../store/slices/employeeSlice';
 import { Layout } from '../components/layout/Layout';
 import { ErrorMessage } from '../components/common/ErrorMessage';
 import { workReportService } from '../services/work.service';
-import { formatDate } from '../utils/date';
+import { formatDate, getDefaultReportMonthYear } from '../utils/date';
 import { formatEmployeeDisplayName } from '../utils/employeeDisplayName';
 import type {
   TopPerformersReport,
@@ -104,9 +104,10 @@ export const TopPerformersPage = () => {
   const dispatch = useAppDispatch();
   const { employees } = useAppSelector((s) => s.employees);
 
+  const defaultReportMonth = useMemo(() => getDefaultReportMonthYear(), []);
   const [granularity, setGranularity] = useState<PayrollPeriodGranularity>('month');
-  const [year, setYear] = useState(() => new Date().getFullYear());
-  const [month, setMonth] = useState(() => new Date().getMonth() + 1);
+  const [year, setYear] = useState(defaultReportMonth.year);
+  const [month, setMonth] = useState(defaultReportMonth.month);
   const [quarter, setQuarter] = useState(1);
   const [department, setDepartment] = useState('');
   const [topN, setTopN] = useState(10);

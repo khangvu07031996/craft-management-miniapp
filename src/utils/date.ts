@@ -62,6 +62,27 @@ export const formatDateForInput = (date: string | Date): string => {
   return `${year}-${month}-${day}`;
 };
 
+/** Tháng báo cáo / lương mặc định: tháng liền trước (tháng 1 → tháng 12 năm trước). */
+export function getDefaultReportMonthYear(ref: Date = new Date()): { year: number; month: number } {
+  const d = new Date(ref.getFullYear(), ref.getMonth(), 1);
+  d.setMonth(d.getMonth() - 1);
+  return { year: d.getFullYear(), month: d.getMonth() + 1 };
+}
+
+/** Ngày đầu–cuối tháng liền trước (YYYY-MM-DD) cho bộ lọc lương tháng. */
+export function getDefaultSalaryMonthDateRange(ref: Date = new Date()): { dateFrom: string; dateTo: string } {
+  const d = new Date(ref.getFullYear(), ref.getMonth(), 1);
+  d.setMonth(d.getMonth() - 1);
+  const y = d.getFullYear();
+  const m = d.getMonth() + 1;
+  const pad = (n: number) => String(n).padStart(2, '0');
+  const lastDay = new Date(y, m, 0).getDate();
+  return {
+    dateFrom: `${y}-${pad(m)}-01`,
+    dateTo: `${y}-${pad(m)}-${pad(lastDay)}`,
+  };
+}
+
 /**
  * Calculate working duration from hire date to now
  * Returns format: "X năm Y tháng Z ngày"

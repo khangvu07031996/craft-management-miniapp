@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
 import {
@@ -12,6 +12,7 @@ import {
 } from '../store/slices/workSlice';
 import { fetchEmployees } from '../store/slices/employeeSlice';
 import { monthlySalaryService } from '../services/work.service';
+import { getDefaultSalaryMonthDateRange } from '../utils/date';
 import { Layout } from '../components/layout/Layout';
 import { MonthlySalaryCard } from '../components/work/MonthlySalaryCard';
 import { MonthlySalaryDetailModal } from '../components/work/MonthlySalaryDetailModal';
@@ -35,18 +36,10 @@ export const MonthlySalaryPage = () => {
   const { monthlySalaries, pagination, isLoading } = useAppSelector((state) => state.work);
   const { employees } = useAppSelector((state) => state.employees);
 
-  // Default: first day to last day of current month
-  const getDefaultDateFrom = () => {
-    const d = new Date();
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-01`;
-  };
-  const getDefaultDateTo = () => {
-    const d = new Date();
-    const lastDay = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
-  };
-  const [dateFrom, setDateFrom] = useState(() => getDefaultDateFrom());
-  const [dateTo, setDateTo] = useState(() => getDefaultDateTo());
+  // Default: first day to last day of previous calendar month (tháng liền trước)
+  const defaultSalaryRange = useMemo(() => getDefaultSalaryMonthDateRange(), []);
+  const [dateFrom, setDateFrom] = useState(defaultSalaryRange.dateFrom);
+  const [dateTo, setDateTo] = useState(defaultSalaryRange.dateTo);
   const [selectedEmployeeId, setSelectedEmployeeId] = useState<string>('');
   const [currentPage, setCurrentPage] = useState(1);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
