@@ -29,6 +29,7 @@ import { SalaryPayConfirm } from '../components/work/SalaryPayConfirm';
 import { SalaryDeleteConfirm } from '../components/work/SalaryDeleteConfirm';
 import { SalaryNoEmployeeModal } from '../components/work/SalaryNoEmployeeModal';
 import { SalaryNoDataModal } from '../components/work/SalaryNoDataModal';
+import { SalaryErrorModal } from '../components/work/SalaryErrorModal';
 import { SalaryPaymentHistory } from '../components/work/SalaryPaymentHistory';
 
 export const MonthlySalaryPage = () => {
@@ -45,10 +46,14 @@ export const MonthlySalaryPage = () => {
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [selectedSalary, setSelectedSalary] = useState<MonthlySalaryResponse | null>(null);
   const [isPayModalOpen, setIsPayModalOpen] = useState(false);
+  const [isPaying, setIsPaying] = useState(false);
+  const [payError, setPayError] = useState<string | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isNoEmployeeModalOpen, setIsNoEmployeeModalOpen] = useState(false);
   const [isNoDataModalOpen, setIsNoDataModalOpen] = useState(false);
   const [noDataEmployeeName, setNoDataEmployeeName] = useState('');
+  const [isCalculateErrorModalOpen, setIsCalculateErrorModalOpen] = useState(false);
+  const [calculateErrorMessage, setCalculateErrorMessage] = useState('');
   const [historyRefreshKey, setHistoryRefreshKey] = useState(0);
 
   useEffect(() => {
@@ -127,11 +132,13 @@ export const MonthlySalaryPage = () => {
       
       if (errorMessage.includes('Không có dữ liệu lương cho nhân viên') || 
           errorMessage.includes('không có bản ghi công việc')) {
-        // Extract employee name from error message or get from employees list
         const employee = employees.find(emp => emp.id === selectedEmployeeId);
         const employeeName = employee ? `${employee.firstName} ${employee.lastName}` : 'nhân viên này';
         setNoDataEmployeeName(employeeName);
         setIsNoDataModalOpen(true);
+      } else if (errorMessage) {
+        setCalculateErrorMessage(errorMessage);
+        setIsCalculateErrorModalOpen(true);
       }
     }
   };
@@ -173,22 +180,56 @@ export const MonthlySalaryPage = () => {
     }
   };
 
-  const handlePay = (id: string) => {
-    const salary = monthlySalaries.find((s) => s.id === id) || null;
+  const resolvePayErrorMessage = (error: unknown): string => {
+    if (typeof error === 'string') return error;
+    if (error && typeof error === 'object') {
+      const err = error as { payload?: unknown; message?: unknown };
+      if (typeof err.payload === 'string') return err.payload;
+      if (typeof err.message === 'string' && err.message !== 'Rejected') return err.message;
+    }
+    return 'Không thể thanh toán bảng lương. Vui lòng thử lại.';
+  };
+
+  const handlePay = async (id: string) => {
+    setPayError(null);
+    const fromList = monthlySalaries.find((s) => s.id === id) || null;
+    const fromSelected = selectedSalary?.id === id ? selectedSalary : null;
+    let salary = fromList || fromSelected;
+
+    if (!salary) {
+      try {
+        salary = await monthlySalaryService.getMonthlySalaryById(id);
+      } catch {
+        setPayError('Không tìm thấy phiếu lương để thanh toán.');
+        setIsPayModalOpen(true);
+        return;
+      }
+    }
+
     setSelectedSalary(salary);
     setIsPayModalOpen(true);
   };
 
   const confirmPay = async () => {
-    if (!selectedSalary) return;
+    if (!selectedSalary) {
+      setPayError('Không tìm thấy phiếu lương để thanh toán.');
+      return;
+    }
+    setIsPaying(true);
+    setPayError(null);
     try {
       await dispatch(payMonthlySalary(selectedSalary.id)).unwrap();
       setIsPayModalOpen(false);
+      setIsDetailModalOpen(false);
       setSelectedSalary(null);
+      setPayError(null);
       await refreshList();
       setHistoryRefreshKey((prev) => prev + 1);
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error paying monthly salary:', error);
+      setPayError(resolvePayErrorMessage(error));
+    } finally {
+      setIsPaying(false);
     }
   };
 
@@ -402,14 +443,22 @@ export const MonthlySalaryPage = () => {
           onClose={handleCloseDetailModal}
           monthlySalary={selectedSalary}
           onPay={(id) => {
-            handlePay(id);
+            void handlePay(id);
           }}
         />
         <SalaryPayConfirm
           isOpen={isPayModalOpen}
-          onClose={() => setIsPayModalOpen(false)}
+          onClose={() => {
+            if (isPaying) return;
+            setIsPayModalOpen(false);
+            setPayError(null);
+          }}
           monthlySalary={selectedSalary}
-          onConfirm={confirmPay}
+          onConfirm={() => {
+            void confirmPay();
+          }}
+          error={payError}
+          isSubmitting={isPaying}
         />
         <SalaryDeleteConfirm
           isOpen={isDeleteModalOpen}
@@ -425,6 +474,15 @@ export const MonthlySalaryPage = () => {
           isOpen={isNoDataModalOpen}
           onClose={() => setIsNoDataModalOpen(false)}
           employeeName={noDataEmployeeName}
+        />
+        <SalaryErrorModal
+          isOpen={isCalculateErrorModalOpen}
+          onClose={() => {
+            setIsCalculateErrorModalOpen(false);
+            setCalculateErrorMessage('');
+          }}
+          title="Không thể tính lương"
+          message={calculateErrorMessage}
         />
       </div>
     </Layout>

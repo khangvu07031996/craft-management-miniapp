@@ -353,7 +353,12 @@ export const payMonthlySalary = createAsyncThunk(
       const result = await monthlySalaryService.payMonthlySalary(id);
       return result;
     } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to pay monthly salary');
+      const errorMessage =
+        error.response?.data?.message ||
+        error.response?.data?.error ||
+        error.message ||
+        'Failed to pay monthly salary';
+      return rejectWithValue(errorMessage);
     }
   }
 );

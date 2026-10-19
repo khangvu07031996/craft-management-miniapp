@@ -9,9 +9,18 @@ interface SalaryPayConfirmProps {
   onClose: () => void;
   onConfirm: () => void;
   monthlySalary: MonthlySalaryResponse | null;
+  error?: string | null;
+  isSubmitting?: boolean;
 }
 
-export const SalaryPayConfirm = ({ isOpen, onClose, onConfirm, monthlySalary }: SalaryPayConfirmProps) => {
+export const SalaryPayConfirm = ({
+  isOpen,
+  onClose,
+  onConfirm,
+  monthlySalary,
+  error = null,
+  isSubmitting = false,
+}: SalaryPayConfirmProps) => {
   const formatCurrency = (amount: number): string =>
     new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
 
@@ -19,9 +28,14 @@ export const SalaryPayConfirm = ({ isOpen, onClose, onConfirm, monthlySalary }: 
     (monthlySalary?.totalAmount || 0) + (monthlySalary?.allowances || 0)
   );
 
+  const periodLabel =
+    monthlySalary?.dateFrom && monthlySalary?.dateTo
+      ? `${monthlySalary.dateFrom} → ${monthlySalary.dateTo}`
+      : `Tháng ${monthlySalary?.month}/${monthlySalary?.year}`;
+
   return (
     <Transition appear show={isOpen} as={Fragment}>
-      <Dialog as="div" className="relative z-[60]" onClose={onClose}>
+      <Dialog as="div" className="relative z-[70]" onClose={isSubmitting ? () => undefined : onClose}>
         <Transition.Child as={Fragment} enter="ease-out duration-300" enterFrom="opacity-0" enterTo="opacity-100" leave="ease-in duration-200" leaveFrom="opacity-100" leaveTo="opacity-0">
           <div className="fixed inset-0 bg-black bg-opacity-25" />
         </Transition.Child>
@@ -49,28 +63,36 @@ export const SalaryPayConfirm = ({ isOpen, onClose, onConfirm, monthlySalary }: 
                       <p>
                         Nhân viên:{' '}
                         <span className="font-medium text-gray-900 dark:text-gray-100">
-                          {monthlySalary?.employee ? `${monthlySalary.employee.firstName} ${monthlySalary.employee.lastName}` : ''}
+                          {monthlySalary?.employee
+                            ? `${monthlySalary.employee.firstName} ${monthlySalary.employee.lastName}`
+                            : '—'}
                         </span>
                       </p>
                       <p>
                         Kỳ lương:{' '}
-                        <span className="font-medium text-gray-900 dark:text-gray-100">
-                          Tháng {monthlySalary?.month}/{monthlySalary?.year}
-                        </span>
+                        <span className="font-medium text-gray-900 dark:text-gray-100">{periodLabel}</span>
                       </p>
                       <p>
                         Tổng lương (gồm phụ cấp):{' '}
                         <span className="font-semibold text-gray-900 dark:text-gray-100">{totalDisplay}</span>
                       </p>
                     </div>
+                    {error && (
+                      <div
+                        role="alert"
+                        className="mt-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-800 dark:bg-red-900/30 dark:text-red-300"
+                      >
+                        {error}
+                      </div>
+                    )}
                   </div>
                 </div>
                 <div className="mt-4 sm:mt-6 flex flex-col sm:flex-row justify-end gap-2">
-                  <Button variant="outline" onClick={onClose} className="w-full sm:w-auto">
-                    Hủy
+                  <Button variant="outline" onClick={onClose} disabled={isSubmitting} className="w-full sm:w-auto">
+                    {error ? 'Đóng' : 'Hủy'}
                   </Button>
-                  <Button onClick={onConfirm} className="w-full sm:w-auto">
-                    Xác nhận thanh toán
+                  <Button onClick={onConfirm} disabled={isSubmitting || !monthlySalary} className="w-full sm:w-auto">
+                    {isSubmitting ? 'Đang thanh toán...' : 'Xác nhận thanh toán'}
                   </Button>
                 </div>
               </Dialog.Panel>
@@ -81,5 +103,3 @@ export const SalaryPayConfirm = ({ isOpen, onClose, onConfirm, monthlySalary }: 
     </Transition>
   );
 };
-
-
